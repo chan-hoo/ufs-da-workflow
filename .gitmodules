@@ -1,0 +1,6 @@
+[submodule "sorc/ufs_model.fd"]
+	path = sorc/ufs_model.fd
+	url = https://github.com/ufs-community/ufs-weather-model.git
+[submodule "sorc/UFS_UTILS.fd"]
+	path = sorc/UFS_UTILS.fd
+	url = https://github.com/ufs-community/UFS_UTILS.git
