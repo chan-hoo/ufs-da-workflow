@@ -42,4 +42,3 @@ setenv("I_MPI_F90", "ifort")
 
 setenv("CMAKE_Platform", "ursa.intel")
 
-whatis("Description: UFS build environment")

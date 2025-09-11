@@ -1,0 +1,12 @@
+help([[
+This module loads python environement for running the UFS-DA workflow on
+the MSU machine Hercules
+]])
+
+whatis([===[Loads libraries needed for running the UFS-DA workflow on Hercules ]===])
+
+load("contrib")
+load("rocoto")
+
+prepend_path("MODULEPATH","/work/noaa/epic/UFS-conda/modulefiles")
+load("python-ufs-land-da-wflow")

@@ -48,4 +48,3 @@ setenv("CXX", "mpiicpc")
 setenv("FC", "mpiifort")
 setenv("CMAKE_Platform", "orion.intel")
 
-whatis("Description: UFS build environment")

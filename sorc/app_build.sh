@@ -89,7 +89,7 @@ HOME_DIR="${SORC_DIR}/.."
 BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
 JEDI_BUILD_DIR="${HOME_DIR}/../JEDI"
-COMPILER=""
+COMPILER="intel"
 APPLICATION=""
 CCPP_SUITES=""
 BUILD_TYPE="Release"
@@ -271,18 +271,6 @@ fi
 
 set -eu
 
-# automatically determine compiler
-if [ -z "${COMPILER}" ] ; then
-  case ${PLATFORM} in
-    gaeac6|hera|hercules|orion|ursa) COMPILER=intel ;;
-    *)
-      COMPILER=intel
-      printf "WARNING: Setting default COMPILER=intel for new platform ${PLATFORM}\n" >&2;
-      ;;
-  esac
-fi
-printf "COMPILER=${COMPILER}\n" >&2
-
 # print settings
 if [ "${VERBOSE}" = true ] ; then
   settings
@@ -306,14 +294,14 @@ if [ "${VERBOSE}" = true ]; then
   MAKE_SETTINGS="${MAKE_SETTINGS} VERBOSE=1"
 fi
 
-if [ "${PLATFORM}" = "gaeac6"]; then
+if [ "${PLATFORM}" = "gaeac6" ]; then
   module reset
 else
   module purge
 fi
 
 # set MODULE_FILE for this platform/compiler combination
-MODULE_FILE="ufs_${PLATFORM}.${COMPILER}"
+MODULE_FILE="ufsda_${PLATFORM}.${COMPILER}"
 if [ ! -f "${HOME_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
   printf "ERROR: module file does not exist for platform/compiler\n" >&2
   printf "  MODULE_FILE=${MODULE_FILE}\n" >&2
@@ -321,9 +309,8 @@ if [ ! -f "${HOME_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
   printf "  COMPILER=${COMPILER}\n\n" >&2
   printf "Please make sure PLATFORM and COMPILER are set correctly\n" >&2
   usage >&2
-  exit 341
+  exit 1
 fi
-
 printf "MODULE_FILE=${MODULE_FILE}\n" >&2
 
 # load modules for platform/compiler combination, then build the code
@@ -360,11 +347,13 @@ else
       [ -x "${file}" ] && cp "${file}" "${HOME_DIR}/exec"
     done
     # copy libraries
-    mkdir -p ${HOME_DIR}/lib64
-    cd ${BUILD_DIR}/lib64
-    for file in *; do
-      [ -f "${file}" ] && cp "${file}" "${HOME_DIR}/lib64"
-    done
+    if [ -d "${BUILD_DIR}/lib64" ]; then
+      mkdir -p ${HOME_DIR}/lib64
+      cd ${BUILD_DIR}/lib64
+      for file in *; do
+        [ -f "${file}" ] && cp "${file}" "${HOME_DIR}/lib64"
+      done
+    fi
   fi
 fi
 

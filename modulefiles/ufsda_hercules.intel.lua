@@ -41,4 +41,3 @@ setenv("CXX", "mpiicpc")
 setenv("FC", "mpiifort")
 setenv("CMAKE_Platform", "hercules.intel")
 
-whatis("Description: UFS build environment")
