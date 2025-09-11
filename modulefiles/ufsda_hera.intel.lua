@@ -33,7 +33,7 @@ load(pathJoin("nemsio", nemsio_ver))
 sigio_ver=os.getenv("sigio_ver") or "2.3.3"
 load(pathJoin("sigio", sigio_ver))
 
-zlib_ver=os.getenv("zlib_ver") or "1.2.13"
+zlib_ver=os.getenv("zlib_ver") or "1.2.11"
 load(pathJoin("zlib", zlib_ver))
 
 setenv("CC", "mpiicx")
