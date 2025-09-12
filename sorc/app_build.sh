@@ -283,7 +283,7 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     set +eu
   fi
 fi
-i[[ "${BUILD_JEDI}" == "only" ]] && exit 0
+[[ "${BUILD_JEDI}" == "only" ]] && exit 0
 
 # === Build workflow components === 
 if [ -d "${BUILD_DIR}" ]; then
