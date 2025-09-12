@@ -159,7 +159,7 @@ if [ "${VERBOSE}" = true ]; then
   MAKE_SETTINGS="${MAKE_SETTINGS} VERBOSE=1"
 fi
 
-# Ensure uppercase / lowercase ============================================
+# Ensure uppercase / lowercase
 APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
 PLATFORM=$(echo ${PLATFORM} | tr '[A-Z]' '[a-z]')
 COMPILER=$(echo ${COMPILER} | tr '[A-Z]' '[a-z]')
@@ -176,7 +176,7 @@ if [ -z $PLATFORM ] ; then
 fi
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 
-# Soft-link static input files to FIX directory
+# === Soft-link static input files to FIX directory ===
 ver_fix_data="v1.0"
 if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
   fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
@@ -243,7 +243,7 @@ if [ "${REMOVE}" = true ]; then
   exit 0  
 fi
 
-# Build JEDI-bundle, if requested (default: off).
+# === Build JEDI-bundle, if requested (default: off) ===
 if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
   jedi_build_skip="NO"
   if [ -d "${JEDI_BUILD_DIR}" ]; then
@@ -261,10 +261,14 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     set -eu
     if [ "${PLATFORM}" = "gaeac6" ]; then
       module reset
+      module load git-lfs
+    elif [ "${PLATFORM}" = "hera" ]; then
+      module purge
+      git lfs install --skip-repo
     else
       module purge
+      module load git-lfs
     fi
-    module load git-lfs
     module use ${SORC_DIR}/jedi-bundle/modulefiles
     module load ${PLATFORM}.${COMPILER}
     module list
