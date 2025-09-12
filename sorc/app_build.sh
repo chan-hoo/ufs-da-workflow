@@ -252,7 +252,7 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     read -p "Type Y or y to remove, otherwise this step will be skipped:" jedi_dir_remove
     if [ "${jedi_dir_remove}" = "Y" ] || [ "${jedi_dir_remove}" = "y" ]; then
       rm -rf ${JEDI_BUILD_DIR}
-      print "The existing JEDI build directory has been removed. Rebuilding ..."
+      printf "The existing JEDI build directory has been removed. Rebuilding ..."
     else
       jedi_build_skip="YES"
     fi
@@ -270,9 +270,10 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     module list
     mkdir -p ${JEDI_BUILD_DIR}
     cd "${JEDI_BUILD_DIR}"
+    cp -rp "${SORC_DIR}/jedi-bundle" .
     mkdir -p build
     cd build
-    ecbuild "${SORC_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
+    ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
     if [ "${PLATFORM}" = "orion" ]; then
       printf "!!! === Please go to (${SORC_DIR}/jedi-bundle/modulefiles) and run (sbatch job_card_orion.sh) === !!!"
     else
