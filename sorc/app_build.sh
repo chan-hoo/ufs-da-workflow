@@ -30,7 +30,7 @@ OPTIONS
   --move
       move binaries to final location.
   --fix_only
-      link static fix files to FIX dir and exit.
+      soft-link static (fix) files to FIX dir and exit.
   --build-dir=BUILD_DIR
       build directory
   --install-dir=INSTALL_DIR
@@ -88,12 +88,12 @@ SORC_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 HOME_DIR="${SORC_DIR}/.."
 BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
-JEDI_BUILD_DIR="${HOME_DIR}/../JEDI"
+JEDI_BUILD_DIR="${HOME_DIR}/../jedi"
 COMPILER="intel"
 APPLICATION=""
 CCPP_SUITES=""
 BUILD_TYPE="Release"
-BUILD_JOBS=4
+BUILD_JOBS=8
 REMOVE=false
 VERBOSE=false
 BUILD_JEDI="off"
@@ -148,6 +148,16 @@ while :; do
   esac
   shift
 done
+
+# print settings
+if [ "${VERBOSE}" = true ] ; then
+  settings
+fi
+# make settings
+MAKE_SETTINGS="-j ${BUILD_JOBS}"
+if [ "${VERBOSE}" = true ]; then
+  MAKE_SETTINGS="${MAKE_SETTINGS} VERBOSE=1"
+fi
 
 # Ensure uppercase / lowercase ============================================
 APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
@@ -233,18 +243,48 @@ if [ "${REMOVE}" = true ]; then
   exit 0  
 fi
 
-# Build JEDI-bundle, if requested.
+# Build JEDI-bundle, if requested (default: off).
 if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
-  if [ "${BUILD_JEDI}" = "only" ]; then
-    if [ -d "${JEDI_BUILD_DIR}" ]; then
-      printf "Removing jedi build directory ...\n"
-      rm -rf "${JEDI_BUILD_DIR}"
-      printf "Removed ...\n"
+  jedi_build_skip="NO"
+  if [ -d "${JEDI_BUILD_DIR}" ]; then
+    printf "JEDI build directory (${JEDI_BUILD_DIR}) already exists.\n"
+    printf "Do you want to remove the existing directory? \n"
+    read -p "Type Y or y to remove, otherwise this step will be skipped:" jedi_dir_remove
+    if [ "${jedi_dir_remove}" = "Y" ] || [ "${jedi_dir_remove}" = "y" ]; then
+      rm -rf ${JEDI_BUILD_DIR}
+      print "The existing JEDI build directory has been removed. Rebuilding ..."
+    else
+      jedi_build_skip="YES"
     fi
   fi
+  if [ "${jedi_build_skip}" = "NO" ]; then
+    set -eu
+    if [ "${PLATFORM}" = "gaeac6" ]; then
+      module reset
+    else
+      module purge
+    fi
+    module load git-lfs
+    module use ${SORC_DIR}/jedi-bundle/modulefiles
+    module load ${PLATFORM}.${COMPILER}
+    module list
+    mkdir -p ${JEDI_BUILD_DIR}
+    cd "${JEDI_BUILD_DIR}"
+    mkdir -p build
+    cd build
+    ecbuild "${SORC_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
+    if [ "${PLATFORM}" = "orion" ]; then
+      printf "!!! === Please go to (${SORC_DIR}/jedi-bundle/modulefiles) and run (sbatch job_card_orion.sh) === !!!"
+    else
+      make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
+    fi
+    cd "${SORC_DIR}"
+    set +eu
+  fi
 fi
-[[ "${BUILD_JEDI}" == "only" ]] && exit 0
+i[[ "${BUILD_JEDI}" == "only" ]] && exit 0
 
+# === Build workflow components === 
 if [ -d "${BUILD_DIR}" ]; then
   while true; do
     if [[ $(ps -o stat= -p ${LCL_PID}) != *"+"* ]] ; then
@@ -271,11 +311,6 @@ fi
 
 set -eu
 
-# print settings
-if [ "${VERBOSE}" = true ] ; then
-  settings
-fi
-
 # cmake settings
 CMAKE_SETTINGS="\
  -DCMAKE_BUILD_TYPE=${BUILD_TYPE}\
@@ -288,12 +323,6 @@ if [ ! -z "${CCPP_SUITES}" ]; then
   CMAKE_SETTINGS="${CMAKE_SETTINGS} -DCCPP_SUITES=${CCPP_SUITES}"
 fi
 
-# make settings
-MAKE_SETTINGS="-j ${BUILD_JOBS}"
-if [ "${VERBOSE}" = true ]; then
-  MAKE_SETTINGS="${MAKE_SETTINGS} VERBOSE=1"
-fi
-
 if [ "${PLATFORM}" = "gaeac6" ]; then
   module reset
 else
@@ -303,7 +332,7 @@ fi
 # set MODULE_FILE for this platform/compiler combination
 MODULE_FILE="ufsda_${PLATFORM}.${COMPILER}"
 if [ ! -f "${HOME_DIR}/modulefiles/${MODULE_FILE}.lua" ]; then
-  printf "ERROR: module file does not exist for platform/compiler\n" >&2
+  printf "FATAL ERROR: module file does not exist for platform/compiler\n" >&2
   printf "  MODULE_FILE=${MODULE_FILE}\n" >&2
   printf "  PLATFORM=${PLATFORM}\n" >&2
   printf "  COMPILER=${COMPILER}\n\n" >&2
