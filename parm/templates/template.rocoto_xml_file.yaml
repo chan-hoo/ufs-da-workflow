@@ -1,0 +1,479 @@
+workflow:
+  attrs:
+    realtime: false
+    scheduler: slurm
+    cyclethrottle: 24
+    taskthrottle: 24
+  cycledef:
+    - attrs:
+        group: cycled
+      spec: {{ DATE_FIRST_CYCLE }}00 {{ DATE_LAST_CYCLE }}00 {{ DATE_CYCLE_FREQ_HR }}:00:00
+    - attrs:
+        group: first_cycle
+      spec: {{ DATE_FIRST_CYCLE }}00 {{ DATE_FIRST_CYCLE }}00 {{ DATE_CYCLE_FREQ_HR }}:00:00
+    - attrs:
+        group: cycled_from_second
+      spec: {{ date_second_cycle }}00 {{ DATE_LAST_CYCLE }}00 {{ DATE_CYCLE_FREQ_HR }}:00:00
+  entities:
+    ACCOUNT: "{{ ACCOUNT }}"
+    APP: "{{ APP }}"
+    ATM_IO_LAYOUT_X: "{{ ATM_IO_LAYOUT_X }}"
+    ATM_IO_LAYOUT_Y: "{{ ATM_IO_LAYOUT_Y }}"
+    ATM_LAYOUT_X: "{{ ATM_LAYOUT_X }}"
+    ATM_LAYOUT_Y: "{{ ATM_LAYOUT_Y }}"
+    ATMOS_FORC: "{{ ATMOS_FORC }}"
+    BKG_ANAL_EXT_SRC_OPT: "{{ BKG_ANAL_EXT_SRC_OPT }}"
+    CCPP_SUITE: "{{ CCPP_SUITE }}"
+    COLDSTART: "{{ COLDSTART }}"
+    COMINgdas: "{{ COMINgdas }}"
+    COMINgfs: "{{ COMINgfs }}"
+    COUPLER_CALENDAR: "{{ COUPLER_CALENDAR }}"
+    CUSTOM_JEDI_CONFIG_FLAG: "{{ CUSTOM_JEDI_CONFIG_FLAG }}"
+    CUSTOM_JEDI_CONFIG_PATH: "{{ CUSTOM_JEDI_CONFIG_PATH }}"
+    CUSTOM_JEDI_CONFIG_PREFIX: "{{ CUSTOM_JEDI_CONFIG_PREFIX }}"
+    DATE_CYCLE_FREQ_HR: "{{ DATE_CYCLE_FREQ_HR }}"
+    DATE_FIRST_CYCLE: "{{ DATE_FIRST_CYCLE }}"
+    DATE_LAST_CYCLE: "{{ DATE_LAST_CYCLE }}"
+    DATM_STREAM_FN_LAST_DATE: "{{ DATM_STREAM_FN_LAST_DATE }}"
+    DCOMINera5: "{{ DCOMINera5 }}"
+    DCOMINera5land: "{{ DCOMINera5land }}"
+    DCOMINghcn: "{{ DCOMINghcn }}"
+    DCOMINgswp3: "{{ DCOMINgswp3 }}"
+    DCOMINsmap: "{{ DCOMINsmap }}"
+    DCOMINsmops: "{{ DCOMINsmops }}"
+    DO_BKG_ANAL_EXT_SRC: "{{ DO_BKG_ANAL_EXT_SRC }}"
+    DO_FREE_FORECAST: "{{ DO_FREE_FORECAST }}"
+    do_jedi_snow: "{{ do_jedi_snow }}"
+    do_jedi_soil_moisture: "{{ do_jedi_soil_moisture }}"
+    DT_ATMOS: "{{ DT_ATMOS }}"
+    DT_RUNSEQ: "{{ DT_RUNSEQ }}"
+    envir: "{{ envir }}"
+    exp_basedir: "{{ exp_basedir }}"
+    EXP_CASE_NAME: "{{ EXP_CASE_NAME }}"
+    FCSTHR: "{{ FCSTHR }}"
+    FHROT: "{{ FHROT }}"
+    FRAC_GRID: "{{ FRAC_GRID }}"
+    IC_DATA_MODEL: "{{ IC_DATA_MODEL }}"
+    IMO: "{{ IMO }}"
+    JEDI_ALGORITHM: "{{ JEDI_ALGORITHM }}"
+    JEDI_IODACONV_PATH: "{{ JEDI_IODACONV_PATH }}"
+    JEDI_PATH: "{{ JEDI_PATH }}"
+    JMO: "{{ JMO }}"
+    KEEPDATA: "{{ KEEPDATA }}"
+    MACHINE: "{{ MACHINE }}"
+    MED_COUPLING_MODE: "{{ MED_COUPLING_MODE }}"
+    model_ver: "{{ model_ver }}"
+    native_default: "{{ native_default }}"
+    NET: "{{ NET }}"
+    NPROCS_ANALYSIS: "{{ NPROCS_ANALYSIS }}"
+    NPROCS_FCST_IC: "{{ NPROCS_FCST_IC }}"
+    NPZ: "{{ NPZ }}"
+    nnodes_forecast: "{{ nnodes_forecast }}"
+    nprocs_forecast: "{{ nprocs_forecast }}"
+    nprocs_forecast_atm: "{{ nprocs_forecast_atm }}"
+    nprocs_per_node: "{{ nprocs_per_node }}"
+    OBSDIR: "{{ OBSDIR }}"
+    OBS_GHCN_SNOW: "{{ OBS_GHCN_SNOW }}"
+    OBS_IMS_SNOW: "{{ OBS_IMS_SNOW }}"
+    OBS_SFCSNO: "{{ OBS_SFCSNO }}"
+    OBS_SMAP: "{{ OBS_SMAP }}"
+    OBS_SMOPS: "{{ OBS_SMOPS }}"
+    OUTPUT_FH: "{{ OUTPUT_FH }}"
+    partition_default: "{{ partition_default }}"
+    PY_LOG_LEVEL: "{{ PY_LOG_LEVEL }}"
+    queue_default: "{{ queue_default }}"
+    RES: "{{ RES }}"
+    RESTART_INTERVAL: "{{ RESTART_INTERVAL }}"
+    RUN: "{{ RUN }}"
+    res_p1: "{{ res_p1 }}"
+    SCHED: "slurm"
+    SMAP_RAW_WINDOW_SPAN_HALF: "{{ SMAP_RAW_WINDOW_SPAN_HALF }}"
+    WARMSTART_DIR: "{{ WARMSTART_DIR }}"
+    WE2E_TEST: "{{ WE2E_TEST }}"
+    WE2E_ATOL: "1e-7"
+    WE2E_LOG_FN: "we2e.log"
+    WRITE_GROUPS: "{{ WRITE_GROUPS }}"
+    WRITE_TASKS_PER_GROUP: "{{ WRITE_TASKS_PER_GROUP }}"
+    HOMElandda: "&exp_basedir;/land-DA_workflow"
+    PTMP: "&exp_basedir;/ptmp"
+    COMROOT: "&PTMP;/&envir;/com"
+    DATAROOT: "&PTMP;/&envir;/tmp"
+    LOGDIR: "&COMROOT;/output/logs"
+    LOGFN_SUFFIX: "<cyclestr>_@Y@m@d@H.log</cyclestr>"
+    PDY:  "<cyclestr>@Y@m@d</cyclestr>"
+    cyc: "<cyclestr>@H</cyclestr>"
+    DATADEP_LRST1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
+    DATADEP_LRST2: "<cyclestr>&WARMSTART_DIR;/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
+    DATADEP_COLDSTART: "<cyclestr>&exp_basedir;/exp_case/&EXP_CASE_NAME;/task_skip_coldstart_@Y@m@d@H.txt</cyclestr>"
+    DATADEP_DATM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
+    DATADEP_DATM2: "<cyclestr>&WARMSTART_DIR;/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
+    DATADEP_FREEFCST: "<cyclestr>&exp_basedir;/exp_case/&EXP_CASE_NAME;/task_analysis_done_@Y@m@d@H.txt</cyclestr>"
+    DATADEP_SFC1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>" 
+    DATADEP_SFC2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>"
+  log:
+    value: "&LOGDIR;/workflow.log"
+  tasks:
+{%- if CUSTOM_JEDI_CONFIG_FLAG == "NO" %}
+    task_jcb:
+      attrs:
+{%- if COLDSTART == "YES" %}
+        cycledefs: cycled_from_second
+{%- else %}
+        cycledefs: cycled
+{%- endif %}
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        COMROOT: "&COMROOT;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
+        do_jedi_snow: "&do_jedi_snow;"
+        do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
+        FRAC_GRID: "&FRAC_GRID;"
+        HOMElandda: "&HOMElandda;"
+        JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
+        KEEPDATA: "&KEEPDATA;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        NPZ: "&NPZ;"
+        OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
+        OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
+        OBS_SFCSNO: "&OBS_SFCSNO;"
+        OBS_SMAP: "&OBS_SMAP;"
+        OBS_SMOPS: "&OBS_SMOPS;"
+        PDY: "&PDY;"
+        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
+        RES: "&RES;"
+        res_p1: "&res_p1;"
+        SCHED: "&SCHED;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "jcb" "&HOMElandda;" "&MACHINE;"'
+      jobname: jcb
+      cores: 1
+      walltime: 00:10:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/jcb&LOGFN_SUFFIX;"
+{%- endif %}
+    task_prep_data:
+      attrs:
+        cycledefs: cycled
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        APP: "&APP;"
+        ATMOS_FORC: "&ATMOS_FORC;"
+        COLDSTART: "&COLDSTART;"
+        COMINgdas: "&COMINgdas;"
+        COMROOT: "&COMROOT;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
+        DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
+        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
+        DATM_STREAM_FN_LAST_DATE: "&DATM_STREAM_FN_LAST_DATE;"
+        DCOMINera5: "&DCOMINera5;"
+        DCOMINghcn: "&DCOMINghcn;"
+        DCOMINgswp3: "&DCOMINgswp3;"
+        DCOMINsmap: "&DCOMINsmap;"
+        DCOMINsmops: "&DCOMINsmops;"
+        FRAC_GRID: "&FRAC_GRID;"
+        HOMElandda: "&HOMElandda;"
+        JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
+        KEEPDATA: "&KEEPDATA;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        OBSDIR: "&OBSDIR;"
+        OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
+        OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
+        OBS_SFCSNO: "&OBS_SFCSNO;"
+        OBS_SMAP: "&OBS_SMAP;"
+        OBS_SMOPS: "&OBS_SMOPS;"
+        PDY: "&PDY;"
+        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
+        RES: "&RES;"
+        SCHED: "&SCHED;"
+        SMAP_RAW_WINDOW_SPAN_HALF: "&SMAP_RAW_WINDOW_SPAN_HALF;"
+        WARMSTART_DIR: "&WARMSTART_DIR;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "prep_data" "&HOMElandda;" "&MACHINE;"'
+      jobname: prep_data
+      cores: 1
+      walltime: 00:30:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
+{%- if memory_flag %}
+      memory: 128G
+{%- endif %}
+{%- if ( APP == "ATML" and COLDSTART == "YES" ) %}
+    task_fcst_ic:
+      attrs:
+        cycledefs: first_cycle
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        APP: "&APP;"
+        COMINgdas: "&COMINgdas;"
+        COMINgfs: "&COMINgfs;"
+        COMROOT: "&COMROOT;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        HOMElandda: "&HOMElandda;"
+        IC_DATA_MODEL: "&IC_DATA_MODEL;"
+        KEEPDATA: "&KEEPDATA;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        NPROCS_FCST_IC: "&NPROCS_FCST_IC;"
+        PDY: "&PDY;"
+        RES: "&RES;"
+        SCHED: "&SCHED;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "fcst_ic" "&HOMElandda;" "&MACHINE;"'
+      jobname: fcst_ic
+      nodes: "1:ppn=&NPROCS_FCST_IC;"
+      walltime: 00:15:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
+{%- if memory_flag %}
+      memory: 128G
+{%- endif %}
+{%- endif %}
+    task_analysis:
+      attrs:
+{%- if COLDSTART == "YES" %}
+        cycledefs: cycled_from_second
+{%- else %}
+        cycledefs: cycled
+{%- endif %}
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        BKG_ANAL_EXT_SRC_OPT: "&BKG_ANAL_EXT_SRC_OPT;"
+        COMINgfs: "&COMINgfs;"
+        COMROOT: "&COMROOT;"
+        COUPLER_CALENDAR: "&COUPLER_CALENDAR;"
+        CUSTOM_JEDI_CONFIG_FLAG: "&CUSTOM_JEDI_CONFIG_FLAG;"
+        CUSTOM_JEDI_CONFIG_PATH: "&CUSTOM_JEDI_CONFIG_PATH;"
+        CUSTOM_JEDI_CONFIG_PREFIX: "&CUSTOM_JEDI_CONFIG_PREFIX;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
+        DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
+        DCOMINera5land: "&DCOMINera5land;"
+        DO_BKG_ANAL_EXT_SRC: "&DO_BKG_ANAL_EXT_SRC;"
+        DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
+        do_jedi_snow: "&do_jedi_snow;"
+        do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
+        exp_basedir: "&exp_basedir;"
+        EXP_CASE_NAME: "&EXP_CASE_NAME;"
+        FRAC_GRID: "&FRAC_GRID;"
+        HOMElandda: "&HOMElandda;"
+        JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
+        JEDI_PATH: "&JEDI_PATH;"
+        KEEPDATA: "&KEEPDATA;"
+        LOGDIR: "&LOGDIR;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        NPROCS_ANALYSIS: "&NPROCS_ANALYSIS;"
+        NPZ: "&NPZ;"
+        OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
+        OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
+        OBS_SFCSNO: "&OBS_SFCSNO;"
+        OBS_SMAP: "&OBS_SMAP;"
+        OBS_SMOPS: "&OBS_SMOPS;"
+        PDY: "&PDY;"
+        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
+        RES: "&RES;"
+        res_p1: "&res_p1;"
+        SCHED: "&SCHED;"
+        WARMSTART_DIR: "&WARMSTART_DIR;"
+        WE2E_TEST: "&WE2E_TEST;"
+        WE2E_ATOL: "&WE2E_ATOL;"
+        WE2E_LOG_FN: "&WE2E_LOG_FN;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "analysis" "&HOMElandda;" "&MACHINE;"'
+      jobname: analysis
+      nodes: "1:ppn=&NPROCS_ANALYSIS;"
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      walltime: 00:15:00
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
+{%- if MACHINE == "ursa" %}
+      memory: 32G
+{%- endif %}
+      dependency:
+        and:
+          taskdep_prep_data:
+            attrs:
+              task: prep_data
+{%- if CUSTOM_JEDI_CONFIG_FLAG == "NO" %}
+          taskdep_jcb:
+            attrs:
+              task: jcb
+{%- endif %}
+          or:
+            datadep_sfc1:
+              attrs:
+                age: 5
+              value: "&DATADEP_SFC1;"
+            datadep_sfc2:
+              attrs:
+                age: 5
+              value: "&DATADEP_SFC2;"
+    task_forecast:
+      attrs:
+{%- if DO_FREE_FORECAST == "YES" %}
+        cycledefs: first_cycle
+{%- else %}
+        cycledefs: cycled
+{%- endif %}
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        APP: "&APP;"
+        ATM_IO_LAYOUT_X: "&ATM_IO_LAYOUT_X;"
+        ATM_IO_LAYOUT_Y: "&ATM_IO_LAYOUT_Y;"
+        ATM_LAYOUT_X: "&ATM_LAYOUT_X;"
+        ATM_LAYOUT_Y: "&ATM_LAYOUT_Y;"
+        ATMOS_FORC: "&ATMOS_FORC;"
+        CCPP_SUITE: "&CCPP_SUITE;"
+        COLDSTART: "&COLDSTART;"
+        COMROOT: "&COMROOT;"
+        COUPLER_CALENDAR: "&COUPLER_CALENDAR;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
+        DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
+        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
+        DATM_STREAM_FN_LAST_DATE: "&DATM_STREAM_FN_LAST_DATE;"
+        DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
+        DT_ATMOS: "&DT_ATMOS;"
+        DT_RUNSEQ: "&DT_RUNSEQ;"
+        FCSTHR: "&FCSTHR;"
+        FHROT: "&FHROT;"
+        HOMElandda: "&HOMElandda;"
+        IMO: "&IMO;"
+        JMO: "&JMO;"
+        KEEPDATA: "&KEEPDATA;"
+        LOGDIR: "&LOGDIR;"
+        MACHINE: "&MACHINE;"
+        MED_COUPLING_MODE: "&MED_COUPLING_MODE;"
+        model_ver: "&model_ver;"
+        NET: "&NET;"
+        NPZ: "&NPZ;"
+        nnodes_forecast: "&nnodes_forecast;"
+        nprocs_forecast: "&nprocs_forecast;"
+        nprocs_forecast_atm: "&nprocs_forecast_atm;"
+        nprocs_per_node: "&nprocs_per_node;"
+        OUTPUT_FH: "&OUTPUT_FH;"
+        PDY: "&PDY;"
+        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
+        RES: "&RES;"
+        RESTART_INTERVAL: "&RESTART_INTERVAL;"
+        res_p1: "&res_p1;"
+        SCHED: "&SCHED;"
+        WARMSTART_DIR: "&WARMSTART_DIR;"
+        WE2E_TEST: "&WE2E_TEST;"
+        WE2E_ATOL: "&WE2E_ATOL;"
+        WE2E_LOG_FN: "&WE2E_LOG_FN;"
+        WRITE_GROUPS: "&WRITE_GROUPS;"
+        WRITE_TASKS_PER_GROUP: "&WRITE_TASKS_PER_GROUP;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "forecast" "&HOMElandda;" "&MACHINE;"'
+      jobname: forecast
+      nodes: "&nnodes_forecast;:ppn=&nprocs_per_node;"
+      walltime: 00:30:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
+      dependency:
+        and:
+          taskdep_prep_data:
+            attrs:
+              task: prep_data
+{%- if DO_FREE_FORECAST == "NO" %}
+          or:
+            taskdep_fcst_ic:
+              attrs:
+                task: fcst_ic
+            datadep_coldstart:
+              attrs:
+                age: 5
+              value: "&DATADEP_COLDSTART;"
+{%- endif %}
+    task_plot_stats:
+      attrs:
+{%- if COLDSTART == "YES" %}
+        cycledefs: cycled_from_second
+{%- else %}
+        cycledefs: cycled
+{%- endif %}
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        COMROOT: "&COMROOT;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
+        DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
+        DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
+        DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
+        HOMElandda: "&HOMElandda;"
+        JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
+        KEEPDATA: "&KEEPDATA;"
+        LOGDIR: "&LOGDIR;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        NPROCS_ANALYSIS: "&NPROCS_ANALYSIS;"
+        OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
+        OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
+        OBS_SFCSNO: "&OBS_SFCSNO;"
+        OBS_SMAP: "&OBS_SMAP;"
+        OBS_SMOPS: "&OBS_SMOPS;"
+        PDY: "&PDY;"
+        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
+        RUN: "&RUN;"
+        SCHED: "&SCHED;"
+      account: "&ACCOUNT;"
+      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "plot_stats" "&HOMElandda;" "&MACHINE;"'
+      jobname: plot_stats
+      cores: 1
+      walltime: 00:10:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
+      dependency:
+        and:
+          taskdep_analysis:
+            attrs:
+              task: analysis
+          or:
+            taskdep_forecast:
+              attrs:
+                task: forecast
+            datadep_freefcst:
+              attrs:
+                age: 5
+              value: "&DATADEP_FREEFCST;"
+
