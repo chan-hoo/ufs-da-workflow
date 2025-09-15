@@ -178,8 +178,8 @@ def setup_wflow_env(machine):
     logging.info(f''' Experimental case directory {exp_case_path} has been created.''')
 
     # Create YAML file for Rocoto XML from template
-    fn_yaml_rocoto_template = "template.land_analysis.yaml"
-    fn_yaml_rocoto = "land_analysis.yaml"
+    fn_yaml_rocoto_template = "template.rocoto_xml_file.yaml"
+    fn_yaml_rocoto = "rocoto_xml_file.yaml"
     fp_yaml_rocoto_template = os.path.join(parm_dir, "templates", fn_yaml_rocoto_template)
     fp_yaml_rocoto = os.path.join(exp_case_path, fn_yaml_rocoto)
     logging.info(f''' Rocoto YAML template: {fp_yaml_rocoto_template}''')
@@ -194,7 +194,7 @@ def setup_wflow_env(machine):
         return False
 
     # Call uwtools to create Rocoto XML file
-    fn_xml_rocoto = "land_analysis.xml"
+    fn_xml_rocoto = "ufsda_rocoto.xml"
     fp_xml_rocoto = os.path.join(exp_case_path, fn_xml_rocoto)
     realize(
         config = fp_yaml_rocoto,
@@ -217,16 +217,16 @@ def setup_wflow_env(machine):
     os.chmod(fp_launch_script, 0o755)
 
     # Add links to log/tmp/com directories within exp_case directory
-    envir = config_parm.get("envir")
     model_ver = config_parm.get("model_ver")    
     net = config_parm.get("NET")
     run = config_parm.get("RUN")
+    # This path (ptmp) need to be changed only for NOAA NCO EE2 compliance (ptmp=OPSROOT)
     ptmp = os.path.join(exp_basedir,"ptmp")
-    log_dir_src = os.path.join(ptmp, envir, "com/output/logs")
+    log_dir_src = os.path.join(ptmp, "com/output/logs")
     log_dir_dst = os.path.join(exp_case_path, "log_dir")
-    tmp_dir_src = os.path.join(ptmp, envir, "tmp")
+    tmp_dir_src = os.path.join(ptmp, "tmp")
     tmp_dir_dst = os.path.join(exp_case_path, "tmp_dir")
-    com_dir_src = os.path.join(ptmp, envir, "com", net, model_ver)
+    com_dir_src = os.path.join(ptmp, "com", net, model_ver)
     com_dir_dst = os.path.join(exp_case_path, "com_dir")
     os.symlink(log_dir_src, log_dir_dst)
     os.symlink(tmp_dir_src, tmp_dir_dst)
@@ -254,7 +254,7 @@ def set_default_parm():
         "BKG_ANAL_EXT_SRC_OPT": "era5land",
         "COMINgdas": "",
         "COMINgfs": "",
-        "CCPP_SUITE": "FV3_GFS_v17_p8_ugwpv1",
+        "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
         "COLDSTART": "NO",
         "COUPLER_CALENDAR": 2,
         "CUSTOM_JEDI_CONFIG_FLAG": "NO",
@@ -274,7 +274,6 @@ def set_default_parm():
         "DO_FREE_FORECAST": "NO",
         "DT_ATMOS": 900,
         "DT_RUNSEQ": 3600,
-        "envir": "test",
         "EXP_CASE_NAME": None,
         "FCSTHR": 24,
         "FHROT": 0,
@@ -306,7 +305,6 @@ def set_default_parm():
         "RUN": "landda",
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
         "WARMSTART_DIR": "/path/to/warm/start/dir",
-        "WE2E_TEST": "NO",
         "WRITE_GROUPS": 1,
         "WRITE_TASKS_PER_GROUP": 6,
     }

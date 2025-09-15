@@ -47,7 +47,6 @@ workflow:
     do_jedi_soil_moisture: "{{ do_jedi_soil_moisture }}"
     DT_ATMOS: "{{ DT_ATMOS }}"
     DT_RUNSEQ: "{{ DT_RUNSEQ }}"
-    envir: "{{ envir }}"
     exp_basedir: "{{ exp_basedir }}"
     EXP_CASE_NAME: "{{ EXP_CASE_NAME }}"
     FCSTHR: "{{ FCSTHR }}"
@@ -89,15 +88,12 @@ workflow:
     SCHED: "slurm"
     SMAP_RAW_WINDOW_SPAN_HALF: "{{ SMAP_RAW_WINDOW_SPAN_HALF }}"
     WARMSTART_DIR: "{{ WARMSTART_DIR }}"
-    WE2E_TEST: "{{ WE2E_TEST }}"
-    WE2E_ATOL: "1e-7"
-    WE2E_LOG_FN: "we2e.log"
     WRITE_GROUPS: "{{ WRITE_GROUPS }}"
     WRITE_TASKS_PER_GROUP: "{{ WRITE_TASKS_PER_GROUP }}"
-    HOMElandda: "&exp_basedir;/land-DA_workflow"
+    HOMEufsda: "&exp_basedir;/ufs-da-workflow"
     PTMP: "&exp_basedir;/ptmp"
-    COMROOT: "&PTMP;/&envir;/com"
-    DATAROOT: "&PTMP;/&envir;/tmp"
+    COMROOT: "&PTMP;/com"
+    DATAROOT: "&PTMP;/tmp"
     LOGDIR: "&COMROOT;/output/logs"
     LOGFN_SUFFIX: "<cyclestr>_@Y@m@d@H.log</cyclestr>"
     PDY:  "<cyclestr>@Y@m@d</cyclestr>"
@@ -131,7 +127,7 @@ workflow:
         do_jedi_snow: "&do_jedi_snow;"
         do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
         FRAC_GRID: "&FRAC_GRID;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         KEEPDATA: "&KEEPDATA;"
         MACHINE: "&MACHINE;"
@@ -148,7 +144,7 @@ workflow:
         res_p1: "&res_p1;"
         SCHED: "&SCHED;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "jcb" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "jcb" "&HOMEufsda;" "&MACHINE;"'
       jobname: jcb
       cores: 1
       walltime: 00:10:00
@@ -182,7 +178,7 @@ workflow:
         DCOMINsmap: "&DCOMINsmap;"
         DCOMINsmops: "&DCOMINsmops;"
         FRAC_GRID: "&FRAC_GRID;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
         KEEPDATA: "&KEEPDATA;"
         MACHINE: "&MACHINE;"
@@ -200,7 +196,7 @@ workflow:
         SMAP_RAW_WINDOW_SPAN_HALF: "&SMAP_RAW_WINDOW_SPAN_HALF;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "prep_data" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "prep_data" "&HOMEufsda;" "&MACHINE;"'
       jobname: prep_data
       cores: 1
       walltime: 00:30:00
@@ -226,7 +222,7 @@ workflow:
         COMROOT: "&COMROOT;"
         cyc: "&cyc;"
         DATAROOT: "&DATAROOT;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         IC_DATA_MODEL: "&IC_DATA_MODEL;"
         KEEPDATA: "&KEEPDATA;"
         MACHINE: "&MACHINE;"
@@ -236,7 +232,7 @@ workflow:
         RES: "&RES;"
         SCHED: "&SCHED;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "fcst_ic" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "fcst_ic" "&HOMEufsda;" "&MACHINE;"'
       jobname: fcst_ic
       nodes: "1:ppn=&NPROCS_FCST_IC;"
       walltime: 00:15:00
@@ -279,7 +275,7 @@ workflow:
         exp_basedir: "&exp_basedir;"
         EXP_CASE_NAME: "&EXP_CASE_NAME;"
         FRAC_GRID: "&FRAC_GRID;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_PATH: "&JEDI_PATH;"
         KEEPDATA: "&KEEPDATA;"
@@ -299,11 +295,8 @@ workflow:
         res_p1: "&res_p1;"
         SCHED: "&SCHED;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
-        WE2E_TEST: "&WE2E_TEST;"
-        WE2E_ATOL: "&WE2E_ATOL;"
-        WE2E_LOG_FN: "&WE2E_LOG_FN;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "analysis" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "analysis" "&HOMEufsda;" "&MACHINE;"'
       jobname: analysis
       nodes: "1:ppn=&NPROCS_ANALYSIS;"
 {%- if native_default is not none %}
@@ -366,7 +359,7 @@ workflow:
         DT_RUNSEQ: "&DT_RUNSEQ;"
         FCSTHR: "&FCSTHR;"
         FHROT: "&FHROT;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         IMO: "&IMO;"
         JMO: "&JMO;"
         KEEPDATA: "&KEEPDATA;"
@@ -388,13 +381,10 @@ workflow:
         res_p1: "&res_p1;"
         SCHED: "&SCHED;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
-        WE2E_TEST: "&WE2E_TEST;"
-        WE2E_ATOL: "&WE2E_ATOL;"
-        WE2E_LOG_FN: "&WE2E_LOG_FN;"
         WRITE_GROUPS: "&WRITE_GROUPS;"
         WRITE_TASKS_PER_GROUP: "&WRITE_TASKS_PER_GROUP;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "forecast" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "forecast" "&HOMEufsda;" "&MACHINE;"'
       jobname: forecast
       nodes: "&nnodes_forecast;:ppn=&nprocs_per_node;"
       walltime: 00:30:00
@@ -436,7 +426,7 @@ workflow:
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
-        HOMElandda: "&HOMElandda;"
+        HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         KEEPDATA: "&KEEPDATA;"
         LOGDIR: "&LOGDIR;"
@@ -453,7 +443,7 @@ workflow:
         RUN: "&RUN;"
         SCHED: "&SCHED;"
       account: "&ACCOUNT;"
-      command: '&HOMElandda;/parm/rocoto_load_modules_run_task.sh "plot_stats" "&HOMElandda;" "&MACHINE;"'
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "plot_stats" "&HOMEufsda;" "&MACHINE;"'
       jobname: plot_stats
       cores: 1
       walltime: 00:10:00

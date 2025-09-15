@@ -3,7 +3,7 @@
 ################################################################################
 
 cmake_minimum_required( VERSION 3.12 )
-project( LandDA VERSION 0.0.0 LANGUAGES C CXX Fortran)
+project( UFSDA VERSION 0.0.0 LANGUAGES C CXX Fortran )
 find_package(ecbuild 3.3.2 REQUIRED)
 enable_testing()
 
