@@ -105,52 +105,6 @@ workflow:
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if CUSTOM_JEDI_CONFIG_FLAG == "NO" %}
-    task_jcb:
-      attrs:
-{%- if COLDSTART == "YES" %}
-        cycledefs: cycled_from_second
-{%- else %}
-        cycledefs: cycled
-{%- endif %}
-        maxtries: 2
-      envars:
-        ACCOUNT: "&ACCOUNT;"
-        COMROOT: "&COMROOT;"
-        cyc: "&cyc;"
-        DATAROOT: "&DATAROOT;"
-        DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
-        do_jedi_snow: "&do_jedi_snow;"
-        do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
-        FRAC_GRID: "&FRAC_GRID;"
-        HOMEufsda: "&HOMEufsda;"
-        JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
-        KEEPDATA: "&KEEPDATA;"
-        MACHINE: "&MACHINE;"
-        model_ver: "&model_ver;"
-        NPZ: "&NPZ;"
-        OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
-        OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
-        OBS_SFCSNO: "&OBS_SFCSNO;"
-        OBS_SMAP: "&OBS_SMAP;"
-        OBS_SMOPS: "&OBS_SMOPS;"
-        PDY: "&PDY;"
-        PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
-        RES: "&RES;"
-        res_p1: "&res_p1;"
-        SCHED: "&SCHED;"
-      account: "&ACCOUNT;"
-      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "jcb" "&HOMEufsda;" "&MACHINE;"'
-      jobname: jcb
-      cores: 1
-      walltime: 00:10:00
-{%- if native_default is not none %}
-      native: "&native_default;"
-{%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
-      join: "&LOGDIR;/jcb&LOGFN_SUFFIX;"
-{%- endif %}
     task_prep_data:
       attrs:
         cycledefs: cycled
@@ -270,11 +224,6 @@ workflow:
           taskdep_prep_data:
             attrs:
               task: prep_data
-{%- if CUSTOM_JEDI_CONFIG_FLAG == "NO" %}
-          taskdep_jcb:
-            attrs:
-              task: jcb
-{%- endif %}
           or:
             datadep_sfc1:
               attrs:
