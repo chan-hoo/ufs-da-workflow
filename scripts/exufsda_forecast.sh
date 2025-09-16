@@ -38,6 +38,7 @@ nHHsec_5d=$(printf "%05d" "${nHHsec}")
 
 filedate=${YYYY}${MM}${DD}.${HH}0000
 
+
 #####################################
 # Copy app-independent input files
 #####################################
@@ -64,6 +65,7 @@ if [ "${APP}" = "S2SWA" ]; then
       'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
       'CCPP_SUITE': ${CCPP_SUITE}
       'external_ic': '.true.'
+      'ignore_rst_cksum': '.true.'
       'make_nh': '.true.'
       'mom_input_filename': 'n'
       'mountain': '.false.'
@@ -86,6 +88,7 @@ if [ "${APP}" = "S2SWA" ]; then
       'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
       'CCPP_SUITE': ${CCPP_SUITE}
       'external_ic': '.false.'
+      'ignore_rst_cksum': '.true.'
       'make_nh': '.false.'
       'mom_input_filename': 'r'
       'mountain': '.true.'
@@ -112,24 +115,35 @@ if [ "${APP}" = "S2SWA" ]; then
 fi
 
 if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  allcomp_restart_n="3"
   allcomp_start_type="startup"
+  allcomp_stop_n="3"
 else
+  allcomp_restart_n="12"
   allcomp_start_type="continue"
+  allcomp_stop_n="12"
 fi
 
 nprocs_atm_m1=$(( nprocs_forecast_atm - 1 ))
 nprocs_atm_lnd_m1=$(( nprocs_forecast_atm + nprocs_forecast_lnd - 1 ))
 
 settings="\
-  'allcomp_start_type': ${allcomp_start_type}
-  'atm_model': ${atm_model}
+  'DT_ATMOS': ${DT_ATMOS}
   'DT_RUNSEQ': ${DT_RUNSEQ}
-  'FCSTHR': ${FCSTHR}
-  'MED_COUPLING_MODE': ${MED_COUPLING_MODE}
-  'nprocs_atm_m1': ${nprocs_atm_m1}
-  'nprocs_forecast_atm': ${nprocs_forecast_atm}
-  'nprocs_atm_lnd_m1': ${nprocs_atm_lnd_m1}
-  'samegrid_atmlnd': ${samegrid_atmlnd}
+  'allcomp_restart_n': ${allcomp_restart_n}
+  'allcomp_start_type': ${allcomp_start_type}
+  'allcomp_stop_n': ${allcomp_stop_n}
+  'atm_model': ${atm_model}
+  'atm_petlist_bounds_n1': ${atm_petlist_bounds_n1}
+  'atm_petlist_bounds_n2': ${atm_petlist_bounds_n2}
+  'ice_petlist_bounds_n1': ${ice_petlist_bounds_n1}
+  'ice_petlist_bounds_n2': ${ice_petlist_bounds_n2}
+  'med_petlist_bounds_n1': ${med_petlist_bounds_n1}
+  'med_petlist_bounds_n2': ${med_petlist_bounds_n2}
+  'ocn_petlist_bounds_n1': ${ocn_petlist_bounds_n1}
+  'ocn_petlist_bounds_n2': ${ocn_petlist_bounds_n2}
+  'wav_petlist_bounds_n1': ${wav_petlist_bounds_n1}
+  'wav_petlist_bounds_n2': ${wav_petlist_bounds_n2}
 " # End of settings variable
 
 fp_template="${PARMlandda}/templates/template.ufs.configure"
@@ -146,10 +160,8 @@ settings="\
   'hh': !!str ${HH}
   'APP': ${APP}
   'DT_ATMOS': ${DT_ATMOS}
-  'FCSTHR': ${FCSTHR}
-  'FHROT': ${FHROT}
-  'IMO': ${IMO}
-  'JMO': ${JMO}
+  'FCST_HRS': ${FCST_HRS}
+  'fhrot': '0'
   'OUTPUT_FH': ${OUTPUT_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'WRITE_GROUPS': ${WRITE_GROUPS}
@@ -164,15 +176,47 @@ ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${f
 # set diag table
 ###################
 settings="\
-  'yyyymmdd': !!str ${YYYYMMDD}
+  'yyyymmdd': !!str ${PDY}
   'yyyy': !!str ${YYYY}
   'mm': !!str ${MM}
   'dd': !!str ${DD}
-  'hh': !!str ${HH}
+  'hh': !!str ${cyc}
+  'RES': ${RES}
 " # End of settings variable
 
 fp_template="${PARMlandda}/templates/template.${APP}.diag_table"
 fn_namelist="diag_table"
+${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+###############
+# set ice_in
+###############
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  ice_runtype="initial"
+  ice_use_restart_time=".false."
+  ice_diagfreq="120"
+  ice_histfreq_n="0, 0, 6, 120, 1"
+else
+  ice_runtype="continue"
+  ice_use_restart_time=".true."
+  ice_diagfreq="60"
+  ice_histfreq_n="0, 0, 6, 0, 0"
+fi
+
+settings="\
+  'yyyymmdd': !!str ${PDY}
+  'yyyy': !!str ${YYYY}
+  'mm': !!str ${MM}
+  'dd': !!str ${DD}
+  'hh_sec': !!str ${HHsec}
+  'ice_runtype': ${ice_runtype}
+  'ice_use_restart_time': ${ice_use_restart_time}
+  'ice_diagfreq': ${ice_diagfreq}
+  'ice_histfreq_n': '${ice_histfreq_n}'
+" # End of settings variable
+
+fp_template="${PARMlandda}/templates/template.${APP}.ice_in"
+fn_namelist="ice_in"
 ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 ################################
@@ -232,12 +276,7 @@ do
 done
 ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
 
-if [ "${APP}" = "LND" ]; then
-  for itile in {1..6}
-  do
-    ln -nsf ${FIXlandda}/NOAHMP_IC/ufs-land_C${RES}_init_fields.tile${itile}.nc C${RES}.initial.tile${itile}.nc
-  done
-elif [ "${APP}" = "ATML" ]; then
+if [ "${APP}" = "S2SWA" ]; then
   ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
   for itile in {1..6}
   do
@@ -255,8 +294,8 @@ elif [ "${APP}" = "ATML" ]; then
   fi
 fi
 
-# Copy restart files only for ATML
-if [ "${APP}" = "ATML" ]; then
+# Copy restart files
+if [ "${APP}" = "S2SWA" ]; then
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     # Set path to directory where restart files exist
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -320,8 +359,7 @@ if [ "${APP}" = "ATML" ]; then
 fi
 cd -
 
-# start runs
-echo "Start ufs-cdeps-land model run with TASKS: ${nprocs_forecast}"
+# Run ufs-weather-model
 export pgm="ufs_model"
 . prep_step
 ${run_cmd} -n ${nprocs_forecast} ${EXEClandda}/$pgm >>$pgmout 2>errfile
@@ -336,8 +374,8 @@ fi
 ###########################
 
 # Copy and link output file to restart for next cycle
-if [ "${FCSTHR}" -gt "${DATE_CYCLE_FREQ_HR}" ]; then
-  num_set=$(( FCSTHR / DATE_CYCLE_FREQ_HR ))
+if [ "${FCST_HRS}" -gt "${DATE_CYCLE_FREQ_HR}" ]; then
+  num_set=$(( FCST_HRS / DATE_CYCLE_FREQ_HR ))
   for iset in $( seq 1 $num_set )
   do
     iset_hr=$(( DATE_CYCLE_FREQ_HR * iset ))
@@ -373,7 +411,7 @@ fi
 # Move land output to COMOUT
 lnd_out_freq_hr=$(( LND_OUTPUT_FREQ_SEC / 3600 ))
 lnd_fcst_hh=${lnd_out_freq_hr}
-while [ ${lnd_fcst_hh} -le ${FCSTHR} ]; do
+while [ ${lnd_fcst_hh} -le ${FCST_HRS} ]; do
   lnd_out_date=$($NDATE $lnd_fcst_hh $PDY$cyc)
   lnd_out_yyyy=${lnd_out_date:0:4}
   lnd_out_mm=${lnd_out_date:4:2}
@@ -393,12 +431,12 @@ while [ ${lnd_fcst_hh} -le ${FCSTHR} ]; do
   lnd_fcst_hh=$(( lnd_fcst_hh + lnd_out_freq_hr ))
 done
 
-if [ "${APP}" = "ATML" ]; then
+if [ "${APP}" = "S2SWA" ]; then
   read -ra out_fh <<< "${OUTPUT_FH}"
   out_fh1="${out_fh[0]}"
   out_fh2="${out_fh[1]}"
   if [ "${out_fh2}" = "-1" ]; then
-    list_out_fh=$(seq 0 ${out_fh1} ${FCSTHR})
+    list_out_fh=$(seq 0 ${out_fh1} ${FCST_HRS})
   else
     list_out_fh=${OUTPUT_FH}
   fi
@@ -426,25 +464,6 @@ if [ "${APP}" = "ATML" ]; then
   for itile in {1..6};
   do
     cp -p "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
-  done
-fi
-
-
-###########################################################
-# WE2E test
-###########################################################
-if [ "${WE2E_TEST}" = "YES" ]; then
-  path_fbase="${FIXlandda}/test_base/we2e_com/${RUN}.${PDY}/RESTART"
-  fn_res="ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile"
-  we2e_log_fp="${LOGDIR}/${WE2E_LOG_FN}"
-  
-  if [ ! -f "${we2e_log_fp}" ]; then
-    touch ${we2e_log_fp}
-  fi
-  # restart files
-  for itile in {1..6}
-  do
-    ${USHlandda}/compare.py "${path_fbase}/${fn_res}${itile}.nc" "${COMOUT}/RESTART/${fn_res}${itile}.nc" ${WE2E_ATOL} ${we2e_log_fp} "FORECAST" ${filedate} "ufs_land_restart.tile${itile}"
   done
 fi
 

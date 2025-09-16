@@ -14,13 +14,13 @@ EARTH_attributes::
 
 # MED #
 MED_model:                      cmeps
-MED_petlist_bounds:             0 143
+MED_petlist_bounds:             {{ med_petlist_bounds_n1 }} {{ med_petlist_bounds_n2 }}
 MED_omp_num_threads:            1
 ::
 
 # ATM #
-ATM_model:                      fv3
-ATM_petlist_bounds:             0 149
+ATM_model:                      {{ atm_model }}
+ATM_petlist_bounds:             {{ atm_petlist_bounds_n1 }} {{ atm_petlist_bounds_n1 }}
 ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
@@ -31,7 +31,7 @@ ATM_attributes::
 
 # OCN #
 OCN_model:                      mom6
-OCN_petlist_bounds:             150 169
+OCN_petlist_bounds:             {{ ocn_petlist_bounds_n1 }} {{ ocn_petlist_bounds_n2 }}
 OCN_omp_num_threads:            1
 OCN_attributes::
   Verbosity = 0
@@ -45,7 +45,7 @@ OCN_attributes::
 
 # ICE #
 ICE_model:                      cice6
-ICE_petlist_bounds:             170 179
+ICE_petlist_bounds:             {{ ice_petlist_bounds_n1 }} {{ ice_petlist_bounds_n2 }}
 ICE_omp_num_threads:            1
 ICE_attributes::
   Verbosity = 0
@@ -61,7 +61,7 @@ ICE_attributes::
 
 # WAV #
 WAV_model:                      ww3
-WAV_petlist_bounds:             180 239
+WAV_petlist_bounds:             {{ wav_petlist_bounds_n1 }} {{ wav_petlist_bounds_n2 }}
 WAV_omp_num_threads:            1
 WAV_attributes::
   Verbosity = 0
@@ -78,7 +78,7 @@ WAV_attributes::
   pio_root = -99
 ::
 
-# CMEPS warm run sequence
+# CMEPS run sequence
 runSeq::
 @{{ DT_RUNSEQ }}
    MED med_phases_prep_wav_avg
@@ -87,7 +87,7 @@ runSeq::
    MED -> OCN :remapMethod=redist
    WAV
    OCN
-   @720
+   @{{ DT_ATMOS }}
      MED med_phases_prep_atm
      MED med_phases_prep_ice
      MED -> ATM :remapMethod=redist
@@ -119,7 +119,7 @@ MED_attributes::
       ICE_model = cice6
       OCN_model = mom6
       WAV_model = ww3
-      coupling_mode = {{ MED_COUPLING_MODE }}
+      coupling_mode = ufs.frac
       pio_typename = pnetcdf
       pio_numiotasks = -99
       pio_stride = 4
@@ -138,12 +138,12 @@ ALLCOMP_attributes::
       start_type = {{ allcomp_start_type }}
       restart_dir = ./RESTART/
       case_name = ufs.cpld
-      restart_n = 3
+      restart_n = {{ allcomp_restart_n }}
       restart_option = nhours
       restart_ymd = -999
       write_restart_at_endofrun = .false.
       dbug_flag = 0
-      stop_n = {{ FCSTHR }}
+      stop_n = {{ allcomp_stop_n }}
       stop_option = nhours
       stop_ymd = -999
       orb_eccen = 1.e36

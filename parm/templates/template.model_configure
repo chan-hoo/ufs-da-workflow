@@ -1,20 +1,20 @@
-start_year:              2021
-start_month:             03
-start_day:               22
-start_hour:              06
+start_year:              {{ yyyy }}
+start_month:             {{ mm }}
+start_day:               {{ dd }}
+start_hour:              {{ hh }}
 start_minute:            0
 start_second:            0
-nhours_fcst:             24
-fhrot:                   0
+nhours_fcst:             {{ FCST_HRS }}
+fhrot:                   {{ fhrot }}
 
-dt_atmos:                720
-restart_interval:        3 -1
+dt_atmos:                {{ DT_ATMOS }}
+restart_interval:        {{ RESTART_INTERVAL }}
 restart_fh:               
 
 quilting:                .true.
 quilting_restart:        .false.
-write_groups:            1
-write_tasks_per_group:   6
+write_groups:            {{ WRITE_GROUPS }}
+write_tasks_per_group:   {{ WRITE_TASKS_PER_GROUP }}
 itasks:                  1
 output_history:          .true.
 history_file_on_native_grid: .false.
@@ -36,5 +36,5 @@ jchunk3d:                0
 kchunk3d:                0
 imo:                     384
 jmo:                     190
-output_fh:               0 21 24
+output_fh:               {{ OUTPUT_FH }}
 iau_offset:              0

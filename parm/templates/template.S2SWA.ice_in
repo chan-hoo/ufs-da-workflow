@@ -1,19 +1,19 @@
 &setup_nml
     days_per_year       = 365
     use_leap_years      = .true.
-    year_init           = 2021
-    month_init          = 03
-    day_init            = 22
-    sec_init            = 21600
-    dt                  = 720
+    year_init           = {{ yyyy }}
+    month_init          = {{ mm }}
+    day_init            = {{ dd }}
+    sec_init            = {{ hh_sec }}
+    dt                  = {{ DT_ATMOS }}
     npt                 = 999
     ndtd                = 1
-    runtype             = 'initial'
+    runtype             = {{ ice_runtype }}
     runid               = 'unknown'
     ice_ic              = 'cice_model.res.nc'
     restart             = .true.
     restart_ext         = .false.
-    use_restart_time    = .false.
+    use_restart_time    = {{ ice_use_restart_time }}
     numin               = 21
     numax               = 89
     restart_format      = 'pnetcdf2'
@@ -30,7 +30,7 @@
     dumpfreq_n          = 1000
     dump_last           = .false.
     bfbflag             = 'off'
-    diagfreq            = 120
+    diagfreq            = {{ ice_diagfreq }}
     diag_type           = 'file'
     diag_file           = 'ice_diag.d'
     print_global        = .true.
@@ -48,7 +48,7 @@
     history_deflate     = 0
     history_precision   = 4
     histfreq            = 'm','d','h','1','x'
-    histfreq_n          = 0, 0, 6, 120, 1
+    histfreq_n          = {{ ice_histfreq_n }}
     hist_avg            = .true.
     hist_suffix         = 'x','x','x','x','x'
     history_dir         = './history/'
@@ -393,9 +393,9 @@
 
 &ice_prescribed_nml
   prescribed_ice_mode = .false.
-  stream_yearfirst = 2021
-  stream_yearlast = 2021
-  stream_yearalign = 2021
+  stream_yearfirst = {{ yyyy }}
+  stream_yearlast = {{ yyyy_last }}
+  stream_yearalign = {{ yyyy_align }}
   stream_varname = "ice_cov"
   stream_meshfile = "INPUT/none"
   stream_datafiles = "none"
