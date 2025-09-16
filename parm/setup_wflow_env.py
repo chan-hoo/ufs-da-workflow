@@ -71,10 +71,7 @@ def setup_wflow_env(machine):
     obs_sfcsno = config_parm.get("OBS_SFCSNO")
     obs_smap = config_parm.get("OBS_SMAP")
     obs_smops = config_parm.get("OBS_SMOPS")
-    if obs_ghcn_snow == "NO" and obs_ims_snow == "NO" and obs_sfcsno == "NO" and obs_smap == "NO" and obs_smops == "NO":
-        logging.error("NO obs options are selected !!!", exc_info=True)
-        sys.exit(1)
-    elif obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
+    if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
         logging.error("Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
         sys.exit(1)
     elif obs_smap == "YES" and obs_smops == "YES":
@@ -119,8 +116,9 @@ def setup_wflow_env(machine):
     atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")    
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
 
-    if app == "ATML":
+    if app == "S2SWA":
         nprocs_forecast_atm = 6*(atm_layout_x*atm_layout_y+atm_io_layout_x*atm_io_layout_y)
+        nprocs_forecast = nprocs_forecast_atm
 
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
@@ -245,13 +243,12 @@ def set_default_parm():
 
     default_config = {
         "ACCOUNT": "epic",
-        "APP": "LND",
+        "APP": "S2SWA",
         "ATM_IO_LAYOUT_X": 1,
         "ATM_IO_LAYOUT_Y": 1,
         "ATM_LAYOUT_X": 3,
         "ATM_LAYOUT_Y": 8,
         "ATMOS_FORC": "gswp3",
-        "BKG_ANAL_EXT_SRC_OPT": "era5land",
         "COMINgdas": "",
         "COMINgfs": "",
         "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
@@ -261,18 +258,16 @@ def set_default_parm():
         "CUSTOM_JEDI_CONFIG_PATH": "/path/to/custom/JEDI/config/dir",
         "CUSTOM_JEDI_CONFIG_PREFIX": "/prefix/of/custom/JEDI/config/file/name",
         "DATE_CYCLE_FREQ_HR": 24,
-        "DATE_FIRST_CYCLE": 200001030000,
-        "DATE_LAST_CYCLE": 200001040000,
-        "DATM_STREAM_FN_LAST_DATE": "",
+        "DATE_FIRST_CYCLE": 202103220600,
+        "DATE_LAST_CYCLE": 202103230600,
         "DCOMINera5": "",
         "DCOMINera5land": "",
         "DCOMINghcn": "",
         "DCOMINgswp3": "",
         "DCOMINsmap": "",
         "DCOMINsmops": "",
-        "DO_BKG_ANAL_EXT_SRC": "NO",
         "DO_FREE_FORECAST": "NO",
-        "DT_ATMOS": 900,
+        "DT_ATMOS": 720,
         "DT_RUNSEQ": 3600,
         "EXP_CASE_NAME": None,
         "FCSTHR": 24,
@@ -286,9 +281,9 @@ def set_default_parm():
         "JMO": 190,
         "KEEPDATA": "YES",
         "MACHINE": "/machine/platform/name",
-        "MED_COUPLING_MODE": "ufs.nfrac.aoflux",
-        "model_ver": "v3.0.0",
-        "NET": "landda",
+        "MED_COUPLING_MODE": "ufs.frac",
+        "model_ver": "v1.0.0",
+        "NET": "ufsda",
         "NPROCS_ANALYSIS": 6,
         "NPROCS_FCST_IC": 36,
         "NPZ": 127,
@@ -302,7 +297,7 @@ def set_default_parm():
         "PY_LOG_LEVEL": "INFO",
         "RES": 96,
         "RESTART_INTERVAL": "12 -1",
-        "RUN": "landda",
+        "RUN": "ufsda",
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
         "WARMSTART_DIR": "/path/to/warm/start/dir",
         "WRITE_GROUPS": 1,
@@ -319,29 +314,25 @@ def set_machine_parm(machine):
     lowercase_machine = machine.lower()
     match lowercase_machine:
         case "gaeac6":
-            CUSTOM_JEDI_CONFIG_PATH = "/gpfs/f6/bil-fire8/world-shared/UFS_Land-DA_v3.0/inputs/test_base/jedi_yaml"
+            CUSTOM_JEDI_CONFIG_PATH = "/gpfs/f6/epic/world-shared/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 192
-            WARMSTART_DIR = "/gpfs/f6/bil-fire8/world-shared/UFS_Land-DA_v3.0/inputs/DATA_RESTART"
+            WARMSTART_DIR = "/gpfs/f6/epic/world-shared/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "hera":
-            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS_Land-DA_v3.0/inputs/test_base/jedi_yaml"
+            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 40
-            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS_Land-DA_v3.0/inputs/DATA_RESTART"
+            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "hercules":
-            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS_Land-DA_v3.0/inputs/test_base/jedi_yaml"
+            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 80
-            WARMSTART_DIR = "/work/noaa/epic/UFS_Land-DA_v3.0/inputs/DATA_RESTART"
+            WARMSTART_DIR = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "orion":
-            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS_Land-DA_v3.0/inputs/test_base/jedi_yaml"
+            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 40
-            WARMSTART_DIR = "/work/noaa/epic/UFS_Land-DA_v3.0/inputs/DATA_RESTART"
+            WARMSTART_DIR = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "ursa":
-            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS_Land-DA_v3.0/inputs/test_base/jedi_yaml"
+            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 192
-            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS_Land-DA_v3.0/inputs/DATA_RESTART"
-        case "singularity":
-            CUSTOM_JEDI_CONFIG_PATH = "SINGULARITY_WORKING_DIR"
-            MAX_CORES_PER_NODE = 40
-            WARMSTART_DIR = "SINGULARITY_WORKING_DIR/land-DA_workflow/fix/DATA_RESTART"
+            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
 

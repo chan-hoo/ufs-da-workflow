@@ -38,160 +38,24 @@ nHHsec_5d=$(printf "%05d" "${nHHsec}")
 
 filedate=${YYYY}${MM}${DD}.${HH}0000
 
-# Copy input namelist data / restart files
-cp -p "${PARMlandda}/templates/template.noahmptable.tbl" noahmptable.tbl
-cp -p "${PARMlandda}/templates/template.fd_ufs.yaml" fd_ufs.yaml
-if [ "${APP}" = "LND" ]; then
-  mkdir -p INPUT_DATM
-
-  ###############
-  # data_table
-  ###############
-  cp -p "${PARMlandda}/templates/template.${APP}.data_table" data_table
-  
-  ###########################################
-  # datm_in: CDEPS datm input namlist file
-  ###########################################
-  if [ "${ATMOS_FORC}" = "gswp3" ]; then
-    datm_in_datamode="CLMNCEP"
-    datm_in_mask_fn="fv1.9x2.5_141008_ESMFmesh.nc"
-    datm_in_mesh_fn="fv1.9x2.5_141008_ESMFmesh.nc"
-    datm_in_nx_global="144"
-    datm_in_ny_global="96"
-  elif [ "${ATMOS_FORC}" = "era5" ]; then
-    datm_in_datamode="ERA5"
-    datm_in_mask_fn="ERA5_mesh.nc"
-    datm_in_mesh_fn="ERA5_mesh.nc"
-    datm_in_nx_global="1440"
-    datm_in_ny_global="721"
-  else
-    err_exit "Invalid atmospheric forcing option: ATMOS_FORC: ${ATMOS_FORC} !!!"
-  fi
-  settings="\
-    'datm_in_datamode': '${datm_in_datamode}'
-    'datm_in_mask_fn': '${datm_in_mask_fn}'
-    'datm_in_mesh_fn': '${datm_in_mesh_fn}'
-    'datm_in_nx_global': ${datm_in_nx_global}
-    'datm_in_ny_global': ${datm_in_ny_global}
-  " # End of settings variable
-  fp_template="${PARMlandda}/templates/template.${APP}.datm_in"
-  fn_namelist="datm_in"
-  ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-  ######################
-  # datm.streams file
-  ######################
-  data_files01_list=()
-  data_files02_list=()
-  data_files03_list=()
-  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    first_date_m1=$($NDATE -24 $DATE_FIRST_CYCLE)
-    if [ -z "${DATM_STREAM_FN_LAST_DATE}" ]; then
-      last_date_p1=$($NDATE 24 $DATE_LAST_CYCLE)
-    else
-      last_date_p1=$($NDATE 24 $DATM_STREAM_FN_LAST_DATE)
-    fi
-    year_first="${first_date_m1:0:4}"
-    month_first="${first_date_m1:4:2}"
-    day_first="${first_date_m1:6:2}"
-    year_last="${last_date_p1:0:4}"
-    month_last="${last_date_p1:4:2}"
-    day_last="${last_date_p1:6:2}"
-  else  # warm start
-    # CDEPS restart and pointer files for DATM (LND)
-    rfile2="ufs.cpld.datm.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-    if [ -f "${COMINm1}/${rfile2}" ]; then
-      ln -nsf "${COMINm1}/${rfile2}" .
-    elif [ -f "${WARMSTART_DIR}/${rfile2}" ]; then
-      ln -nsf "${WARMSTART_DIR}/${rfile2}" .
-    else
-      ln -nsf ${FIXlandda}/restarts/${ATMOS_FORC}/${rfile2} .
-    fi
-    ls -1 "${rfile2}">rpointer.atm
- 
-    # Extract info from datm restart file
-    ${USHlandda}/datm_rfile_info.py -i ${rfile2} -f ${ATMOS_FORC} -l ${PY_LOG_LEVEL}
-    # Read result file
-    while IFS= read -r line; do
-      year_first=$(echo "$line" | cut -d',' -f1)
-      month_first=$(echo "$line" | cut -d',' -f2)
-      day_first=$(echo "$line" | cut -d',' -f3)
-      year_last=$(echo "$line" | cut -d',' -f4)
-      month_last=$(echo "$line" | cut -d',' -f5)
-      day_last=$(echo "$line" | cut -d',' -f6)
-    done < "first_last_date.txt"
-  fi
-
-  if [ "${ATMOS_FORC}" = "gswp3" ]; then
-    var_fn_prefix="clmforc.GSWP3.c2011.0.5x0.5"
-    gswp3_vars=( "Solr" "Prec" "TPQWL" "ESMFmesh" )
-    for var in "${gswp3_vars[@]}" ; do
-      given_date="${year_first}-${month_first}-08"
-      num_months_m1=$(( (year_last - year_first) * 12 + (month_last - month_first) + 1 ))
-      for imon in $( seq 1 $num_months_m1 ) ; do
-        idate=$( date -d "$given_date + $((imon-1)) months" +%Y%m )
-        iyyyy="${idate:0:4}"
-        imm="${idate:4:2}"
-        var_fn="${var_fn_prefix}.${var}.${iyyyy}-${imm}.nc"
-        if [ "${var}" = "Solr" ]; then
-          data_files01_list+=("\"INPUT_DATM/${var_fn}\"")
-        elif [ "${var}" = "Prec" ]; then
-          data_files02_list+=("\"INPUT_DATM/${var_fn}\"")
-        elif [ "${var}" = "TPQWL" ]; then
-          data_files03_list+=("\"INPUT_DATM/${var_fn}\"")
-        fi
-      done
-    done
-  elif [ "${ATMOS_FORC}" = "era5" ]; then
-    data_fn_prefix="ERA5_forcing_"
-    data_fn_suffix="_fix.nc"
-    first_date="${year_first}-${month_first}-${day_first}"
-    last_date="${year_last}-${month_last}-${day_last}"
-    second_first=$(date -d "${first_date}" +%s)
-    second_last=$(date -d "${last_date}" +%s)
-    second_diff=$(( second_last - second_first ))
-    num_days=$(( second_diff / (60 * 60 * 24) ))
-    for iday in $( seq 0 $num_days ) ; do
-      idate=$( date -d "$first_date + $iday days" +%Y%m%d )
-      iyyyy="${idate:0:4}"
-      imm="${idate:4:2}"
-      idd="${idate:6:2}"
-      data_fn="${data_fn_prefix}${iyyyy}-${imm}-${idd}${data_fn_suffix}"
-      data_files01_list+=("\"INPUT_DATM/${data_fn}\"")
-    done
-  fi
-  year_align="${year_first}"
-  settings="\
-    'ATMOS_FORC': '${ATMOS_FORC}'
-    'year_first': '${year_first}'
-    'year_last': '${year_last}'
-    'year_align': '${year_align}'
-    'data_files01': '${data_files01_list[@]}'
-    'data_files02': '${data_files02_list[@]}'
-    'data_files03': '${data_files03_list[@]}'
-    'datm_in_mesh_fn': '${datm_in_mesh_fn}'
-  " # End of settings variable
-  fp_template="${PARMlandda}/templates/template.${APP}.datm.streams"
-  fn_namelist="datm.streams"
-  ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-  # soft-link datm input files from shared directory
-  ln -nsf ${DATA_DATM}/* INPUT_DATM/.
-elif [ "${APP}" = "ATML" ]; then
-  ###############
+#####################################
+# Copy app-independent input files
+#####################################
+if [ "${APP}" = "S2SWA" ]; then
   # field_table
-  ###############
   cp -p "${PARMlandda}/templates/template.${APP}.field_table" field_table
-  ####################
+  # fd_ufs.yaml
+  cp -p "${PARMlandda}/templates/template.${APP}.fd_ufs.yaml" fd_ufs.yaml
+  # data_table
+  cp -p "${PARMlandda}/templates/template.${APP}.data_table" data_table
   # global fix files
-  ####################
   ln -nsf ${FIXlandda}/FV3_fix_global/* .
 fi
 
 ##################
 # Set input.nml
 ##################
-if [ "${APP}" = "ATML" ]; then
+if [ "${APP}" = "S2SWA" ]; then
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     settings="\
       'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
@@ -201,14 +65,19 @@ if [ "${APP}" = "ATML" ]; then
       'CCPP_SUITE': ${CCPP_SUITE}
       'external_ic': '.true.'
       'make_nh': '.true.'
+      'mom_input_filename': 'n'
       'mountain': '.false.'
       'na_init': '1'
       'nggps_ic': '.true.'
-      'nstf_name': '2,1,0,0,0'
+      'nstf_name': '2,0,0,0,0'
       'NPZ': ${NPZ}
       'res_p1': ${res_p1}
       'warm_start': '.false.'
     " # End of settings variable
+#############################################
+# CHECK: in other cases, nstf_name: 2,1,0,0,0 for coldstart, but in regression test 
+#        'cpld_control_gfsv17_intel' of ufs-weather-model, it is set to 2,0,0,0,0
+#############################################
   else
     settings="\
       'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
@@ -218,6 +87,7 @@ if [ "${APP}" = "ATML" ]; then
       'CCPP_SUITE': ${CCPP_SUITE}
       'external_ic': '.false.'
       'make_nh': '.false.'
+      'mom_input_filename': 'r'
       'mountain': '.true.'
       'na_init': '0'
       'nggps_ic': '.false.'
@@ -237,27 +107,13 @@ fi
 ######################
 # Set ufs.configure
 ######################
-if [ "${APP}" = "LND" ]; then
-  atm_model="datm"
-  samegrid_atmlnd=".false."
-elif [ "${APP}" = "ATML" ]; then
+if [ "${APP}" = "S2SWA" ]; then
   atm_model="fv3"
-  samegrid_atmlnd=".true."
-fi
-
-if [ "${ATMOS_FORC}" = "era5" ]; then
-  lnd_precip_partition_option="1"
-  lnd_snow_albedo_option="2"
-else
-  lnd_precip_partition_option="4"
-  lnd_snow_albedo_option="1"
 fi
 
 if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-  allcomp_read_restart=".false."
   allcomp_start_type="startup"
 else
-  allcomp_read_restart=".true."
   allcomp_start_type="continue"
 fi
 
@@ -265,19 +121,10 @@ nprocs_atm_m1=$(( nprocs_forecast_atm - 1 ))
 nprocs_atm_lnd_m1=$(( nprocs_forecast_atm + nprocs_forecast_lnd - 1 ))
 
 settings="\
-  'allcomp_read_restart': ${allcomp_read_restart}
   'allcomp_start_type': ${allcomp_start_type}
   'atm_model': ${atm_model}
   'DT_RUNSEQ': ${DT_RUNSEQ}
   'FCSTHR': ${FCSTHR}
-  'LND_CALC_SNET': ${LND_CALC_SNET}
-  'LND_IC_TYPE': ${LND_IC_TYPE}
-  'LND_INITIAL_ALBEDO': ${LND_INITIAL_ALBEDO}
-  'LND_LAYOUT_X': ${LND_LAYOUT_X}
-  'LND_LAYOUT_Y': ${LND_LAYOUT_Y}
-  'LND_OUTPUT_FREQ_SEC': ${LND_OUTPUT_FREQ_SEC}
-  'lnd_precip_partition_option': ${lnd_precip_partition_option}
-  'lnd_snow_albedo_option': ${lnd_snow_albedo_option}
   'MED_COUPLING_MODE': ${MED_COUPLING_MODE}
   'nprocs_atm_m1': ${nprocs_atm_m1}
   'nprocs_forecast_atm': ${nprocs_forecast_atm}

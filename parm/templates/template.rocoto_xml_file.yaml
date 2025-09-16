@@ -22,7 +22,6 @@ workflow:
     ATM_LAYOUT_X: "{{ ATM_LAYOUT_X }}"
     ATM_LAYOUT_Y: "{{ ATM_LAYOUT_Y }}"
     ATMOS_FORC: "{{ ATMOS_FORC }}"
-    BKG_ANAL_EXT_SRC_OPT: "{{ BKG_ANAL_EXT_SRC_OPT }}"
     CCPP_SUITE: "{{ CCPP_SUITE }}"
     COLDSTART: "{{ COLDSTART }}"
     COMINgdas: "{{ COMINgdas }}"
@@ -34,14 +33,12 @@ workflow:
     DATE_CYCLE_FREQ_HR: "{{ DATE_CYCLE_FREQ_HR }}"
     DATE_FIRST_CYCLE: "{{ DATE_FIRST_CYCLE }}"
     DATE_LAST_CYCLE: "{{ DATE_LAST_CYCLE }}"
-    DATM_STREAM_FN_LAST_DATE: "{{ DATM_STREAM_FN_LAST_DATE }}"
     DCOMINera5: "{{ DCOMINera5 }}"
     DCOMINera5land: "{{ DCOMINera5land }}"
     DCOMINghcn: "{{ DCOMINghcn }}"
     DCOMINgswp3: "{{ DCOMINgswp3 }}"
     DCOMINsmap: "{{ DCOMINsmap }}"
     DCOMINsmops: "{{ DCOMINsmops }}"
-    DO_BKG_ANAL_EXT_SRC: "{{ DO_BKG_ANAL_EXT_SRC }}"
     DO_FREE_FORECAST: "{{ DO_FREE_FORECAST }}"
     do_jedi_snow: "{{ do_jedi_snow }}"
     do_jedi_soil_moisture: "{{ do_jedi_soil_moisture }}"
@@ -100,7 +97,6 @@ workflow:
     cyc: "<cyclestr>@H</cyclestr>"
     DATADEP_LRST1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
     DATADEP_LRST2: "<cyclestr>&WARMSTART_DIR;/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
-    DATADEP_COLDSTART: "<cyclestr>&exp_basedir;/exp_case/&EXP_CASE_NAME;/task_skip_coldstart_@Y@m@d@H.txt</cyclestr>"
     DATADEP_DATM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
     DATADEP_DATM2: "<cyclestr>&WARMSTART_DIR;/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
     DATADEP_FREEFCST: "<cyclestr>&exp_basedir;/exp_case/&EXP_CASE_NAME;/task_analysis_done_@Y@m@d@H.txt</cyclestr>"
@@ -171,7 +167,6 @@ workflow:
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
-        DATM_STREAM_FN_LAST_DATE: "&DATM_STREAM_FN_LAST_DATE;"
         DCOMINera5: "&DCOMINera5;"
         DCOMINghcn: "&DCOMINghcn;"
         DCOMINgswp3: "&DCOMINgswp3;"
@@ -209,43 +204,6 @@ workflow:
 {%- if memory_flag %}
       memory: 128G
 {%- endif %}
-{%- if ( APP == "ATML" and COLDSTART == "YES" ) %}
-    task_fcst_ic:
-      attrs:
-        cycledefs: first_cycle
-        maxtries: 2
-      envars:
-        ACCOUNT: "&ACCOUNT;"
-        APP: "&APP;"
-        COMINgdas: "&COMINgdas;"
-        COMINgfs: "&COMINgfs;"
-        COMROOT: "&COMROOT;"
-        cyc: "&cyc;"
-        DATAROOT: "&DATAROOT;"
-        HOMEufsda: "&HOMEufsda;"
-        IC_DATA_MODEL: "&IC_DATA_MODEL;"
-        KEEPDATA: "&KEEPDATA;"
-        MACHINE: "&MACHINE;"
-        model_ver: "&model_ver;"
-        NPROCS_FCST_IC: "&NPROCS_FCST_IC;"
-        PDY: "&PDY;"
-        RES: "&RES;"
-        SCHED: "&SCHED;"
-      account: "&ACCOUNT;"
-      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "fcst_ic" "&HOMEufsda;" "&MACHINE;"'
-      jobname: fcst_ic
-      nodes: "1:ppn=&NPROCS_FCST_IC;"
-      walltime: 00:15:00
-{%- if native_default is not none %}
-      native: "&native_default;"
-{%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
-      join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
-{%- if memory_flag %}
-      memory: 128G
-{%- endif %}
-{%- endif %}
     task_analysis:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -256,7 +214,6 @@ workflow:
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"
-        BKG_ANAL_EXT_SRC_OPT: "&BKG_ANAL_EXT_SRC_OPT;"
         COMINgfs: "&COMINgfs;"
         COMROOT: "&COMROOT;"
         COUPLER_CALENDAR: "&COUPLER_CALENDAR;"
@@ -268,7 +225,6 @@ workflow:
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DCOMINera5land: "&DCOMINera5land;"
-        DO_BKG_ANAL_EXT_SRC: "&DO_BKG_ANAL_EXT_SRC;"
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         do_jedi_snow: "&do_jedi_snow;"
         do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
@@ -353,7 +309,6 @@ workflow:
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
-        DATM_STREAM_FN_LAST_DATE: "&DATM_STREAM_FN_LAST_DATE;"
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         DT_ATMOS: "&DT_ATMOS;"
         DT_RUNSEQ: "&DT_RUNSEQ;"
@@ -400,22 +355,13 @@ workflow:
             attrs:
               task: prep_data
 {%- if DO_FREE_FORECAST == "NO" %}
-          or:
-            taskdep_fcst_ic:
-              attrs:
-                task: fcst_ic
-            datadep_coldstart:
-              attrs:
-                age: 5
-              value: "&DATADEP_COLDSTART;"
+          taskdep_analysis:
+            attrs:
+              task: analysis
 {%- endif %}
     task_plot_stats:
       attrs:
-{%- if COLDSTART == "YES" %}
-        cycledefs: cycled_from_second
-{%- else %}
         cycledefs: cycled
-{%- endif %}
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"

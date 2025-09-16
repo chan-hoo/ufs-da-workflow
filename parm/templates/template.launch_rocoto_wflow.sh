@@ -45,15 +45,6 @@ wflow_status="IN PROGRESS"
 # crontab line
 CRONTAB_LINE="*/2 * * * * cd ${workdir} && ./launch_rocoto_wflow.sh >> ${WFLOW_LOG_FN}"
 
-if [ "$#" -eq 1 ] && [ "$1" == "add" ]; then
-  msg="The crontab line is added:
-  CRONTAB_LINE = \"${CRONTAB_LINE}\" 
-  "
-
-  ${PARMdir}/get_crontab_contents.py --add -m=${MACHINE} -l="${CRONTAB_LINE}" -d
-  printf "%s" "$msg"
-fi
-
 cd "${workdir}"
 rocotorun_cmd="rocotorun -w \"${WFLOW_XML_FN}\" -d \"${rocoto_database_fn}\" -v 10"
 eval ${rocotorun_cmd} >> ${LOG_FN_ROCOTO_RUN} 2>&1
@@ -110,12 +101,3 @@ Summary of workflow status:
 =====================================================
 " >> ${WFLOW_LOG_FN}
 
-# Remove crontab line
-if [ "${wflow_status}" = "SUCCESS" ] || [ "${wflow_status}" = "FAILURE" ]; then
-  msg="The crontab line is removed:
-  CRONTAB_LINE = \"${CRONTAB_LINE}\" "
-
-  ${PARMdir}/get_crontab_contents.py --remove -m=${MACHINE} -l="${CRONTAB_LINE}" -d
-
-  printf "%s" "$msg" >> ${WFLOW_LOG_FN}
-fi
