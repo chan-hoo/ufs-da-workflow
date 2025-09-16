@@ -10,7 +10,7 @@ Usage: task_load_modules_run_jjob.sh task_name home_dir machine_name jjob_fn
 
 where the arguments are defined as follows:
   task_name:
-  Task name for which this script will load modules and launch the J-job.
+  Task name for which this script will load modules and run the task script.
 
   home_dir:
   Full path to the pachage home directory.
