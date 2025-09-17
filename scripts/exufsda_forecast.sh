@@ -324,23 +324,29 @@ done
 ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
 ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
 
-# MOM6 files
-ocn_fns=( "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "layer_coord.nc" \ 
-	  "MOM6_IC_TS.nc" "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" \
-	  "ocean_mosaic.nc" "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" "topo_edits_011818.nc" )
+# MOM6 input data files
+ocn_fns=( "atmos_mosaic_tile1Xland_mosiaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
+          "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "land_mask.nc" \
+	  "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" "MOM6_IC_TS.nc" \
+	  "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
+	  "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" "topog.nc" \
+	  "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
 for ifn in "${ocn_fns[@]}" ; do
   ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ifn}" .
 done
 
+# MOM6 input namelist file
+cp -p "${PARMufsda}/templates/template.${APP}.MOM_input" MOM_input
+
 # GFS IC files for cold start
-if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-  ln -nsf ${COMIN}/gfs_ctrl.nc .
-  for itile in {1..6}
-  do
-    ln -nsf ${COMIN}/gfs_data.tile${itile}.nc .
-    ln -nsf ${COMIN}/sfc_data.tile${itile}.nc .
-  done
-fi
+#if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+#  ln -nsf ${COMIN}/gfs_ctrl.nc .
+#  for itile in {1..6}
+#  do
+#    ln -nsf ${COMIN}/gfs_data.tile${itile}.nc .
+#    ln -nsf ${COMIN}/sfc_data.tile${itile}.nc .
+#  done
+#fi
 
 # Copy restart files
 if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then

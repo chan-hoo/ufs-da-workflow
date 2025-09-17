@@ -181,7 +181,7 @@ ver_fix_data="v1.0"
 if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
   fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
 elif [ "${PLATFORM}" = "orion" ] || [ "${PLATFORM}" = "hercules" ]; then
-  fix_orig="/work/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
+  fix_orig="/work2/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
 elif [ "${PLATFORM}" = "gaeac6" ]; then
   fix_orig="/gpfs/f6/epic/world-shared/UFS-DA-Workflow_${ver_fix_data}/inputs"
 else
