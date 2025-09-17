@@ -20,7 +20,7 @@ MED_omp_num_threads:            1
 
 # ATM #
 ATM_model:                      {{ atm_model }}
-ATM_petlist_bounds:             {{ atm_petlist_bounds_n1 }} {{ atm_petlist_bounds_n1 }}
+ATM_petlist_bounds:             {{ atm_petlist_bounds_n1 }} {{ atm_petlist_bounds_n2 }}
 ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0

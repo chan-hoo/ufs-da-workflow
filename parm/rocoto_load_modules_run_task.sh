@@ -54,4 +54,4 @@ fi
 module list
 
 # Run task script
-${home_dir}/scripts/exufsda_${task_name_lower}
+${home_dir}/scripts/exufsda_${task_name_lower}.sh

@@ -8,7 +8,7 @@
     dt                  = {{ DT_ATMOS }}
     npt                 = 999
     ndtd                = 1
-    runtype             = {{ ice_runtype }}
+    runtype             = '{{ ice_runtype }}'
     runid               = 'unknown'
     ice_ic              = 'cice_model.res.nc'
     restart             = .true.

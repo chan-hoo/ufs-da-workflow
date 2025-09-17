@@ -72,10 +72,9 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   # ufs.configure
   allcomp_restart_n="3"
   allcomp_start_type="startup"
-  allcomp_stop_n="3"
 
   # model_configure
-  fhrot="3"
+  fhrot="0"
 
   # ice_in
   ice_runtype="initial"
@@ -97,10 +96,9 @@ else
   # ufs.configure
   allcomp_restart_n="12"
   allcomp_start_type="continue"
-  allcomp_stop_n="12"
 
   # model_configure
-  fhrot="0"
+  fhrot="12"
 
   # ice_in
   ice_runtype="continue"
@@ -162,7 +160,7 @@ settings="\
   'DT_RUNSEQ': ${DT_RUNSEQ}
   'allcomp_restart_n': ${allcomp_restart_n}
   'allcomp_start_type': ${allcomp_start_type}
-  'allcomp_stop_n': ${allcomp_stop_n}
+  'allcomp_stop_n': ${FCST_HRS}
   'atm_model': ${atm_model}
   'atm_petlist_bounds_n1': 0
   'atm_petlist_bounds_n2': ${nprocs_atm_m1}
@@ -191,7 +189,7 @@ settings="\
   'APP': ${APP}
   'DT_ATMOS': ${DT_ATMOS}
   'FCST_HRS': ${FCST_HRS}
-  'fhrot': ${fhhrot}
+  'fhrot': ${fhrot}
   'OUTPUT_FH': ${OUTPUT_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'WRITE_GROUPS': ${WRITE_GROUPS}
@@ -229,6 +227,8 @@ settings="\
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh_sec': !!str ${HHsec}
+  'DT_ATMOS': ${DT_ATMOS}
+  'ICE_DOMAIN_NPROCS': ${ICE_DOMAIN_NPROCS}
   'ice_runtype': ${ice_runtype}
   'ice_use_restart_time': ${ice_use_restart_time}
   'ice_diagfreq': ${ice_diagfreq}
@@ -407,7 +407,7 @@ cd -
 # Run ufs-weather-model
 export pgm="ufs_model"
 . prep_step
-${run_cmd} --label -n ${nprocs_forecast} ${EXEClandda}/$pgm >>$pgmout 2>errfile
+${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
