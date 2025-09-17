@@ -83,12 +83,10 @@ def setup_wflow_env(machine):
         do_jedi_snow = "YES"
     else:
         do_jedi_snow = "NO"
-    config_parm["do_jedi_snow"] = do_jedi_snow
     if obs_smap == "YES" or obs_smops == "YES":
         do_jedi_soil_moisture = "YES"
     else:
         do_jedi_soil_moisture = "NO"
-    config_parm["do_jedi_soil_moisture"] = do_jedi_soil_moisture
 
     # Create an experimental case directory
     if config_parm.get("EXP_CASE_NAME") is None:
@@ -97,16 +95,18 @@ def setup_wflow_env(machine):
     else:
         exp_case_name = config_parm.get("EXP_CASE_NAME")
 
+    # Path to experimenal case
+    exp_case_path = os.path.join(exp_basedir, "exp_case", exp_case_name) 
+
     # Calculate date for the second cycle
     date_first_cycle = config_parm.get("DATE_FIRST_CYCLE")
     date_last_cycle = config_parm.get("DATE_LAST_CYCLE")
     date_cycle_freq_hr = config_parm.get("DATE_CYCLE_FREQ_HR")
     if date_first_cycle == date_last_cycle:
-        date_second_cycle = date_first_cycle
+        date_second_cycle = None
     else:
         next_date = datetime.strptime(str(date_first_cycle), "%Y%m%d%H") + timedelta(hours=date_cycle_freq_hr)
         date_second_cycle = next_date.strftime("%Y%m%d%H")
-    config_parm["date_second_cycle"] = date_second_cycle
 
     # Calculate HPC parameter values
     app = config_parm.get("APP")
@@ -115,9 +115,9 @@ def setup_wflow_env(machine):
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
     atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
     ice_domain_nprocs = config_parm.get("ICE_DOMAIN_NPROCS")
-    ocn_nproc = config_parm.get("OCN_NPROCS")
+    ocn_nprocs = config_parm.get("OCN_NPROCS")
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
-    wav_nproc = config_parm.get("WAV_NPROCS")
+    wav_nprocs = config_parm.get("WAV_NPROCS")
 
     if app == "S2SWA":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
@@ -154,6 +154,10 @@ def setup_wflow_env(machine):
 
     # Update config yaml file
     config_parm.update({
+        'exp_case_path': exp_case_path,
+        'date_second_cycle': date_second_cycle,
+        'do_jedi_snow': do_jedi_snow,
+        'do_jedi_soil_moisture': do_jedi_soil_moisture,
         'memory_flag': memory_flag,
         'native_default': native_default,
         'nnodes_forecast': nnodes_forecast,
@@ -168,7 +172,6 @@ def setup_wflow_env(machine):
     config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
     logging.debug(f''' FINAL configuration: {config_parm_str}''')
 
-    exp_case_path = os.path.join(exp_basedir, "exp_case", exp_case_name) 
     if os.path.exists(exp_case_path) and os.path.isdir(exp_case_path):
         tmp_new_name = exp_case_path+"_old"
         if os.path.exists(tmp_new_name):
@@ -265,10 +268,7 @@ def set_default_parm():
         "DATE_CYCLE_FREQ_HR": 24,
         "DATE_FIRST_CYCLE": 202103220600,
         "DATE_LAST_CYCLE": 202103230600,
-        "DCOMINera5": "",
-        "DCOMINera5land": "",
         "DCOMINghcn": "",
-        "DCOMINgswp3": "",
         "DCOMINsmap": "",
         "DCOMINsmops": "",
         "DO_FREE_FORECAST": "NO",

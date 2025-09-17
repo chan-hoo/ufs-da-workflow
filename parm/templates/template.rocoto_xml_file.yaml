@@ -11,9 +11,11 @@ workflow:
     - attrs:
         group: first_cycle
       spec: {{ DATE_FIRST_CYCLE }}00 {{ DATE_FIRST_CYCLE }}00 {{ DATE_CYCLE_FREQ_HR }}:00:00
+{%- if date_second_cycle is not none %}
     - attrs:
         group: cycled_from_second
       spec: {{ date_second_cycle }}00 {{ DATE_LAST_CYCLE }}00 {{ DATE_CYCLE_FREQ_HR }}:00:00
+{%- endif %}
   entities:
     ACCOUNT: "{{ ACCOUNT }}"
     APP: "{{ APP }}"
@@ -33,9 +35,7 @@ workflow:
     DATE_CYCLE_FREQ_HR: "{{ DATE_CYCLE_FREQ_HR }}"
     DATE_FIRST_CYCLE: "{{ DATE_FIRST_CYCLE }}"
     DATE_LAST_CYCLE: "{{ DATE_LAST_CYCLE }}"
-    DCOMINera5: "{{ DCOMINera5 }}"
     DCOMINghcn: "{{ DCOMINghcn }}"
-    DCOMINgswp3: "{{ DCOMINgswp3 }}"
     DCOMINsmap: "{{ DCOMINsmap }}"
     DCOMINsmops: "{{ DCOMINsmops }}"
     DO_FREE_FORECAST: "{{ DO_FREE_FORECAST }}"
@@ -44,7 +44,7 @@ workflow:
     DT_ATMOS: "{{ DT_ATMOS }}"
     DT_RUNSEQ: "{{ DT_RUNSEQ }}"
     exp_basedir: "{{ exp_basedir }}"
-    EXP_CASE_NAME: "{{ EXP_CASE_NAME }}"
+    exp_case_path: "{{ exp_case_path }}"
     FCST_HRS: "{{ FCST_HRS }}"
     FRAC_GRID: "{{ FRAC_GRID }}"
     IC_DATA_MODEL: "{{ IC_DATA_MODEL }}"
@@ -98,15 +98,20 @@ workflow:
     DATADEP_LRST2: "<cyclestr>&WARMSTART_DIR;/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
     DATADEP_DATM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
     DATADEP_DATM2: "<cyclestr>&WARMSTART_DIR;/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
-    DATADEP_FREEFCST: "<cyclestr>&exp_basedir;/exp_case/&EXP_CASE_NAME;/task_analysis_done_@Y@m@d@H.txt</cyclestr>"
+    DATADEP_FREEFCST: "<cyclestr>&exp_case_path;/task_analysis_done_@Y@m@d@H.txt</cyclestr>"
     DATADEP_SFC1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>" 
     DATADEP_SFC2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>"
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
+{%- if COLDSTART == "NO" and date_second_cycle is not none %}
     task_prep_data:
       attrs:
+{%- if COLDSTART == "YES" %}
+        cycledefs: cycled_from_second
+{%- else %}
         cycledefs: cycled
+{%- endif %}
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"
@@ -120,9 +125,7 @@ workflow:
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
-        DCOMINera5: "&DCOMINera5;"
         DCOMINghcn: "&DCOMINghcn;"
-        DCOMINgswp3: "&DCOMINgswp3;"
         DCOMINsmap: "&DCOMINsmap;"
         DCOMINsmops: "&DCOMINsmops;"
         FRAC_GRID: "&FRAC_GRID;"
@@ -180,8 +183,7 @@ workflow:
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         do_jedi_snow: "&do_jedi_snow;"
         do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
-        exp_basedir: "&exp_basedir;"
-        EXP_CASE_NAME: "&EXP_CASE_NAME;"
+        exp_case_path: "&exp_case_path;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
@@ -231,6 +233,7 @@ workflow:
               attrs:
                 age: 5
               value: "&DATADEP_SFC2;"
+{%- endif %}
     task_forecast:
       attrs:
 {%- if DO_FREE_FORECAST == "YES" %}
@@ -296,15 +299,11 @@ workflow:
       partition: "&partition_default;"
       queue: "&queue_default;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
-      dependency:
-        and:
-          taskdep_prep_data:
-            attrs:
-              task: prep_data
 {%- if DO_FREE_FORECAST == "NO" %}
-          taskdep_analysis:
-            attrs:
-              task: analysis
+      dependency:
+        taskdep_analysis:
+          attrs:
+            task: analysis
 {%- endif %}
     task_plot_stats:
       attrs:
@@ -347,16 +346,16 @@ workflow:
       queue: "&queue_default;"
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
       dependency:
-        and:
+{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "NO" %}
+        taskdep_forecast:
+          attrs:
+            task: forecast
+{%- else %}
+        or:
           taskdep_analysis:
             attrs:
               task: analysis
-          or:
-            taskdep_forecast:
-              attrs:
-                task: forecast
-            datadep_freefcst:
-              attrs:
-                age: 5
-              value: "&DATADEP_FREEFCST;"
-
+          taskdep_forecast:
+            attrs:
+              task: forecast
+{%- endif %}

@@ -2,6 +2,17 @@
 
 set -xue
 
+#
+#-----------------------------------------------------------------------
+# This part replaces the role of J-job script in the NOAA NCO standards
+#-----------------------------------------------------------------------
+#
+source ${HOMEufsda}/parm/jjob_env_setup.sh
+#
+#-----------------------------------------------------------------------
+#-----------------------------------------------------------------------
+#
+
 #export MPI_TYPE_DEPTH=20
 export OMP_STACKSIZE=512M
 export KMP_AFFINITY=scatter
@@ -233,20 +244,32 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 #####################
 cp -p ${PARMufsda}/templates/template.${APP}.ww3_shel.nml ww3_shel.nml
 
-############################
-# Copy FIX (static) files
-############################
-# Global fix files
-ln -nsf ${FIXufsda}/FV3_fix_global/* .
+#########################################
+# Soft-link or copy FIX (static) files
+#########################################
+# FV3 global fix files
+ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
 
-# Tiled fix files
+# FV3 tiled fix files
 sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_color" \
           "soil_type" "substrate_temperature" "vegetation_greenness" "vegetation_type" )
 for ifn in "${sfc_fns[@]}" ; do
   for itile in {1..6};
   do
-    ln -nsf "${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" .
+    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" .
   done
+done
+
+# CICE files
+ice_fns=( "grid_cice_NEMS_mx100.nc" "cice_model.res.nc" "kmtu_cice_NEMS_mx100.nc" )
+for ifn in "${ice_fns[@]}" ; do
+  ln -nsf "${FIXufsda}/DATA_fix/CICE/${ifn}" .
+done
+
+# WW3 files
+wav_fns=( "mod_def.ww3" "ww3_points.list" )
+for ifn in "${wav_fns[@]}" ; do
+  ln -nsf "${FIXufsda}/DATA_fix/WW3/${ifn}" .
 done
 
 ################################
@@ -290,6 +313,7 @@ fi
 mkdir -p INPUT
 cd INPUT
 
+# Grid/orography/mosaic files
 for itile in {1..6}
 do
   ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc oro_data.tile${itile}.nc
@@ -299,6 +323,14 @@ do
 done
 ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
 ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
+
+# MOM6 files
+ocn_fns=( "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "layer_coord.nc" \ 
+	  "MOM6_IC_TS.nc" "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" \
+	  "ocean_mosaic.nc" "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" "topo_edits_011818.nc" )
+for ifn in "${ocn_fns[@]}" ; do
+  ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ifn}" .
+done
 
 # GFS IC files for cold start
 if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -446,4 +478,17 @@ for itile in {1..6};
 do
   cp -p "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
 done
+
+#
+#-----------------------------------------------------------------------
+# J-job script ending part
+#-----------------------------------------------------------------------
+#
+if [ -e "$pgmout" ]; then
+  cat $pgmout
+fi
+if [ "${KEEPDATA}" = "NO" ]; then
+  rm -rf ${DATA}
+fi
+date
 
