@@ -2,15 +2,16 @@
 
 set -xue
 
-export MPI_TYPE_DEPTH=20
+#export MPI_TYPE_DEPTH=20
 export OMP_STACKSIZE=512M
-# shellcheck disable=SC2125
+export KMP_AFFINITY=scatter
 export OMP_NUM_THREADS=1
-export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+#export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+#export PSM_RANKS_PER_CONTEXT=4
+#export PSM_SHAREDCONTEXTS=1
 export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
-export PSM_RANKS_PER_CONTEXT=4
-export PSM_SHAREDCONTEXTS=1
+
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
@@ -25,7 +26,6 @@ YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
-YYYYMMDD=${PDY}
 nYYYY=${NTIME:0:4}
 nMM=${NTIME:4:2}
 nDD=${NTIME:6:2}
@@ -36,96 +36,115 @@ HHsec_5d=$(printf "%05d" "${HHsec}")
 nHHsec=$(( nHH * 3600 ))
 nHHsec_5d=$(printf "%05d" "${nHHsec}")
 
-filedate=${YYYY}${MM}${DD}.${HH}0000
+filedate=${PDY}.${cyc}0000
 
+########################################
+# cold/warm-start dependent variables
+########################################
 
-#####################################
-# Copy app-independent input files
-#####################################
-if [ "${APP}" = "S2SWA" ]; then
-  # field_table
-  cp -p "${PARMlandda}/templates/template.${APP}.field_table" field_table
-  # fd_ufs.yaml
-  cp -p "${PARMlandda}/templates/template.${APP}.fd_ufs.yaml" fd_ufs.yaml
-  # data_table
-  cp -p "${PARMlandda}/templates/template.${APP}.data_table" data_table
-  # global fix files
-  ln -nsf ${FIXlandda}/FV3_fix_global/* .
-fi
-
-##################
-# Set input.nml
-##################
-if [ "${APP}" = "S2SWA" ]; then
-  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    settings="\
-      'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
-      'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
-      'ATM_LAYOUT_X': ${ATM_LAYOUT_X}
-      'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
-      'CCPP_SUITE': ${CCPP_SUITE}
-      'external_ic': '.true.'
-      'ignore_rst_cksum': '.true.'
-      'make_nh': '.true.'
-      'mom_input_filename': 'n'
-      'mountain': '.false.'
-      'na_init': '1'
-      'nggps_ic': '.true.'
-      'nstf_name': '2,0,0,0,0'
-      'NPZ': ${NPZ}
-      'res_p1': ${res_p1}
-      'warm_start': '.false.'
-    " # End of settings variable
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  # input.nml
+  external_ic=".true."
+  ignore_rst_cksum=".true."
+  make_nh=".true."
+  mom_input_filename="n"
+  mountain=".false."
+  na_init="1"
+  nggps_ic=".true."
+  nstf_name="2,0,0,0,0"
+  warm_start=".false."
 #############################################
 # CHECK: in other cases, nstf_name: 2,1,0,0,0 for coldstart, but in regression test 
 #        'cpld_control_gfsv17_intel' of ufs-weather-model, it is set to 2,0,0,0,0
 #############################################
-  else
-    settings="\
-      'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
-      'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
-      'ATM_LAYOUT_X': ${ATM_LAYOUT_X}
-      'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
-      'CCPP_SUITE': ${CCPP_SUITE}
-      'external_ic': '.false.'
-      'ignore_rst_cksum': '.true.'
-      'make_nh': '.false.'
-      'mom_input_filename': 'r'
-      'mountain': '.true.'
-      'na_init': '0'
-      'nggps_ic': '.false.'
-      'nstf_name': '2,0,0,0,0'
-      'NPZ': ${NPZ}
-      'res_p1': ${res_p1}
-      'warm_start': '.true.'
-    " # End of settings variable
-  fi
-  fp_template="${PARMlandda}/templates/template.${APP}.input.nml.${CCPP_SUITE}"
-  fn_namelist="input.nml"
-  ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+  # ufs.configure
+  allcomp_restart_n="3"
+  allcomp_start_type="startup"
+  allcomp_stop_n="3"
+
+  # model_configure
+  fhrot="3"
+
+  # ice_in
+  ice_runtype="initial"
+  ice_use_restart_time=".false."
+  ice_diagfreq="120"
+  ice_histfreq_n="0, 0, 6, 120, 1"
 else
-  cp -p "${PARMlandda}/templates/template.${APP}.input.nml" input.nml
+  # input.nml
+  external_ic=".false."
+  ignore_rst_cksum=".true."
+  make_nh=".false."
+  mom_input_filename="r"
+  mountain=".true."
+  na_init="0"
+  nggps_ic=".false."
+  nstf_name="2,0,0,0,0"
+  warm_start=".true."
+
+  # ufs.configure
+  allcomp_restart_n="12"
+  allcomp_start_type="continue"
+  allcomp_stop_n="12"
+
+  # model_configure
+  fhrot="0"
+
+  # ice_in
+  ice_runtype="continue"
+  ice_use_restart_time=".true."
+  ice_diagfreq="60"
+  ice_histfreq_n="0, 0, 6, 0, 0"
 fi
+
+#####################################
+# Copy app-independent input files
+#####################################
+# field_table
+cp -p "${PARMufsda}/templates/template.${APP}.field_table" field_table
+# fd_ufs.yaml
+cp -p "${PARMufsda}/templates/template.${APP}.fd_ufs.yaml" fd_ufs.yaml
+# data_table
+cp -p "${PARMufsda}/templates/template.${APP}.data_table" data_table
+
+##################
+# Set input.nml
+##################
+settings="\
+  'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
+  'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
+  'ATM_LAYOUT_X': ${ATM_LAYOUT_X}
+  'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
+  'CCPP_SUITE': ${CCPP_SUITE}
+  'external_ic': '${external_ic}'
+  'ignore_rst_cksum': '${ignore_rst_cksum}'
+  'make_nh': '${make_nh}'
+  'mom_input_filename': ${mom_input_filename}
+  'mountain': '${mountain}'
+  'na_init': ${na_init}
+  'nggps_ic': '${nggps_ic}'
+  'nstf_name': '${nstf_name}'
+  'NPZ': ${NPZ}
+  'res_p1': ${res_p1}
+  'warm_start': '${warm_start}'
+" # End of settings variable
+
+fp_template="${PARMufsda}/templates/template.${APP}.input.nml.${CCPP_SUITE}"
+fn_namelist="input.nml"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 ######################
 # Set ufs.configure
 ######################
-if [ "${APP}" = "S2SWA" ]; then
-  atm_model="fv3"
-fi
-
-if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-  allcomp_restart_n="3"
-  allcomp_start_type="startup"
-  allcomp_stop_n="3"
-else
-  allcomp_restart_n="12"
-  allcomp_start_type="continue"
-  allcomp_stop_n="12"
-fi
-
+atm_model="fv3"
 nprocs_atm_m1=$(( nprocs_forecast_atm - 1 ))
-nprocs_atm_lnd_m1=$(( nprocs_forecast_atm + nprocs_forecast_lnd - 1 ))
+nprocs_med_m1=$(( nprocs_forecast_med - 1 ))
+nprocs_atm_ocn=$(( nprocs_forecast_atm + OCN_NPROCS ))
+nprocs_atm_ocn_m1=$(( nprocs_atm_ocn - 1 ))
+nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + ICE_DOMAIN_NPROCS ))
+nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
+nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 
 settings="\
   'DT_ATMOS': ${DT_ATMOS}
@@ -134,21 +153,21 @@ settings="\
   'allcomp_start_type': ${allcomp_start_type}
   'allcomp_stop_n': ${allcomp_stop_n}
   'atm_model': ${atm_model}
-  'atm_petlist_bounds_n1': ${atm_petlist_bounds_n1}
-  'atm_petlist_bounds_n2': ${atm_petlist_bounds_n2}
-  'ice_petlist_bounds_n1': ${ice_petlist_bounds_n1}
-  'ice_petlist_bounds_n2': ${ice_petlist_bounds_n2}
-  'med_petlist_bounds_n1': ${med_petlist_bounds_n1}
-  'med_petlist_bounds_n2': ${med_petlist_bounds_n2}
-  'ocn_petlist_bounds_n1': ${ocn_petlist_bounds_n1}
-  'ocn_petlist_bounds_n2': ${ocn_petlist_bounds_n2}
-  'wav_petlist_bounds_n1': ${wav_petlist_bounds_n1}
-  'wav_petlist_bounds_n2': ${wav_petlist_bounds_n2}
+  'atm_petlist_bounds_n1': 0
+  'atm_petlist_bounds_n2': ${nprocs_atm_m1}
+  'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
+  'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
+  'med_petlist_bounds_n1': 0
+  'med_petlist_bounds_n2': ${nprocs_med_m1}
+  'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
+  'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
+  'wav_petlist_bounds_n1': ${nprocs_atm_ocn_ice}
+  'wav_petlist_bounds_n2': ${nprocs_forecast_m1}
 " # End of settings variable
 
-fp_template="${PARMlandda}/templates/template.ufs.configure"
+fp_template="${PARMufsda}/templates/template.ufs.configure"
 fn_namelist="ufs.configure"
-${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 ########################
 # Set model_configure
@@ -161,16 +180,16 @@ settings="\
   'APP': ${APP}
   'DT_ATMOS': ${DT_ATMOS}
   'FCST_HRS': ${FCST_HRS}
-  'fhrot': '0'
+  'fhrot': ${fhhrot}
   'OUTPUT_FH': ${OUTPUT_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'WRITE_GROUPS': ${WRITE_GROUPS}
   'WRITE_TASKS_PER_GROUP': ${WRITE_TASKS_PER_GROUP}
 " # End of settings variable
 
-fp_template="${PARMlandda}/templates/template.model_configure"
+fp_template="${PARMufsda}/templates/template.model_configure"
 fn_namelist="model_configure"
-${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 ###################
 # set diag table
@@ -184,28 +203,18 @@ settings="\
   'RES': ${RES}
 " # End of settings variable
 
-fp_template="${PARMlandda}/templates/template.${APP}.diag_table"
+fp_template="${PARMufsda}/templates/template.${APP}.diag_table"
 fn_namelist="diag_table"
-${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 ###############
 # set ice_in
 ###############
-if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-  ice_runtype="initial"
-  ice_use_restart_time=".false."
-  ice_diagfreq="120"
-  ice_histfreq_n="0, 0, 6, 120, 1"
-else
-  ice_runtype="continue"
-  ice_use_restart_time=".true."
-  ice_diagfreq="60"
-  ice_histfreq_n="0, 0, 6, 0, 0"
-fi
-
 settings="\
   'yyyymmdd': !!str ${PDY}
   'yyyy': !!str ${YYYY}
+  'yyyy_last': !!str ${nYYYY}
+  'yyyy_align': !!str ${YYYY}
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh_sec': !!str ${HHsec}
@@ -215,9 +224,30 @@ settings="\
   'ice_histfreq_n': '${ice_histfreq_n}'
 " # End of settings variable
 
-fp_template="${PARMlandda}/templates/template.${APP}.ice_in"
+fp_template="${PARMufsda}/templates/template.${APP}.ice_in"
 fn_namelist="ice_in"
-${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+#####################
+# set ww3_shel.nml
+#####################
+cp -p ${PARMufsda}/templates/template.${APP}.ww3_shel.nml ww3_shel.nml
+
+############################
+# Copy FIX (static) files
+############################
+# Global fix files
+ln -nsf ${FIXufsda}/FV3_fix_global/* .
+
+# Tiled fix files
+sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_color" \
+          "soil_type" "substrate_temperature" "vegetation_greenness" "vegetation_type" )
+for ifn in "${sfc_fns[@]}" ; do
+  for itile in {1..6};
+  do
+    ln -nsf "${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" .
+  done
+done
 
 ################################
 # Set up RESTART directory
@@ -260,86 +290,71 @@ fi
 mkdir -p INPUT
 cd INPUT
 
-sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_color" \
-          "soil_type" "substrate_temperature" "vegetation_greenness" "vegetation_type" )
-for ifn in "${sfc_fns[@]}" ; do
-  for itile in {1..6};
-  do
-    ln -nsf "${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" .
-  done
-done
-
 for itile in {1..6}
 do
-  ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc oro_data.tile${itile}.nc
-  ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_grid.tile${itile}.nc .
+  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc oro_data.tile${itile}.nc
+  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid.tile${itile}.nc .
+  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ls.tile${itile}.nc oro_data_ls.tile${itile}.nc
+  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ss.tile${itile}.nc oro_data_ss.tile${itile}.nc
 done
-ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
+ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
+ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
 
-if [ "${APP}" = "S2SWA" ]; then
-  ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
+# GFS IC files for cold start
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  ln -nsf ${COMIN}/gfs_ctrl.nc .
   for itile in {1..6}
   do
-    ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ls.tile${itile}.nc oro_data_ls.tile${itile}.nc
-    ln -nsf ${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ss.tile${itile}.nc oro_data_ss.tile${itile}.nc
+    ln -nsf ${COMIN}/gfs_data.tile${itile}.nc .
+    ln -nsf ${COMIN}/sfc_data.tile${itile}.nc .
   done
-  # GFS IC files for cold start
-  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    ln -nsf ${COMIN}/gfs_ctrl.nc .
-    for itile in {1..6}
-    do
-      ln -nsf ${COMIN}/gfs_data.tile${itile}.nc .
-      ln -nsf ${COMIN}/sfc_data.tile${itile}.nc .
-    done
-  fi
 fi
 
 # Copy restart files
-if [ "${APP}" = "S2SWA" ]; then
-  if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-    # Set path to directory where restart files exist
-    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-      data_dir="${WARMSTART_DIR}"
-    else
-      data_dir="${COMINm1}/RESTART"
-    fi
+if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+  # Set path to directory where restart files exist
+  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_dir="${WARMSTART_DIR}"
+  else
+    data_dir="${COMINm1}/RESTART"
+  fi
 
-    rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" )
-    for ifn in "${rst_fns[@]}" ; do
-      for itile in {1..6};
-      do
-        r_fp="${data_dir}/${YYYY}${MM}${DD}.${HH}0000.${ifn}.tile${itile}.nc"
-        if [ -f "${r_fp}" ]; then
-          ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
-        else
-          err_exit "${r_fp} file does not exist."
-        fi
-      done
-      if [ "${ifn}" = "fv_core.res" ]; then
-        r_fp="${data_dir}/${YYYY}${MM}${DD}.${HH}0000.${ifn}.nc"
-        if [ -f "${r_fp}" ]; then
-          ln -nsf "${r_fp}" "${ifn}.nc"
-        else
-          err_exit "${r_fp} file does not exist."
-        fi
-      fi
-    done
-    # link sfc_data from COMIN because they were upated by JEDI Analysis task
-    if [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-      data_dir="${COMIN}"
-    fi
+  rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" )
+  for ifn in "${rst_fns[@]}" ; do
     for itile in {1..6};
     do
-      r_fp="${data_dir}/${YYYY}${MM}${DD}.${HH}0000.sfc_data.tile${itile}.nc"
+      r_fp="${data_dir}/${filedate}.${ifn}.tile${itile}.nc"
       if [ -f "${r_fp}" ]; then
-        ln -nsf "${r_fp}" "sfc_data.tile${itile}.nc"
+        ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
       else
         err_exit "${r_fp} file does not exist."
       fi
     done
+    if [ "${ifn}" = "fv_core.res" ]; then
+      r_fp="${data_dir}/${filedate}.${ifn}.nc"
+      if [ -f "${r_fp}" ]; then
+        ln -nsf "${r_fp}" "${ifn}.nc"
+      else
+        err_exit "${r_fp} file does not exist."
+      fi
+    fi
+  done
+  # link sfc_data from COMIN because they were upated by JEDI Analysis task
+  if [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_dir="${COMIN}"
+  fi
+  for itile in {1..6};
+  do
+    r_fp="${data_dir}/${filedate}.sfc_data.tile${itile}.nc"
+    if [ -f "${r_fp}" ]; then
+      ln -nsf "${r_fp}" "sfc_data.tile${itile}.nc"
+    else
+      err_exit "${r_fp} file does not exist."
+    fi
+  done
 
-    # update coupler.res file
-    settings="\
+  # update coupler.res file
+  settings="\
   'coupler_calendar': ${COUPLER_CALENDAR}
   'yyyp': !!str ${YYYY}
   'mp': !!str ${MM}
@@ -351,28 +366,25 @@ if [ "${APP}" = "S2SWA" ]; then
   'hh': !!str ${HH}
 " # End of settings variable
 
-    fp_template="${PARMlandda}/templates/template.coupler.res"
-    fn_namelist="coupler.res"
-    ${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-  fi
+  fp_template="${PARMufsda}/templates/template.coupler.res"
+  fn_namelist="coupler.res"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 fi
 cd -
 
 # Run ufs-weather-model
 export pgm="ufs_model"
 . prep_step
-${run_cmd} -n ${nprocs_forecast} ${EXEClandda}/$pgm >>$pgmout 2>errfile
+${run_cmd} --label -n ${nprocs_forecast} ${EXEClandda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
   err_exit "ufs_model failed"
 fi
 
-###########################
+############################
 # copy model ouput to COM
-###########################
-
+############################
 # Copy and link output file to restart for next cycle
 if [ "${FCST_HRS}" -gt "${DATE_CYCLE_FREQ_HR}" ]; then
   num_set=$(( FCST_HRS / DATE_CYCLE_FREQ_HR ))
@@ -391,10 +403,6 @@ if [ "${FCST_HRS}" -gt "${DATE_CYCLE_FREQ_HR}" ]; then
       cp -p "${DATA}/ufs.cpld.lnd.out.${iYYYY}-${iMM}-${iDD}-${iHHsec_5d}.tile${itile}.nc" "${COMOUT}/RESTART/ufs_land_restart.${iYYYY}-${iMM}-${iDD}_${iHH}-00-00.tile${itile}.nc"
       ln -nsf "${COMOUT}/RESTART/ufs_land_restart.${iYYYY}-${iMM}-${iDD}_${iHH}-00-00.tile${itile}.nc" ${DATA_RESTART}/.
     done
-    if [ "${APP}" = "LND" ]; then
-      cp -p "${DATA}/ufs.cpld.datm.r.${iYYYY}-${iMM}-${iDD}-${iHHsec_5d}.nc" ${COMOUT}/.
-      ln -nsf "${COMOUT}/ufs.cpld.datm.r.${iYYYY}-${iMM}-${iDD}-${iHHsec_5d}.nc" ${DATA_RESTART}/.
-    fi
   done
 else
   for itile in {1..6}
@@ -402,68 +410,40 @@ else
     cp -p "${DATA}/ufs.cpld.lnd.out.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.tile${itile}.nc" "${COMOUT}/RESTART/ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile${itile}.nc"
     ln -nsf "${COMOUT}/RESTART/ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile${itile}.nc" ${DATA_RESTART}/.
   done
-  if [ "${APP}" = "LND" ]; then
-    cp -p "${DATA}/ufs.cpld.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" ${COMOUT}/.
-    ln -nsf "${COMOUT}/ufs.cpld.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" ${DATA_RESTART}/.
-  fi
 fi
 
-# Move land output to COMOUT
-lnd_out_freq_hr=$(( LND_OUTPUT_FREQ_SEC / 3600 ))
-lnd_fcst_hh=${lnd_out_freq_hr}
-while [ ${lnd_fcst_hh} -le ${FCST_HRS} ]; do
-  lnd_out_date=$($NDATE $lnd_fcst_hh $PDY$cyc)
-  lnd_out_yyyy=${lnd_out_date:0:4}
-  lnd_out_mm=${lnd_out_date:4:2}
-  lnd_out_dd=${lnd_out_date:6:2}
-  lnd_out_hh=${lnd_out_date:8:2}
-  lnd_out_hh_sec=$(( lnd_out_hh * 3600 ))
-  lnd_out_hh_sec_5d=$(printf "%05d" "${lnd_out_hh_sec}")
-  lnd_fcst_hh_3d=$(printf "%03d" "${lnd_fcst_hh}")
-  # land output files
+# Move output to COMOUT
+read -ra out_fh <<< "${OUTPUT_FH}"
+out_fh1="${out_fh[0]}"
+out_fh2="${out_fh[1]}"
+if [ "${out_fh2}" = "-1" ]; then
+  list_out_fh=$(seq 0 ${out_fh1} ${FCST_HRS})
+else
+  list_out_fh=${OUTPUT_FH}
+fi
+for ihr in ${list_out_fh}
+do
+  ihr_3d=$(printf "%03d" "${ihr}")
   for itile in {1..6}
   do
-    cp -p "${DATA}/ufs.cpld.lnd.out.${lnd_out_yyyy}-${lnd_out_mm}-${lnd_out_dd}-${lnd_out_hh_sec_5d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.lnd.f${lnd_fcst_hh_3d}.c${RES}.tile${itile}.nc"
+    cp -p "${DATA}/atmf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.atm.f${ihr_3d}.c${RES}.tile${itile}.nc"
+    cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
   done
-  # ufs.cpld.cpl.r files
-  cp -p "${DATA}/RESTART/ufs.cpld.cpl.r.${lnd_out_yyyy}-${lnd_out_mm}-${lnd_out_dd}-${lnd_out_hh_sec_5d}.nc" ${COMOUT}/RESTART/.
-
-  lnd_fcst_hh=$(( lnd_fcst_hh + lnd_out_freq_hr ))
 done
+# RESTART directory
+cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.coupler.res" ${COMOUT}/RESTART/.
+cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.fv_core.res.nc" ${COMOUT}/RESTART/.
 
-if [ "${APP}" = "S2SWA" ]; then
-  read -ra out_fh <<< "${OUTPUT_FH}"
-  out_fh1="${out_fh[0]}"
-  out_fh2="${out_fh[1]}"
-  if [ "${out_fh2}" = "-1" ]; then
-    list_out_fh=$(seq 0 ${out_fh1} ${FCST_HRS})
-  else
-    list_out_fh=${OUTPUT_FH}
-  fi
-  for ihr in ${list_out_fh}
-  do
-    ihr_3d=$(printf "%03d" "${ihr}")
-    for itile in {1..6}
-    do
-      cp -p "${DATA}/atmf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.atm.f${ihr_3d}.c${RES}.tile${itile}.nc"
-      cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
-    done
-  done
-  # RESTART directory
-  cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.coupler.res" ${COMOUT}/RESTART/.
-  cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.fv_core.res.nc" ${COMOUT}/RESTART/.
-
-  rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" "sfc_data" )
-  for ifn in "${rst_fns[@]}" ; do
-    for itile in {1..6};
-    do
-      cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.${ifn}.tile${itile}.nc" ${COMOUT}/RESTART/.
-    done
-  done
-  # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
+rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" "sfc_data" )
+for ifn in "${rst_fns[@]}" ; do
   for itile in {1..6};
   do
-    cp -p "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+    cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.${ifn}.tile${itile}.nc" ${COMOUT}/RESTART/.
   done
-fi
+done
+# Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
+for itile in {1..6};
+do
+  cp -p "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+done
 

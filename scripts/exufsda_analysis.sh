@@ -16,7 +16,7 @@ MP=${PTIME:4:2}
 DP=${PTIME:6:2}
 HP=${PTIME:8:2}
 
-filedate=${YYYY}${MM}${DD}.${HH}0000
+filedate=${PDY}.${cyc}0000
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then

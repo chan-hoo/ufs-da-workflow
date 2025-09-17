@@ -113,12 +113,16 @@ def setup_wflow_env(machine):
     atm_layout_x = config_parm.get("ATM_LAYOUT_X")
     atm_layout_y = config_parm.get("ATM_LAYOUT_Y")
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
-    atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")    
+    atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
+    ice_domain_nprocs = config_parm.get("ICE_DOMAIN_NPROCS")
+    ocn_nproc = config_parm.get("OCN_NPROCS")
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
+    wav_nproc = config_parm.get("WAV_NPROCS")
 
     if app == "S2SWA":
-        nprocs_forecast_atm = 6*(atm_layout_x*atm_layout_y+atm_io_layout_x*atm_io_layout_y)
-        nprocs_forecast = nprocs_forecast_atm
+        nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
+        nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
+        nprocs_forecast = nprocs_forecast_atm + ocn_nprocs + ice_domain_nprocs + wav_nprocs
 
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
@@ -155,6 +159,7 @@ def setup_wflow_env(machine):
         'nnodes_forecast': nnodes_forecast,
         'nprocs_forecast': nprocs_forecast,
         'nprocs_forecast_atm': nprocs_forecast_atm,
+        'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
         'partition_default': partition_default,
         'queue_default': queue_default,
@@ -273,6 +278,7 @@ def set_default_parm():
         "FCST_HRS": 24,
         "FRAC_GRID": "NO",
         "IC_DATA_MODEL": "gfs",
+        "ICE_DOMAIN_NPROCS": 10,
         "JEDI_ALGORITHM": "letkf-oi",
         "JEDI_IODACONV_PATH": "/path/to/jedi/ioda/converter/python/library",
         "JEDI_PATH": "",
@@ -289,6 +295,7 @@ def set_default_parm():
         "OBS_SFCSNO": "NO",
         "OBS_SMAP": "NO",
         "OBS_SMOPS": "NO",
+        "OCN_NPROCS": 20,
         "OUTPUT_FH": "3 -1",
         "PY_LOG_LEVEL": "INFO",
         "RES": 96,
@@ -296,6 +303,7 @@ def set_default_parm():
         "RUN": "ufsda",
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
         "WARMSTART_DIR": "/path/to/warm/start/dir",
+        "WAV_NPROCS": 60,
         "WRITE_GROUPS": 1,
         "WRITE_TASKS_PER_GROUP": 6,
     }
