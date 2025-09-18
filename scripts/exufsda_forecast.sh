@@ -2,6 +2,7 @@
 
 set -xue
 
+ulimit -s unlimited; ulimit -a;
 #
 #-----------------------------------------------------------------------
 # This part replaces the role of J-job script in the NOAA NCO standards
@@ -22,6 +23,8 @@ export OMP_NUM_THREADS=1
 #export PSM_SHAREDCONTEXTS=1
 export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
+export I_MPI_EXTRA_FILESYSTEM=ON
+export FI_MLX_INJECT_LIMIT=0
 
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
@@ -256,26 +259,60 @@ sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_col
 for ifn in "${sfc_fns[@]}" ; do
   for itile in {1..6};
   do
-    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" .
+    ifp="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc"
+    if [ -e "${ifp}" ]; then
+      ln -nsf ${ifp} .
+    else
+      err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+    fi
   done
 done
 
 # CICE files
-ice_fns=( "grid_cice_NEMS_mx100.nc" "kmtu_cice_NEMS_mx100.nc" "mesh.xm100.nc" )
+ice_fns=( "grid_cice_NEMS_mx100.nc" "kmtu_cice_NEMS_mx100.nc" "mesh.mx100.nc" )
 for ifn in "${ice_fns[@]}" ; do
-  ln -nsf "${FIXufsda}/DATA_fix/CICE/${ifn}" .
+  ifp="${FIXufsda}/DATA_fix/CICE/${ifn}"
+  if [ -e "${ifp}" ]; then
+    ln -nsf ${ifp} .
+  else
+    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+  fi
 done
 
 # WW3 files
 wav_fns=( "mod_def.ww3" "ww3_points.list" "mesh.global_270k.nc" )
 for ifn in "${wav_fns[@]}" ; do
-  ln -nsf "${FIXufsda}/DATA_fix/WW3/${ifn}" .
+  ifp="${FIXufsda}/DATA_fix/WW3/${ifn}"
+  if [ -e "${ifp}" ]; then
+    ln -nsf ${ifp} .
+  else
+    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+  fi
 done
 
 ##########################
 # MOM6 output directory
 ##########################
 mkdir -p MOM6_OUTPUT
+
+##########################
+# CICE histoy directory
+##########################
+mkdir -p history
+
+################################################
+# IC (initial condition) files for cold start
+################################################
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
+    data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
+  else
+    data_dir="${COMIN}"
+  fi
+  # CICE
+  ln -nsf "${data_dir}/cice_model.res.nc" .
+  ln -nsf "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec}.nc" history/.
+fi
 
 ################################
 # Set up RESTART directory
@@ -291,10 +328,10 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   fi      
   # CMEPS restart and pointer files
   r_fn="ufs.cpld.cpl.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-  if [ -f "${data_dir}/${r_fn}" ]; then
+  if [ -e "${data_dir}/${r_fn}" ]; then
     ln -nsf "${data_dir}/${r_fn}" RESTART/.
   else
-    err_exit "${data_dir}/${r_fn} file does not exist."
+    err_exit "FATAL ERROR: Symlink failed: ${data_dir}/${r_fn} file does not exist."
   fi
   ls -1 "./RESTART/${r_fn}">rpointer.cpl
 
@@ -330,14 +367,19 @@ ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_mosaic.nc" .
 ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid_spec.nc" grid_spec.nc
 
 # MOM6 input data files
-ocn_fns=( "atmos_mosaic_tile1Xland_mosiaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
+ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
           "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "land_mask.nc" \
 	  "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" "MOM6_IC_TS.nc" \
 	  "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
 	  "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" "topog.nc" \
 	  "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
 for ifn in "${ocn_fns[@]}" ; do
-  ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ifn}" .
+  ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
+  if [ -e "${ifp}" ]; then
+    ln -nsf ${ifp} .
+  else
+    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+  fi
 done
 
 # MOM6 input namelist files
@@ -373,18 +415,18 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     for itile in {1..6};
     do
       r_fp="${data_dir}/${filedate}.${ifn}.tile${itile}.nc"
-      if [ -f "${r_fp}" ]; then
+      if [ -e "${r_fp}" ]; then
         ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
       else
-        err_exit "${r_fp} file does not exist."
+        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
       fi
     done
     if [ "${ifn}" = "fv_core.res" ]; then
       r_fp="${data_dir}/${filedate}.${ifn}.nc"
-      if [ -f "${r_fp}" ]; then
+      if [ -e "${r_fp}" ]; then
         ln -nsf "${r_fp}" "${ifn}.nc"
       else
-        err_exit "${r_fp} file does not exist."
+        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
       fi
     fi
   done
@@ -395,10 +437,10 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   for itile in {1..6};
   do
     r_fp="${data_dir}/${filedate}.sfc_data.tile${itile}.nc"
-    if [ -f "${r_fp}" ]; then
+    if [ -e "${r_fp}" ]; then
       ln -nsf "${r_fp}" "sfc_data.tile${itile}.nc"
     else
-      err_exit "${r_fp} file does not exist."
+      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
     fi
   done
 
@@ -424,7 +466,7 @@ cd -
 # Run ufs-weather-model
 export pgm="ufs_model"
 . prep_step
-${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
+${run_cmd} -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
