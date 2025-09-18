@@ -311,7 +311,7 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   fi
   # CICE
   ln -nsf "${data_dir}/cice_model.res.nc" .
-  ln -nsf "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec}.nc" history/.
+  cp -p "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec}.nc" history/.
 fi
 
 ################################
@@ -334,19 +334,6 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     err_exit "FATAL ERROR: Symlink failed: ${data_dir}/${r_fn} file does not exist."
   fi
   ls -1 "./RESTART/${r_fn}">rpointer.cpl
-
-  # NoahMP restart files
-  if [ "${DO_FREE_FORECAST}" = "YES" ]; then
-    for itile in {1..6}
-    do
-      ln -nsf "${WARMSTART_DIR}/ufs_land_restart.${YYYY}-${MM}-${DD}_${HH}-00-00.tile${itile}.nc" RESTART/ufs.cpld.lnd.out.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc
-    done
-  else
-    for itile in {1..6}
-    do
-      ln -nsf "${COMIN}/ufs_land_restart.anal.${YYYY}-${MM}-${DD}_${HH}-00-00.tile${itile}.nc" RESTART/ufs.cpld.lnd.out.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc
-    done
-  fi
 fi
 
 #############################
@@ -463,47 +450,22 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
 fi
 cd -
 
+##########################
 # Run ufs-weather-model
+##########################
 export pgm="ufs_model"
 . prep_step
-${run_cmd} -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
+${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
-  err_exit "ufs_model failed"
+  err_exit "FATAL ERROR: ufs_model failed"
 fi
 
-############################
-# copy model ouput to COM
-############################
-# Copy and link output file to restart for next cycle
-if [ "${FCST_HRS}" -gt "${DATE_CYCLE_FREQ_HR}" ]; then
-  num_set=$(( FCST_HRS / DATE_CYCLE_FREQ_HR ))
-  for iset in $( seq 1 $num_set )
-  do
-    iset_hr=$(( DATE_CYCLE_FREQ_HR * iset ))
-    iset_cdate=$($NDATE ${iset_hr} $PDY$cyc)
-    iYYYY=${iset_cdate:0:4}
-    iMM=${iset_cdate:4:2}
-    iDD=${iset_cdate:6:2}
-    iHH=${iset_cdate:8:2}
-    iHHsec=$(( iHH * 3600 )) 
-    iHHsec_5d=$(printf "%05d" "${iHHsec}")
-    for itile in {1..6}
-    do
-      cp -p "${DATA}/ufs.cpld.lnd.out.${iYYYY}-${iMM}-${iDD}-${iHHsec_5d}.tile${itile}.nc" "${COMOUT}/RESTART/ufs_land_restart.${iYYYY}-${iMM}-${iDD}_${iHH}-00-00.tile${itile}.nc"
-      ln -nsf "${COMOUT}/RESTART/ufs_land_restart.${iYYYY}-${iMM}-${iDD}_${iHH}-00-00.tile${itile}.nc" ${DATA_RESTART}/.
-    done
-  done
-else
-  for itile in {1..6}
-  do
-    cp -p "${DATA}/ufs.cpld.lnd.out.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.tile${itile}.nc" "${COMOUT}/RESTART/ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile${itile}.nc"
-    ln -nsf "${COMOUT}/RESTART/ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile${itile}.nc" ${DATA_RESTART}/.
-  done
-fi
-
-# Move output to COMOUT
+################################
+# Copy output files to COMOUT
+################################
+# FV3
 read -ra out_fh <<< "${OUTPUT_FH}"
 out_fh1="${out_fh[0]}"
 out_fh2="${out_fh[1]}"
@@ -521,21 +483,28 @@ do
     cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
   done
 done
-# RESTART directory
-cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.coupler.res" ${COMOUT}/RESTART/.
-cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.fv_core.res.nc" ${COMOUT}/RESTART/.
 
-rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" "sfc_data" )
-for ifn in "${rst_fns[@]}" ; do
-  for itile in {1..6};
-  do
-    cp -p "${DATA}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.${ifn}.tile${itile}.nc" ${COMOUT}/RESTART/.
-  done
-done
+# MOM6
+cp -rp "${DATA}/MOM6_OUTPUT" ${COMOUT}
+
+# CICE
+cp -rp "${DATA}/history" ${COMOUT}
+
+# WW3
+cp -p *.out_grd.ww3 ${COMOUT}
+cp -p *.out_pnt.ww3.nc ${COMOUT}
+
+# cpld/pointer
+cp -p ufs.cpld.ww3.r.* ${COMOUT}
+cp -p rpointer.cpl.* ${COMOUT}
+
+# RESTART directory
+cp -rp "${DATA}/RESTART" ${COMOUT}
+
 # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
 for itile in {1..6};
 do
-  cp -p "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+  ln -nsf "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
 done
 
 #
