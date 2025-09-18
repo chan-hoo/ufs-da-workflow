@@ -300,6 +300,7 @@ def set_default_parm():
         "FCST_HRS": 24,
         "FRAC_GRID": "NO",
         "IC_DATA_MODEL": "gfs",
+        "IC_FROM_FIX_DIR": "YES",
         "ICE_DOMAIN_NPROCS": 10,
         "JEDI_ALGORITHM": "letkf-oi",
         "JEDI_IODACONV_PATH": "/path/to/jedi/ioda/converter/python/library",

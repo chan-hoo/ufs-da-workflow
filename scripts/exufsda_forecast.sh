@@ -261,16 +261,21 @@ for ifn in "${sfc_fns[@]}" ; do
 done
 
 # CICE files
-ice_fns=( "grid_cice_NEMS_mx100.nc" "cice_model.res.nc" "kmtu_cice_NEMS_mx100.nc" )
+ice_fns=( "grid_cice_NEMS_mx100.nc" "kmtu_cice_NEMS_mx100.nc" "mesh.xm100.nc" )
 for ifn in "${ice_fns[@]}" ; do
   ln -nsf "${FIXufsda}/DATA_fix/CICE/${ifn}" .
 done
 
 # WW3 files
-wav_fns=( "mod_def.ww3" "ww3_points.list" )
+wav_fns=( "mod_def.ww3" "ww3_points.list" "mesh.global_270k.nc" )
 for ifn in "${wav_fns[@]}" ; do
   ln -nsf "${FIXufsda}/DATA_fix/WW3/${ifn}" .
 done
+
+##########################
+# MOM6 output directory
+##########################
+mkdir -p MOM6_OUTPUT
 
 ################################
 # Set up RESTART directory
@@ -316,13 +321,13 @@ cd INPUT
 # Grid/orography/mosaic files
 for itile in {1..6}
 do
-  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc oro_data.tile${itile}.nc
-  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid.tile${itile}.nc .
-  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ls.tile${itile}.nc oro_data_ls.tile${itile}.nc
-  ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data_ss.tile${itile}.nc oro_data_ss.tile${itile}.nc
+  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc" oro_data.tile${itile}.nc
+  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid.tile${itile}.nc" .
+  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data_ls.tile${itile}.nc" oro_data_ls.tile${itile}.nc
+  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data_ss.tile${itile}.nc" oro_data_ss.tile${itile}.nc
 done
-ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_mosaic.nc .
-ln -nsf ${FIXufsda}/FV3_fix_tiled/C${RES}/C${RES}_grid_spec.nc grid_spec.nc
+ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_mosaic.nc" .
+ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid_spec.nc" grid_spec.nc
 
 # MOM6 input data files
 ocn_fns=( "atmos_mosaic_tile1Xland_mosiaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
@@ -335,18 +340,24 @@ for ifn in "${ocn_fns[@]}" ; do
   ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ifn}" .
 done
 
-# MOM6 input namelist file
+# MOM6 input namelist files
 cp -p "${PARMufsda}/templates/template.${APP}.MOM_input" MOM_input
+cp -p "${PARMufsda}/templates/template.${APP}.MOM_override" MOM_override
 
-# GFS IC files for cold start
-#if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-#  ln -nsf ${COMIN}/gfs_ctrl.nc .
-#  for itile in {1..6}
-#  do
-#    ln -nsf ${COMIN}/gfs_data.tile${itile}.nc .
-#    ln -nsf ${COMIN}/sfc_data.tile${itile}.nc .
-#  done
-#fi
+# GFS IC (initial condition) files for cold start
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
+    data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
+  else
+    data_dir="${COMIN}"
+  fi
+  ln -nsf "${data_dir}/gfs_ctrl.nc" .
+  for itile in {1..6}
+  do
+    ln -nsf "${data_dir}/gfs_data.tile${itile}.nc" .
+    ln -nsf "${data_dir}/sfc_data.tile${itile}.nc" .
+  done
+fi
 
 # Copy restart files
 if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
