@@ -442,25 +442,3 @@ if [ "${DO_FREE_FORECAST}" = "YES" ] && [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:
   touch "${exp_case_path}/task_analysis_done_${PDY}${cyc}.txt"
 fi
 
-###########################################################
-# WE2E test
-###########################################################
-if [ "${WE2E_TEST}" = "YES" ]; then
-  path_fbase="${FIXlandda}/test_base/we2e_com/${RUN}.${PDY}"
-  fn_sfc="${filedate}.sfc_data.tile"
-  fn_inc="${inc_fn_prefix}.tile"
-  we2e_log_fp="${LOGDIR}/${WE2E_LOG_FN}"
-  if [ ! -f "${we2e_log_fp}" ]; then
-    touch ${we2e_log_fp}
-  fi
-  # surface data tiles
-  for itile in {1..6}
-  do
-    ${USHlandda}/compare.py "${path_fbase}/${fn_sfc}${itile}.nc" "${COMOUT}/${fn_sfc}${itile}.nc" ${WE2E_ATOL} ${we2e_log_fp} "ANALYSIS" ${filedate} "sfc_data.tile${itile}"
-  done
-  # increment tiles
-  for itile in {1..6}
-  do
-    ${USHlandda}/compare.py "${path_fbase}/${fn_inc}${itile}.nc" "${COMOUT}/${fn_inc}${itile}.nc" ${WE2E_ATOL} ${we2e_log_fp} "ANALYSIS" ${filedate} "snowinc.tile${itile}"
-  done
-fi

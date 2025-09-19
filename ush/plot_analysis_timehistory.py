@@ -38,7 +38,6 @@ def main():
     fn_data_anal_suffix = yaml_data['fn_data_anal_suffix']
     hofx_data_path = yaml_data['hofx_data_path']
     jedi_exe = yaml_data['jedi_exe']
-    nprocs_anal = yaml_data['nprocs_anal']
     out_fn_base = yaml_data['out_fn_base']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
     OBS_IMS_SNOW = yaml_data['OBS_IMS_SNOW']
@@ -59,8 +58,6 @@ def main():
     logging.basicConfig(format='%(levelname)s::%(pathname)s::L%(lineno)d::%(message)s', level=log_level)
 
     logging.info(f''' YAML Data: {yaml_data}''')
-
-    nprocs_anal = int(nprocs_anal)
 
     svar_list = []
     if OBS_GHCN_SNOW == "YES":
@@ -83,12 +80,12 @@ def main():
         elif svar == "smap_soil_moisture" or svar == "smops_soil_moisture":
             var_nm = "soilMoistureVolumetric" 
 
-        var_dict_anal = get_data_analysis(path_data,fn_data_anal_prefix,fn_data_anal_suffix,jedi_exe,nprocs_anal,var_nm,svar)
+        var_dict_anal = get_data_analysis(path_data,fn_data_anal_prefix,fn_data_anal_suffix,jedi_exe,var_nm,svar)
         plot_his_omb(var_dict_anal,out_fn_base,work_dir,var_nm,hofx_data_path,svar)
 
 
 # Get data from files =============================================== CHJ =====
-def get_data_analysis(path_data,fn_data_anal_prefix,fn_data_anal_suffix,jedi_exe,nprocs_anal,var_nm,obs_type):
+def get_data_analysis(path_data,fn_data_anal_prefix,fn_data_anal_suffix,jedi_exe,var_nm,obs_type):
 
     logging.info(f''' ===== var name: '{var_nm}' ===== obs type: '{obs_type}'==========''')
     # Find files with the sampe prefix

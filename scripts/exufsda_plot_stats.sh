@@ -2,6 +2,43 @@
 
 set -xue
 
+#
+#-----------------------------------------------------------------------
+# This part replaces the role of J-job script in the NOAA NCO standards
+#-----------------------------------------------------------------------
+#
+source ${HOMEufsda}/parm/jjob_env_setup.sh
+#
+#-----------------------------------------------------------------------
+#-----------------------------------------------------------------------
+#
+
+if [ "${DO_FREE_FORECAST}" = "YES" ]; then
+  if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    do_plot_stats="NO"
+    do_plot_time_history="NO"
+    do_plot_restart="YES"
+  else
+    do_plot_stats="YES"
+    do_plot_time_history="YES"
+    do_plot_restart="NO"
+  fi
+else
+  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    do_plot_stats="NO"
+    do_plot_time_history="NO"
+    do_plot_restart="YES"
+  else
+    do_plot_stats="YES"
+    do_plot_time_history="YES"
+    do_plot_restart="YES"
+  fi
+fi
+
+DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
+DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
+DO_PLOT_RESTART="${DO_PLOT_RESTART:-${do_plot_restart}}"
+
 # Set other dates
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 
@@ -15,17 +52,11 @@ nMM=${NTIME:4:2}
 nDD=${NTIME:6:2}
 nHH=${NTIME:8:2}
 
-DO_PLOT_STATS="${DO_PLOT_STATS:-YES}"
-DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-YES}"
-DO_PLOT_BASIN="${DO_PLOT_BASIN:-NO}"
+# Path to orography files
+orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
+orog_fn_base="C${RES}_oro_data"
 
-if [ "${DO_FREE_FORECAST}" = "YES" ] && [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-  DO_PLOT_RESTART="NO"
-  DO_PLOT_COMBINE_TILES="NO"
-else
-  DO_PLOT_RESTART="YES"
-  DO_PLOT_COMBINE_TILES="YES"
-fi
+
 
 ############################################################
 # Stats Plot
@@ -56,7 +87,7 @@ if [ "${DO_PLOT_STATS}" = "YES" ]; then
   fi
 
   cat > plot_hofx.yaml <<EOF
-cartopy_ne_path: '${FIXlandda}/NaturalEarth'
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
 cyc: '${cyc}'
 field_range: [${field_range_low},${field_range_high}]
@@ -73,9 +104,9 @@ PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
   
-  ${USHlandda}/hofx_analysis_stats.py
+  ${USHufsda}/hofx_analysis_stats.py
   if [ $? -ne 0 ]; then
-    err_exit "Scatter/Histogram plots failed"
+    err_exit "FATAL ERROR: Scatter/Histogram plots failed."
   fi
   
   # Copy result files to COMOUT
@@ -89,7 +120,7 @@ fi
 if [ "${DO_PLOT_TIME_HISTORY}" = "YES" ]; then
   fn_data_anal_prefix="analysis_"
   fn_data_anal_suffix=".log"
-  out_fn_base="landda_timehistory"
+  out_fn_base="ufsda_timehistory"
 
   cat > plot_timehistory.yaml <<EOF
 path_data: '${LOGDIR}'
@@ -98,7 +129,6 @@ fn_data_anal_prefix: '${fn_data_anal_prefix}'
 fn_data_anal_suffix: '${fn_data_anal_suffix}'
 hofx_data_path: '${DATA_HOFX_OMB}'
 jedi_exe: '${JEDI_ALGORITHM}'
-nprocs_anal: '${NPROCS_ANALYSIS}'
 out_fn_base: '${out_fn_base}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
@@ -108,9 +138,9 @@ OBS_SMOPS: '${OBS_SMOPS}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
 
-  ${USHlandda}/plot_analysis_timehistory.py
+  ${USHufsda}/plot_analysis_timehistory.py
   if [ $? -ne 0 ]; then
-    err_exit "Time-history plots failed"
+    err_exit "FATAL ERROR: Time-history plots failed."
   fi
 
   # Copy result files to COMOUT
@@ -121,113 +151,44 @@ fi
 # Plot restart tiles
 ###########################################################
 if [ "${DO_PLOT_RESTART}" = "YES" ]; then
-  fn_data_base="ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile"
-  fn_data_ext=".nc"
-  soil_level_number="1"
-  out_title_base="Land-DA::restart::${nYYYY}-${nMM}-${nDD}_${nHH}::"
-  out_fn_base="landda_out_restart_${nYYYY}-${nMM}-${nDD}_${nHH}_"
-  plot_cs_cmap="gist_ncar_r"
+  fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile"
+  out_title_base="UFS-DA::RESTART::${nYYYY}-${nMM}-${nDD}-${nHH}::"
+  out_fn_base="ufsda_out_restart_${nYYYY}${nMM}${nDD}${nHH}_"
+  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
+  zlevel_number="1"
 
   cat > plot_restart.yaml <<EOF
-path_data: '${COMIN}/RESTART'
-work_dir: '${DATA}'
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 fn_data_base: '${fn_data_base}'
-fn_data_ext: '${fn_data_ext}'
-soil_lvl_number: '${soil_level_number}'
-OBS_SMAP: '${OBS_SMAP}'
-OBS_SMOPS: '${OBS_SMOPS}'
+orog_path: '${orog_path}'
+orog_fn_base: '${orog_fn_base}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
-cartopy_ne_path: '${FIXlandda}/NaturalEarth'
-plot_cs_cmap: '${plot_cs_cmap}'
+path_data: '${COMIN}/RESTART'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+zlevel_number: '${zlevel_number}'
+work_dir: '${DATA}'
 EOF
 
-  ${USHlandda}/plot_forecast_restart.py
+  ${USHufsda}/plot_forecast_restart.py
   if [ $? -ne 0 ]; then
-    err_exit "Forecast restart plots failed"
+    err_exit "FATAL ERROR: Forecast restart plots failed."
   fi
 
   # Copy result files to COMOUT
   cp -p ${out_fn_base}* ${COMOUTplot}
 fi
 
-###########################################################
-# Combine and plot restart tiles
-###########################################################
-if [ "${DO_PLOT_COMBINE_TILES}" = "YES" ]; then
-  fn_data_base="ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile"
-  fn_data_ext=".nc"
-  soil_level_number="1"
-  out_title_base="Land-DA::${nYYYY}-${nMM}-${nDD}_${nHH}::"
-  out_fn_base="landda_out_combined_${nYYYY}-${nMM}-${nDD}_${nHH}_"
-  # Number of mesh (grid) points in longitudinal direction
-  nlon_plot=400
-  # Number of mesh (grid) points in latitudinal direction
-  nlat_plot=200
-  # SciPy griddata methods: linear, nearest, cubic
-  griddata_method="nearest"
-  # matplolib pcolormesh shading options: flat, nearest, auto, gouraud
-  shading_option="auto"
-
-  cat > plot_combine_tiles.yaml <<EOF
-path_data: '${COMIN}/RESTART'
-work_dir: '${DATA}'
-fn_data_base: '${fn_data_base}'
-fn_data_ext: '${fn_data_ext}'
-soil_lvl_number: '${soil_level_number}'
-out_title_base: '${out_title_base}'
-out_fn_base: '${out_fn_base}'
-cartopy_ne_path: '${FIXlandda}/NaturalEarth'
-nlon_plot: ${nlon_plot}
-nlat_plot: ${nlat_plot}
-griddata_method: '${griddata_method}'
-shading_option: '${shading_option}'
-PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-EOF
-
-  ${USHlandda}/plot_combine_tiles.py
-  if [ $? -ne 0 ]; then
-    err_exit "Forecast restart plots failed"
-  fi
-
-  # Copy result files to COMOUT
-  cp -p ${out_fn_base}* ${COMOUTplot}
+#
+#-----------------------------------------------------------------------
+# J-job script ending part
+#-----------------------------------------------------------------------
+#
+if [ -e "$pgmout" ]; then
+  cat $pgmout
 fi
-
-###########################################################
-# Basin Plot
-###########################################################
-if [ "${DO_PLOT_BASIN}" = "YES" ]; then
-  fn_data_base="ufs_land_restart.${nYYYY}-${nMM}-${nDD}_${nHH}-00-00.tile"
-  fn_data_ext=".nc"
-
-  out_title_base="Land-DA::restart:: "
-  out_fn_base="landda_basin"
-
-  cat > plot_basin.yaml <<EOF
-path_data: '${COMIN}/RESTART'
-work_dir: '${DATA}'
-fn_data_base: '${fn_data_base}'
-fn_data_ext: '${fn_data_ext}'
-out_title_base: '${out_title_base}'
-out_fn_base: '${out_fn_base}'
-DATE_FIRST_CYCLE: '${DATE_FIRST_CYCLE}'
-DATE_LAST_CYCLE: '${DATE_LAST_CYCLE}'
-OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
-OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
-PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-EOF
-
-  # Run script when the experiment reaches its last day
-  if [ "${PDY}${cyc}" = "${DATE_LAST_CYCLE}" ]; then 
-    # Change basin code here. Default is 4219 - Mississippi River basin
-    echo "4219" | ${USHlandda}/plot_basin.py
-    if [ $? -ne 0 ]; then
-      err_exit "Basin plot failed"
-    fi
-
-    # Copy result files to COMOUT
-    cp -p ${out_fn_base}* ${COMOUTplot}
-  fi
+if [ "${KEEPDATA}" = "NO" ]; then
+  rm -rf ${DATA}
 fi
+date
+

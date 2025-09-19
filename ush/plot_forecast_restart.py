@@ -2,12 +2,10 @@
 
 ###################################################################### CHJ #####
 ## Name		: plot_forecast_restart.py
-## Usage	: Plot restart output file of land-DA workflow
-## Input files  : ufs_land_restart.tile#.nc
+## Usage	: Plot restart output file of UFS DA workflow
 ## NOAA/EPIC
 ## History ===============================
-## V000: 2024/09/26: Chan-Hoo Jeon : Preliminary version
-## V001: 2024/10/05: Chan-Hoo Jeon : Add to land-DA workflow
+## V000: 2025/09/19: Chan-Hoo Jeon : Preliminary version
 ###################################################################### CHJ #####
 
 import os, sys
@@ -18,6 +16,8 @@ import netCDF4 as nc
 import cartopy
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import xarray as xr
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.ticker
@@ -28,7 +28,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Main part (will be called at the end) ============================= CHJ =====
 def main():
-# =================================================================== CHJ =====
 
     global num_tiles
 
@@ -37,18 +36,19 @@ def main():
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    path_data = yaml_data['path_data']
-    work_dir = yaml_data['work_dir']
+    cartopy_ne_path = yaml_data['cartopy_ne_path']
     fn_data_base = yaml_data['fn_data_base']
-    fn_data_ext = yaml_data['fn_data_ext']
-    soil_lvl_num = yaml_data['soil_lvl_number']
-    OBS_SMAP = yaml_data['OBS_SMAP']
-    OBS_SMOPS = yaml_data['OBS_SMOPS']
+    orog_path = yaml_data['orog_path']
+    orog_fn_base = yaml_data['orog_fn_base']
     out_title_base = yaml_data['out_title_base']
     out_fn_base = yaml_data['out_fn_base']
-    cartopy_ne_path = yaml_data['cartopy_ne_path']
-    plot_cs_cmap = yaml_data['plot_cs_cmap']   
+    path_data = yaml_data['path_data']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
+    work_dir = yaml_data['work_dir']
+    zlvl = yaml_data['zlevel_number']
+
+    zlvlm1 = int(zlvl)-1
+    num_tiles=6
 
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
@@ -66,77 +66,68 @@ def main():
     # Set the path to Natural Earth dataset
     cartopy.config['data_dir']=cartopy_ne_path
 
-    #var_list=["snwdph","smc"]
-    if OBS_SMAP == "YES" or OBS_SMOPS == "YES":
-        var_list=["smc"]
-    else:
-        var_list=["snwdph"]
-    # Number of tiles
-    num_tiles=6
+    # get lon, lat from orography
+    get_geo(orog_path,orog_fn_base)
 
-    # get lon, lat
-    get_geo(path_data,fn_data_base,fn_data_ext)
+#    var_list=["snwdph","smc"]
+    var_list=["snwdph"]
+
     # plot restart file
     for var_nm in var_list:
-        plot_data(path_data,fn_data_base,fn_data_ext,var_nm,soil_lvl_num,
-                  out_title_base,out_fn_base,work_dir,plot_cs_cmap)
-       
+        plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir)
+
 
 # geo lon/lat from orography ======================================== CHJ =====
-def get_geo(path_data,fn_data_base,fn_data_ext):
-# =================================================================== CHJ =====
+def get_geo(orog_path,orog_fn_base):
 
     global glon,glat
+    logging.info(f''' ===== geo data files ==============================================''')
 
-    logging.info(f''' ===== geo data files ====================================''')
-
-    # open the data file
+    glon_all=[]
+    glat_all=[]
     for it in range(num_tiles):
         itp=it+1
-        fn_data=fn_data_base+str(itp)+fn_data_ext
-        fp_data=os.path.join(path_data,fn_data)
-        try: data_raw=nc.Dataset(fp_data)
-        except: raise Exception('Could NOT find the file',fp_data)
-        if itp == 1:
-            print(data_raw)
-        # Extract geo data
-        glon_data=np.ma.masked_invalid(data_raw.variables['grid_xt'])
-        logging.info(f''' Dimension of glon(grid_xt)= {glon_data.shape}''')
-        logging.info(f''' Tile{itp} ,Max= {np.max(glon_data)}''')
-        logging.info(f''' Tile{itp} ,Min= {np.min(glon_data)}''')
+        fn_orog=f'''{orog_fn_base}.tile{itp}.nc'''
+        fp_orog=os.path.join(orog_path,fn_orog)
 
-        glat_data=np.ma.masked_invalid(data_raw.variables['grid_yt'])
-        logging.info(f''' Dimension of glat(grid_yt)= {glat_data.shape}''')
-        logging.info(f''' Tile{itp} ,Max= {np.max(glat_data)}''')
-        logging.info(f''' Tile{itp} ,Min= {np.min(glat_data)}''')
+        try: orog=xr.open_dataset(fp_orog)
+        except: raise Exception('Could NOT find the file',fp_orog)
 
-        if itp == 1:
-            ny,nx=glon_data.shape
-            glon=np.zeros((num_tiles,ny,nx))
-            glat=np.zeros((num_tiles,ny,nx))
+        # Extract longitudes, and latitudes
+        geolon=np.ma.masked_invalid(orog['geolon'].data)
+        geolat=np.ma.masked_invalid(orog['geolat'].data)
 
-        data_raw.close()        
-        glon[it,:,:]=glon_data[:,:]
-        glat[it,:,:]=glat_data[:,:]
+        logging.info(f''' Dimension of glon (tile {itp}) = {geolon.shape}''')
+        logging.info(f''' Tile{itp}, Max = {np.max(geolon)}''')
+        logging.info(f''' Tile{itp}, Min = {np.min(geolon)}''')
+        logging.info(f''' Dimension of glat (tile {itp}) = {geolat.shape}''')
+        logging.info(f''' Tile{itp}, Max = {np.max(geolat)}''')
+        logging.info(f''' Tile{itp}, Min = {np.min(geolat)}''')
+
+        glon_all.append(geolon[None,:])
+        glat_all.append(geolat[None,:])
+
+        if itp==1:
+            print(orog)
+
+    glon=np.vstack(glon_all)
+    glat=np.vstack(glat_all)
 
     logging.info(f''' Dimension of glon= {glon.shape}''')
     logging.info(f''' Dimension of glon= {glat.shape}''')
 
 
 # Get sfc_data from files and plot ================================== CHJ =====
-def plot_data(path_data,fn_data_base,fn_data_ext,var_nm,soil_lvl_num,
-              out_title_base,out_fn_base,work_dir,plot_cs_cmap):
-# =================================================================== CHJ =====
+def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir):
 
     # center of map
     c_lon=-77.0369
 
     logging.info(f''' ===== data file: '{var_nm}' ========================''')
-    soil_lvl_num = int(soil_lvl_num)
     # open the data file
     for it in range(num_tiles):
         itp=it+1
-        fn_data=fn_data_base+str(itp)+fn_data_ext
+        fn_data=fn_data_base+str(itp)+'.nc'
         fp_data=os.path.join(path_data,fn_data)
         try: data_raw=nc.Dataset(fp_data)
         except: raise Exception('Could NOT find the file',fp_data)
@@ -144,7 +135,7 @@ def plot_data(path_data,fn_data_base,fn_data_ext,var_nm,soil_lvl_num,
         var_data=np.ma.masked_invalid(data_raw.variables[var_nm])
         if var_nm == 'stc' or var_nm == 'smc' or var_nm == 'slc':
             logging.info(f''' Dimension of original data= {var_data.shape}''')
-            var_data_2d=var_data[:,soil_lvl_num-1,:,:]
+            var_data_2d=var_data[:,zlvlm1,:,:]
         else:
             var_data_2d=var_data                
  
@@ -166,7 +157,7 @@ def plot_data(path_data,fn_data_base,fn_data_ext,var_nm,soil_lvl_num,
     logging.info(f''' cs_max= {cs_max}''')
     logging.info(f''' cs_min= {cs_min}''')
 
-    cs_cmap=plot_cs_cmap
+    cs_cmap='gist_ncar_r'
     cbar_extend='neither'
 
     # Plot each tile

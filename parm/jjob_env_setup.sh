@@ -75,7 +75,7 @@ export COMOUThofx="${COMOUThofx:-${COMOUT}/hofx}"
 mkdir -p ${COMOUThofx}
 export COMOUTplot="${COMOUTplot:-${COMOUT}/plot}"
 mkdir -p ${COMOUTplot}
-export COMOUTrestart="${COMOUTrestart:-${COMOUT}/restart}"
+export COMOUTrestart="${COMOUTrestart:-${COMOUT}/RESTART}"
 mkdir -p ${COMOUTrestart}
 
 # Create teomporary share directories

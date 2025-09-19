@@ -499,12 +499,12 @@ cp -p ufs.cpld.ww3.r.* ${COMOUT}
 cp -p rpointer.cpl.* ${COMOUT}
 
 # RESTART directory
-cp -rp "${DATA}/RESTART" ${COMOUT}
+cp -p ${DATA}/RESTART/* ${COMOUTrestart}
 
 # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
 for itile in {1..6};
 do
-  ln -nsf "${COMOUT}/RESTART/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+  ln -nsf "${COMOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
 done
 
 #
