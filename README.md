@@ -48,11 +48,11 @@ Change the parameter values such as `ACCOUNT` as needed.
 ./setup_wflow_env.py
 ```
 
-7 Move to the experimental case directory:
+7. Move to the experimental case directory:
 ```
 cd ../../exp_case/[EXP_CASE_NAME]
 ```
-where `EXP_CASE_NAME` is specified in the configuration file `config.yaml`.
+where `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
 
 8. Launchh the workflow tasks:
 ```
