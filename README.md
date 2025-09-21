@@ -32,7 +32,8 @@ cd ufs-da-workflow/sorc
 4. Load the python environment to set up the workflow:
 ```
 cd ..
-module use wflow_[machine] 
+module use modulefiles
+module load wflow_[machine] 
 ```
 where `[machine]` is `gaeac6`, `hera`, `hercules`, `orion`, or `ursa`.
 
