@@ -184,13 +184,29 @@ def setup_wflow_env(machine):
     else:
         memory_flag = True
 
+    # Set machine-dependent paths if not specified in config.yaml
+    jedi_path = config_parm.get("JEDI_PATH")
+    if jedi_path is None:
+        jedi_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+    jedi_py_ver = config_parm.get("JEDI_PY_VER")
+    jedi_iodaconv_path = os.path.join(jedi_path, "lib", jedi_py_ver)
+    custom_jedi_config_path = config_parm.get("CUSTOM_JEDI_CONFIG_PATH")
+    if custom_jedi_config_path is None:
+        custom_jedi_config_path = os.path.join(fix_dir, "DATA_jedi", "custom_yaml")
+    warmstart_dir = config_parm.get("WARMSTART_DIR")
+    if warmstart_dir is None:
+        warmstart_dir = os.path.join(fix_dir, "DATA_restart")
+
     # Update config yaml file
     config_parm.update({
-        'exp_case_path': exp_case_path,
+        'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
         'date_second_cycle': date_second_cycle,
         'DO_FREE_FORECAST': do_free_forecast,
         'do_jedi_snow': do_jedi_snow,
         'do_jedi_soil_moisture': do_jedi_soil_moisture,
+        'exp_case_path': exp_case_path,
+        'jedi_iodaconv_path': jedi_iodaconv_path,
+        'JEDI_PATH': jedi_path,
         'memory_flag': memory_flag,
         'native_default': native_default,
         'nnodes_forecast': nnodes_forecast,
@@ -200,6 +216,7 @@ def setup_wflow_env(machine):
         'nprocs_per_node': nprocs_per_node,
         'partition_default': partition_default,
         'queue_default': queue_default,
+        'WARMSTART_DIR': warmstart_dir,
         })
    
     config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
@@ -302,7 +319,7 @@ def set_default_parm():
         "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
         "COLDSTART": "NO",
         "CUSTOM_JEDI_CONFIG_FLAG": "NO",
-        "CUSTOM_JEDI_CONFIG_PATH": "/path/to/custom/JEDI/config/dir",
+        "CUSTOM_JEDI_CONFIG_PATH": None,
         "CUSTOM_JEDI_CONFIG_PREFIX": "/prefix/of/custom/JEDI/config/file/name",
         "DATE_CYCLE_FREQ_HR": 24,
         "DATE_FIRST_CYCLE": 202103220600,
@@ -321,8 +338,8 @@ def set_default_parm():
         "IC_FROM_FIX_DIR": "YES",
         "ICE_DOMAIN_NPROCS": 10,
         "JEDI_ALGORITHM": "letkf-oi",
-        "JEDI_IODACONV_PATH": "/path/to/jedi/ioda/converter/python/library",
-        "JEDI_PATH": "",
+        "JEDI_PY_VER": "python3.11",
+        "JEDI_PATH": None,
         "KEEPDATA": "YES",
         "MACHINE": "/machine/platform/name",
         "model_ver": "v1.0.0",
@@ -343,7 +360,7 @@ def set_default_parm():
         "RESTART_INTERVAL": "12 -1",
         "RUN": "ufsda",
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
-        "WARMSTART_DIR": "/path/to/warm/start/dir",
+        "WARMSTART_DIR": None,
         "WAV_NPROCS": 60,
         "WRITE_GROUPS": 1,
         "WRITE_TASKS_PER_GROUP": 6,
@@ -359,32 +376,20 @@ def set_machine_parm(machine):
     lowercase_machine = machine.lower()
     match lowercase_machine:
         case "gaeac6":
-            CUSTOM_JEDI_CONFIG_PATH = "/gpfs/f6/epic/world-shared/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 192
-            WARMSTART_DIR = "/gpfs/f6/epic/world-shared/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "hera":
-            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 40
-            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "hercules":
-            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 80
-            WARMSTART_DIR = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "orion":
-            CUSTOM_JEDI_CONFIG_PATH = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 40
-            WARMSTART_DIR = "/work/noaa/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case "ursa":
-            CUSTOM_JEDI_CONFIG_PATH = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/test_base/jedi_yaml"
             MAX_CORES_PER_NODE = 192
-            WARMSTART_DIR = "/scratch3/NAGAPE/epic/UFS-DA-Workflow_v1.0/inputs/DATA_RESTART"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
 
     machine_config = {
-        "CUSTOM_JEDI_CONFIG_PATH": CUSTOM_JEDI_CONFIG_PATH,
         "MAX_CORES_PER_NODE": MAX_CORES_PER_NODE,
-        "WARMSTART_DIR": WARMSTART_DIR,
     }
 
     return machine_config

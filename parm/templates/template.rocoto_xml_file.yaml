@@ -51,7 +51,7 @@ workflow:
     IC_FROM_FIX_DIR: "{{ IC_FROM_FIX_DIR }}"
     ICE_DOMAIN_NPROCS: "{{ ICE_DOMAIN_NPROCS }}"
     JEDI_ALGORITHM: "{{ JEDI_ALGORITHM }}"
-    JEDI_IODACONV_PATH: "{{ JEDI_IODACONV_PATH }}"
+    jedi_iodaconv_path: "{{ jedi_iodaconv_path }}"
     JEDI_PATH: "{{ JEDI_PATH }}"
     KEEPDATA: "{{ KEEPDATA }}"
     MACHINE: "{{ MACHINE }}"
@@ -95,17 +95,14 @@ workflow:
     LOGFN_SUFFIX: "<cyclestr>_@Y@m@d@H.log</cyclestr>"
     PDY:  "<cyclestr>@Y@m@d</cyclestr>"
     cyc: "<cyclestr>@H</cyclestr>"
-    DATADEP_LRST1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
-    DATADEP_LRST2: "<cyclestr>&WARMSTART_DIR;/ufs_land_restart.@Y-@m-@d_@H-00-00.tile6.nc</cyclestr>"
-    DATADEP_DATM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
-    DATADEP_DATM2: "<cyclestr>&WARMSTART_DIR;/ufs.cpld.datm.r.@Y-@m-@d-00000.nc</cyclestr>"
+    DATADEP_COLDSTART: "<cyclestr>&exp_case_path;/task_skip_coldstart_@Y@m@d@H.txt</cyclestr>"
     DATADEP_FREEFCST: "<cyclestr>&exp_case_path;/task_analysis_done_@Y@m@d@H.txt</cyclestr>"
     DATADEP_SFC1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>" 
     DATADEP_SFC2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>"
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if COLDSTART == "NO" and date_second_cycle is not none %}
+{%- if COLDSTART == "NO" and date_second_cycle is not none and DO_FREE_FORECAST == "none" %}
     task_prep_data:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -131,7 +128,7 @@ workflow:
         DCOMINsmops: "&DCOMINsmops;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
-        JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
+        jedi_iodaconv_path: "&jedi_iodaconv_path;"
         KEEPDATA: "&KEEPDATA;"
         MACHINE: "&MACHINE;"
         model_ver: "&model_ver;"
@@ -300,11 +297,25 @@ workflow:
       partition: "&partition_default;"
       queue: "&queue_default;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
-{%- if DO_FREE_FORECAST == "NONE" %}
       dependency:
-        taskdep_analysis:
-          attrs:
-            task: analysis
+        or:
+          datadep_coldstart:
+            attrs:
+              age: 5
+            value: "&DATADEP_COLDSTART;"
+{%- if DO_FREE_FORECAST == "none" %}
+          taskdep_analysis:
+            attrs:
+              task: analysis
+{%- else %}
+          datadep_sfc1:
+            attrs:
+              age: 5
+            value: "&DATADEP_SFC1;"
+          datadep_sfc2:
+            attrs:
+              age: 5
+            value: "&DATADEP_SFC2;"
 {%- endif %}
     task_plot_stats:
       attrs:
