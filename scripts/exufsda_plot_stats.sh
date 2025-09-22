@@ -13,7 +13,7 @@ source ${HOMEufsda}/parm/jjob_env_setup.sh
 #-----------------------------------------------------------------------
 #
 
-if [ "${DO_FREE_FORECAST}" = "YES" ]; then
+if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"

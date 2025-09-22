@@ -28,7 +28,6 @@ workflow:
     COLDSTART: "{{ COLDSTART }}"
     COMINgdas: "{{ COMINgdas }}"
     COMINgfs: "{{ COMINgfs }}"
-    COUPLER_CALENDAR: "{{ COUPLER_CALENDAR }}"
     CUSTOM_JEDI_CONFIG_FLAG: "{{ CUSTOM_JEDI_CONFIG_FLAG }}"
     CUSTOM_JEDI_CONFIG_PATH: "{{ CUSTOM_JEDI_CONFIG_PATH }}"
     CUSTOM_JEDI_CONFIG_PREFIX: "{{ CUSTOM_JEDI_CONFIG_PREFIX }}"
@@ -46,6 +45,7 @@ workflow:
     exp_basedir: "{{ exp_basedir }}"
     exp_case_path: "{{ exp_case_path }}"
     FCST_HRS: "{{ FCST_HRS }}"
+    FHROT: "{{ FHROT }}"
     FRAC_GRID: "{{ FRAC_GRID }}"
     IC_DATA_MODEL: "{{ IC_DATA_MODEL }}"
     IC_FROM_FIX_DIR: "{{ IC_FROM_FIX_DIR }}"
@@ -173,7 +173,6 @@ workflow:
         ACCOUNT: "&ACCOUNT;"
         COMINgfs: "&COMINgfs;"
         COMROOT: "&COMROOT;"
-        COUPLER_CALENDAR: "&COUPLER_CALENDAR;"
         CUSTOM_JEDI_CONFIG_FLAG: "&CUSTOM_JEDI_CONFIG_FLAG;"
         CUSTOM_JEDI_CONFIG_PATH: "&CUSTOM_JEDI_CONFIG_PATH;"
         CUSTOM_JEDI_CONFIG_PREFIX: "&CUSTOM_JEDI_CONFIG_PREFIX;"
@@ -237,7 +236,7 @@ workflow:
 {%- endif %}
     task_forecast:
       attrs:
-{%- if DO_FREE_FORECAST == "YES" %}
+{%- if DO_FREE_FORECAST == "first" %}
         cycledefs: first_cycle
 {%- else %}
         cycledefs: cycled
@@ -254,7 +253,6 @@ workflow:
         CCPP_SUITE: "&CCPP_SUITE;"
         COLDSTART: "&COLDSTART;"
         COMROOT: "&COMROOT;"
-        COUPLER_CALENDAR: "&COUPLER_CALENDAR;"
         cyc: "&cyc;"
         DATAROOT: "&DATAROOT;"
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
@@ -264,6 +262,7 @@ workflow:
         DT_ATMOS: "&DT_ATMOS;"
         DT_RUNSEQ: "&DT_RUNSEQ;"
         FCST_HRS: "&FCST_HRS;"
+        FHROT: "&FHROT;"
         HOMEufsda: "&HOMEufsda;"
         IC_FROM_FIX_DIR: "&IC_FROM_FIX_DIR;"
         ICE_DOMAIN_NPROCS: "&ICE_DOMAIN_NPROCS;"
@@ -301,7 +300,7 @@ workflow:
       partition: "&partition_default;"
       queue: "&queue_default;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
-{%- if DO_FREE_FORECAST == "NO" %}
+{%- if DO_FREE_FORECAST == "NONE" %}
       dependency:
         taskdep_analysis:
           attrs:
@@ -349,7 +348,7 @@ workflow:
       queue: "&queue_default;"
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
       dependency:
-{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "NO" %}
+{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
         taskdep_forecast:
           attrs:
             task: forecast

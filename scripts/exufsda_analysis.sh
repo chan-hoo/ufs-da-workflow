@@ -109,7 +109,6 @@ fi
 
 # update coupler.res file
 settings="\
-  'coupler_calendar': ${COUPLER_CALENDAR}
   'yyyp': !!str ${YYYP}
   'mp': !!str ${MP}
   'dp': !!str ${DP}
@@ -438,7 +437,7 @@ if [ -d diags ]; then
 fi
 
 # Create rocoto task-dependency txt file only for free-forecast run
-if [ "${DO_FREE_FORECAST}" = "YES" ] && [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+if [ "${DO_FREE_FORECAST}" = "first" ] && [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
   touch "${exp_case_path}/task_analysis_done_${PDY}${cyc}.txt"
 fi
 

@@ -5,7 +5,7 @@ start_hour:              {{ hh }}
 start_minute:            0
 start_second:            0
 nhours_fcst:             {{ FCST_HRS }}
-fhrot:                   {{ fhrot }}
+fhrot:                   {{ FHROT }}
 
 dt_atmos:                {{ DT_ATMOS }}
 restart_interval:        {{ RESTART_INTERVAL }}

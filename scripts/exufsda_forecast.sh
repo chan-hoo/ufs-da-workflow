@@ -76,9 +76,6 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   allcomp_restart_n="3"
   allcomp_start_type="startup"
 
-  # model_configure
-  fhrot="0"
-
   # ice_in
   ice_runtype="initial"
   ice_use_restart_time=".false."
@@ -99,9 +96,6 @@ else
   # ufs.configure
   allcomp_restart_n="12"
   allcomp_start_type="continue"
-
-  # model_configure
-  fhrot="12"
 
   # ice_in
   ice_runtype="continue"
@@ -192,7 +186,7 @@ settings="\
   'APP': ${APP}
   'DT_ATMOS': ${DT_ATMOS}
   'FCST_HRS': ${FCST_HRS}
-  'fhrot': ${fhrot}
+  'FHROT': ${FHROT}
   'OUTPUT_FH': ${OUTPUT_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'WRITE_GROUPS': ${WRITE_GROUPS}
@@ -433,7 +427,6 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
 
   # update coupler.res file
   settings="\
-  'coupler_calendar': ${COUPLER_CALENDAR}
   'yyyp': !!str ${YYYY}
   'mp': !!str ${MM}
   'dp': !!str ${DD}

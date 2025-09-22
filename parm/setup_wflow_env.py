@@ -74,11 +74,28 @@ def setup_wflow_env(machine):
         f.close()
         logging.debug(f''' Input YAML file:, {yaml_data} ''')
     except FileNotFoundError:
-        logging.error(f''' Input YAML file {yaml_file} does not exist! ''')
+        logging.error(f''' FATAL ERROR: Input YAML file {yaml_file} does not exist! ''')
 
     for key,value in yaml_data.items():
         if key in config_parm:
             config_parm[key] = value
+
+    # Check lowercase/uppercase
+    do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
+    do_free_forecast_options = ["first", "all", "none"]
+    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
+    if isinstance(do_free_forecast_orig, bool):
+        logging.error(err_msg)
+        sys.exit(1)
+    elif not do_free_forecast_orig.islower():
+        do_free_forecast = do_free_forecast_orig.lower()
+        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
+    else:
+        do_free_forecast = do_free_forecast_orig
+
+    if do_free_forecast not in do_free_forecast_options:
+        logging.error(err_msg)
+        sys.exit(1)
 
     # Check for unsupported conditions
     obs_ghcn_snow = config_parm.get("OBS_GHCN_SNOW")
@@ -87,10 +104,10 @@ def setup_wflow_env(machine):
     obs_smap = config_parm.get("OBS_SMAP")
     obs_smops = config_parm.get("OBS_SMOPS")
     if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
-        logging.error("Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
+        logging.error("FATAL ERROR: Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
         sys.exit(1)
     elif obs_smap == "YES" and obs_smops == "YES":
-        logging.error("Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
+        logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
         sys.exit(1)
 
     # Set the types of JEDI analyses by the types of observation
@@ -171,6 +188,7 @@ def setup_wflow_env(machine):
     config_parm.update({
         'exp_case_path': exp_case_path,
         'date_second_cycle': date_second_cycle,
+        'DO_FREE_FORECAST': do_free_forecast,
         'do_jedi_snow': do_jedi_snow,
         'do_jedi_soil_moisture': do_jedi_soil_moisture,
         'memory_flag': memory_flag,
@@ -210,7 +228,7 @@ def setup_wflow_env(machine):
             "-t", fp_yaml_rocoto_template,
             "-o", fp_yaml_rocoto ])
     except:
-        logging.error(f''' Call to python script fill_jinja_template.py 
+        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py 
               to create a '{fp_yaml_rocoto}' file from a jinja2 template failed.''')
         return False
 
@@ -262,7 +280,7 @@ def setup_wflow_env(machine):
 
     # Create coldstart txt file for the first cycle when APP = LND
     coldstart = config_parm.get("COLDSTART")
-    if app == "LND" and coldstart == "YES":
+    if coldstart == "YES":
         fn_pass = f"task_skip_coldstart_{date_first_cycle}.txt"
         open(os.path.join(exp_case_path,fn_pass), 'a').close()
 
@@ -283,7 +301,6 @@ def set_default_parm():
         "COMINgfs": "",
         "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
         "COLDSTART": "NO",
-        "COUPLER_CALENDAR": 2,
         "CUSTOM_JEDI_CONFIG_FLAG": "NO",
         "CUSTOM_JEDI_CONFIG_PATH": "/path/to/custom/JEDI/config/dir",
         "CUSTOM_JEDI_CONFIG_PREFIX": "/prefix/of/custom/JEDI/config/file/name",
@@ -293,11 +310,12 @@ def set_default_parm():
         "DCOMINghcn": "",
         "DCOMINsmap": "",
         "DCOMINsmops": "",
-        "DO_FREE_FORECAST": "NO",
+        "DO_FREE_FORECAST": "none",
         "DT_ATMOS": 720,
         "DT_RUNSEQ": 3600,
         "EXP_CASE_NAME": None,
         "FCST_HRS": 24,
+        "FHROT": 0,
         "FRAC_GRID": "NO",
         "IC_DATA_MODEL": "gfs",
         "IC_FROM_FIX_DIR": "YES",
