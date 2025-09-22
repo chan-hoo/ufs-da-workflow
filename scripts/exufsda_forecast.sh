@@ -223,7 +223,7 @@ settings="\
   'yyyy_align': !!str ${YYYY}
   'mm': !!str ${MM}
   'dd': !!str ${DD}
-  'hh_sec': !!str ${HHsec}
+  'hh_sec': !!str ${HHsec_5d}
   'DT_ATMOS': ${DT_ATMOS}
   'ICE_DOMAIN_NPROCS': ${ICE_DOMAIN_NPROCS}
   'ice_runtype': ${ice_runtype}
@@ -305,7 +305,7 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   fi
   # CICE
   ln -nsf "${data_dir}/cice_model.res.nc" .
-  cp -p "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec}.nc" history/.
+  cp -p "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc" history/.
 fi
 
 ################################
@@ -313,21 +313,46 @@ fi
 ################################
 mkdir -p RESTART
 
+#######################
+# Copy restart files
+#######################
 if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
   # Set path to directory where restart files exist
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINm1}/RESTART"
-  fi      
-  # CMEPS restart and pointer files
-  r_fn="ufs.cpld.cpl.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-  if [ -e "${data_dir}/${r_fn}" ]; then
-    ln -nsf "${data_dir}/${r_fn}" RESTART/.
-  else
-    err_exit "FATAL ERROR: Symlink failed: ${data_dir}/${r_fn} file does not exist."
+    data_dir="${COMINm1}"
   fi
-  ls -1 "./RESTART/${r_fn}">rpointer.cpl
+  # Restart from RESTART and pointer files
+  rst_fns=( "ufs.cpld.cpl.r" "iced" )
+  for ifn in "${rst_fns[@]}" ; do 
+    r_fn="${ifn}.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
+    r_fp="${data_dir}/RESTART/${r_fn}"
+    if [ -e "${r_fp}" ]; then
+      if [ "${ifn}" = "ufs.cpld.cpl.r" ]; then
+        ln -nsf "${r_fp}" .
+	ls -1 "${r_fn}">rpointer.cpl
+      elif [ "${ifn}" = "iced" ]; then
+        ln -nsf "${r_fp}" "RESTART/${r_fn}"
+        ls -1 "./RESTART/${r_fn}">ice.restart_file
+      else
+        ln -nsf "${r_fp}" .
+      fi
+    else
+      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+    fi
+  done
+  # Restart from COM
+  rst_fns=( "ufs.cpld.ww3.r" )
+  for ifn in "${rst_fns[@]}" ; do
+    r_fn="${ifn}.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
+    r_fp="${data_dir}/${r_fn}"
+    if [ -e "${r_fp}" ]; then
+        ln -nsf "${r_fp}" .
+    else
+      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+    fi
+  done
 fi
 
 #############################
@@ -391,6 +416,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     data_dir="${COMINm1}/RESTART"
   fi
 
+  # Tiled files
   rst_fns=( "ca_data" "fv_core.res" "fv_srf_wnd.res" "fv_tracer.res" "phy_data" )
   for ifn in "${rst_fns[@]}" ; do
     for itile in {1..6};
@@ -402,30 +428,57 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
         err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
       fi
     done
-    if [ "${ifn}" = "fv_core.res" ]; then
-      r_fp="${data_dir}/${filedate}.${ifn}.nc"
-      if [ -e "${r_fp}" ]; then
-        ln -nsf "${r_fp}" "${ifn}.nc"
-      else
-        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
-      fi
-    fi
   done
-  # link sfc_data from COMIN because they were upated by JEDI Analysis task
-  if [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-    data_dir="${COMIN}"
-  fi
-  for itile in {1..6};
-  do
-    r_fp="${data_dir}/${filedate}.sfc_data.tile${itile}.nc"
+
+  # Single files (time format: YYYYMMDD.HH0000)
+  rst_fns=( "MOM.res" "fv_core.res" )
+  for ifn in "${rst_fns[@]}" ; do
+    r_fp="${data_dir}/${filedate}.${ifn}.nc"
     if [ -e "${r_fp}" ]; then
-      ln -nsf "${r_fp}" "sfc_data.tile${itile}.nc"
+      ln -nsf "${r_fp}" "${ifn}.nc"
     else
       err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
     fi
   done
 
-  # update coupler.res file
+  # Single files (time format: YYYY-MM-DD-HHsec_5d)
+  rst_fns=( "iced" )
+  for ifn in "${rst_fns[@]}" ; do
+    r_fn="${ifn}.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
+    r_fp="${data_dir}/${r_fn}"
+    if [ -e "${r_fp}" ]; then
+      ln -nsf "${r_fp}" "${r_fn}"
+    else
+      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+    fi
+  done
+  
+  # Files updated by ANALYSIS (JEDI)
+  if [ "${DO_FREE_FORECAST}" = "none" ]; then
+    data_dir="${COMIN}"
+  # Files from WARMSTART/COMINm1
+  else
+    # Set path to directory where restart files exist
+    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+      data_dir="${WARMSTART_DIR}"
+    else
+      data_dir="${COMINm1}/RESTART"
+    fi
+  fi
+  rst_fns=( "sfc_data" )
+  for ifn in "${rst_fns[@]}" ; do
+    for itile in {1..6};
+    do
+      r_fp="${data_dir}/${filedate}.${ifn}.tile${itile}.nc"
+      if [ -e "${r_fp}" ]; then
+        ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
+      else
+        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+      fi
+    done
+  done
+
+  # create coupler.res file
   settings="\
   'yyyp': !!str ${YYYY}
   'mp': !!str ${MM}
@@ -487,9 +540,8 @@ cp -rp "${DATA}/history" ${COMOUT}
 cp -p *.out_grd.ww3 ${COMOUT}
 cp -p *.out_pnt.ww3.nc ${COMOUT}
 
-# cpld/pointer
+# cpld
 cp -p ufs.cpld.ww3.r.* ${COMOUT}
-cp -p rpointer.cpl.* ${COMOUT}
 
 # RESTART directory
 cp -p ${DATA}/RESTART/* ${COMOUTrestart}
