@@ -41,6 +41,13 @@ def main(INTERVAL):
 
             print(f''' Waiting {INTERVAL} seconds before next run...\n''')
             time.sleep(INTERVAL)
+            step = 10
+            if INTERVAL > step:
+                for remaining in range(INTERVAL, 0, -step):
+                    print(f" ... {remaining} seconds left ...")
+                    time.sleep(step)
+            else:
+                time.sleep(INTERVAL)
 
     except KeyboardInterrupt:
         print("\n User interrupted the loop. Exiting gracefully.")
@@ -82,7 +89,7 @@ def parse_args(argv):
             "--interval",
             dest="INTERVAL",
             type=int,
-            default=10,
+            default=30,
             help="Interval in seconds.",
             )
 
