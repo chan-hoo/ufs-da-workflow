@@ -12,7 +12,6 @@ source ${HOMEufsda}/parm/jjob_env_setup.sh
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 #
-
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
@@ -23,6 +22,10 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_time_history="YES"
     do_plot_restart="NO"
   fi
+elif [ "${DO_FREE_FORECAST}" = "all" ]; then
+  do_plot_stats="NO"
+  do_plot_time_history="NO"
+  do_plot_restart="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
