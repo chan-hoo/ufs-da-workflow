@@ -362,6 +362,7 @@ def set_default_parm():
         "RESTART_INTERVAL": "12 -1",
         "RUN": "ufsda",
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
+        "WALLTIME_FORECAST": "00:30:00",
         "WARMSTART_DIR": None,
         "WAV_NPROCS": 60,
         "WRITE_GROUPS": 1,

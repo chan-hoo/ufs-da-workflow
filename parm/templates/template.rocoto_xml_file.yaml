@@ -291,7 +291,7 @@ workflow:
       command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "forecast" "&HOMEufsda;" "&MACHINE;"'
       jobname: forecast
       nodes: "&nnodes_forecast;:ppn=&nprocs_per_node;"
-      walltime: 00:30:00
+      walltime: {{ WALLTIME_FORECAST }}
 {%- if native_default is not none %}
       native: "&native_default;"
 {%- endif %}
