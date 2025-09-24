@@ -17,30 +17,36 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_restart="YES"
+    do_plot_fcst_out_fv3="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="NO"
+    do_plot_fcst_out_fv3="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_stats="NO"
   do_plot_time_history="NO"
   do_plot_restart="YES"
+  do_plot_fcst_out_fv3="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_restart="YES"
+    do_plot_fcst_out_fv3="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="YES"
+    do_plot_fcst_out_fv3="YES"
   fi
 fi
 
 DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
 DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 DO_PLOT_RESTART="${DO_PLOT_RESTART:-${do_plot_restart}}"
+DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
 
 # Set other dates
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -58,7 +64,6 @@ nHH=${NTIME:8:2}
 # Path to orography files
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
 orog_fn_base="C${RES}_oro_data"
-
 
 
 ############################################################
@@ -181,6 +186,48 @@ EOF
   # Copy result files to COMOUT
   cp -p ${out_fn_base}* ${COMOUTplot}
 fi
+
+###########################################################
+# Plot forecast output tiles: FV3
+###########################################################
+if [ "${DO_PLOT_FCST_OUT_FV3}" = "YES" ]; then
+  fn_base_prefix="${NET}.${cycle}"
+  out_title_base="UFS-DA::OUT::FV3::${YYYY}-${MM}-${DD}-${HH}::"
+  out_fn_base="ufsda_out_fv3_${YYYY}${MM}${DD}${HH}_"
+  # zlevel_number is valid only for 3-D fields
+  zlevel_number_atm="1"
+  zlevel_number_sfc="1"
+
+  cat > plot_forecast_out_fv3.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+FCST_HRS: ${FCST_HRS}
+fn_base_prefix: '${fn_base_prefix}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base}'
+OUTPUT_FH: '${OUTPUT_FH}'
+path_data: '${COMIN}'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+RES: ${RES}
+var_list_atm:
+  - tmp
+  - o3mr
+var_list_sfc:
+  - snod
+  - soilm
+work_dir: '${DATA}'
+zlevel_number_atm: '${zlevel_number_atm}'
+zlevel_number_sfc: '${zlevel_number_sfc}'
+EOF
+
+  ${USHufsda}/plot_forecast_out_fv3.py
+  if [ $? -ne 0 ]; then
+    err_exit "FATAL ERROR: Forecast FV3 output plots failed."
+  fi
+
+  # Copy result files to COMOUT
+  cp -p ${out_fn_base}* ${COMOUTplot}
+fi
+
 
 #
 #-----------------------------------------------------------------------

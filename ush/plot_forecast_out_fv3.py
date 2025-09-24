@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 ###################################################################### CHJ #####
-## Name		: plot_forecast_restart.py
-## Usage	: Plot restart output file of UFS DA workflow
+## Name		: plot_forecast_out_fv3.py
+## Usage	: Plot FV3 output files in forecast
 ## NOAA/EPIC
 ## History ===============================
-## V000: 2025/09/19: Chan-Hoo Jeon : Preliminary version
+## V000: 2025/09/24: Chan-Hoo Jeon : Preliminary version
 ###################################################################### CHJ #####
 
 import os, sys
@@ -31,23 +31,28 @@ def main():
 
     global num_tiles
 
-    yaml_file = "plot_restart.yaml"
+    yaml_file="plot_forecast_out_fv3.yaml"
     with open(yaml_file, 'r') as f:
-        yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+        yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
-    fn_data_base = yaml_data['fn_data_base']
-    orog_path = yaml_data['orog_path']
-    orog_fn_base = yaml_data['orog_fn_base']
+    FCST_HRS = yaml_data['FCST_HRS']
+    fn_base_prefix = yaml_data['fn_base_prefix']
     out_title_base = yaml_data['out_title_base']
     out_fn_base = yaml_data['out_fn_base']
+    OUTPUT_FH = yaml_data['OUTPUT_FH']
     path_data = yaml_data['path_data']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
+    RES = yaml_data['RES']
+    var_list_atm = yaml_data['var_list_atm']
+    var_list_sfc = yaml_data['var_list_sfc']
     work_dir = yaml_data['work_dir']
-    zlvl = yaml_data['zlevel_number']
+    zlvl_atm = yaml_data['zlevel_number_atm']
+    zlvl_sfc = yaml_data['zlevel_number_sfc']
 
-    zlvlm1 = int(zlvl)-1
+    zlvlm1_atm = int(zlvl_atm)-1
+    zlvlm1_sfc = int(zlvl_sfc)-1
     num_tiles = 6
 
     # Set logging config
@@ -66,48 +71,73 @@ def main():
     # Set the path to Natural Earth dataset
     cartopy.config['data_dir'] = cartopy_ne_path
 
-    # get lon, lat from orography
-    get_geo(orog_path,orog_fn_base)
+    # Make list of output hours from OUTPUT_FH
+    output_fh = list(map(int, OUTPUT_FH.split()))
+    if output_fh[1] == -1:
+        fhr_list = list(range(0, FCST_HRS+1, output_fh[0]))
+    else:
+        fhr_list = output_fh
+    logging.info(f''' FHR list: {fhr_list}''')
 
-    var_list = ["snwdph","smc"]
+    # from 'atm' file
+    logging.info(f''' ATM variable list: {var_list_atm}''')
+    if var_list_atm:
+        # get lon, lat
+        fn_atm_base = f'''{fn_base_prefix}.atm.f000.c{RES}.tile'''
+        get_geo(path_data,fn_atm_base)
+        # plot output variables: atm
+        for var_nm in var_list_atm:
+            for ifhr in fhr_list:
+                ifhr_3d = f'''{ifhr:03d}'''
+                logging.info(f''' Variable: {var_nm} from "atm", fhr: {ifhr_3d}''')
+                fn_atm_base = f'''{fn_base_prefix}.atm.f{ifhr_3d}.c{RES}.tile'''
+                plot_data(path_data,fn_atm_base,var_nm,ifhr_3d,zlvlm1_atm,out_title_base,out_fn_base,work_dir)
 
-    # plot restart file
-    for var_nm in var_list:
-        plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir)
+    # from 'sfc' file
+    logging.info(f''' SFC variable list: {var_list_sfc}''')
+    if var_list_sfc:
+        # get lon, lat
+        fn_sfc_base = f'''{fn_base_prefix}.sfc.f000.c{RES}.tile'''
+        get_geo(path_data,fn_sfc_base)
+        # plot output variables: sfc
+        for var_nm in var_list_sfc:
+            for ifhr in fhr_list:
+                ifhr_3d = f'''{ifhr:03d}'''
+                logging.info(f''' Variable: {var_nm} from "sfc", fhr: {ifhr_3d}''')
+                fn_sfc_base = f'''{fn_base_prefix}.sfc.f{ifhr_3d}.c{RES}.tile'''
+                plot_data(path_data,fn_sfc_base,var_nm,ifhr_3d,zlvlm1_sfc,out_title_base,out_fn_base,work_dir)
 
 
-# geo lon/lat from orography ======================================== CHJ =====
-def get_geo(orog_path,orog_fn_base):
+# geo lon/lat ======================================================= CHJ =====
+def get_geo(path_data,fn_data_base):
 
-    global glon,glat
-    logging.info(f''' ===== geo data files ==============================================''')
+    global glon, glat
+    logging.info(f''' ===== geo data files ====================================''')
+    # open the data file
 
     glon_all = []
     glat_all = []
     for it in range(num_tiles):
-        itp = it+1
-        fn_orog = f'''{orog_fn_base}.tile{itp}.nc'''
-        fp_orog = os.path.join(orog_path,fn_orog)
-
-        try: orog = xr.open_dataset(fp_orog)
-        except: raise Exception('Could NOT find the file',fp_orog)
-
-        # Extract longitudes, and latitudes
-        geolon = np.ma.masked_invalid(orog['geolon'].data)
-        geolat = np.ma.masked_invalid(orog['geolat'].data)
-
-        logging.info(f''' Dimension of glon (tile {itp}) = {geolon.shape}''')
-        logging.info(f''' Tile{itp}, Max = {np.max(geolon)}''')
-        logging.info(f''' Tile{itp}, Min = {np.min(geolon)}''')
-        logging.info(f''' Dimension of glat (tile {itp}) = {geolat.shape}''')
-        logging.info(f''' Tile{itp}, Max = {np.max(geolat)}''')
-        logging.info(f''' Tile{itp}, Min = {np.min(geolat)}''')
-
-        glon_all.append(geolon[None,:])
-        glat_all.append(geolat[None,:])
-
+        itp=it+1
+        fn_data=f'''{fn_data_base}{itp}.nc'''
+        fp_data=os.path.join(path_data,fn_data)
+        try: data_raw=nc.Dataset(fp_data)
+        except: raise Exception('Could NOT find the file',fp_data)
         if itp == 1:
-            logging.info(f''' Variables: {list(orog.variables)}''')
+            logging.info(f''' Variables: {list(data_raw.variables)}''')
+        # Extract geo data
+        glon_data = np.ma.masked_invalid(data_raw.variables['grid_xt'])
+        logging.info(f''' Dimension of glon(grid_xt)= {glon_data.shape}''')
+        logging.info(f''' Tile{itp}, Max= {np.max(glon_data)}''')
+        logging.info(f''' Tile{itp}, Min= {np.min(glon_data)}''')
+
+        glat_data = np.ma.masked_invalid(data_raw.variables['grid_yt'])
+        logging.info(f''' Dimension of glat(grid_yt)= {glat_data.shape}''')
+        logging.info(f''' Tile{itp}, Max= {np.max(glat_data)}''')
+        logging.info(f''' Tile{itp}, Min= {np.min(glat_data)}''')
+
+        glon_all.append(glon_data[None,:])
+        glat_all.append(glat_data[None,:])
 
     glon = np.vstack(glon_all)
     glat = np.vstack(glat_all)
@@ -116,8 +146,8 @@ def get_geo(orog_path,orog_fn_base):
     logging.info(f''' Dimension of glon = {glat.shape}''')
 
 
-# Get sfc_data from files and plot ================================== CHJ =====
-def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir):
+# Get data from files and plot ====================================== CHJ =====
+def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,out_fn_base,work_dir):
 
     # center of map
     c_lon = -77.0369
@@ -128,7 +158,7 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,wo
     # open the data file
     for it in range(num_tiles):
         itp = it+1
-        fn_data = fn_data_base+str(itp)+'.nc'
+        fn_data = f'''{fn_data_base}{itp}.nc'''
         fp_data = os.path.join(path_data,fn_data)
         try: data_raw = nc.Dataset(fp_data)
         except: raise Exception('Could NOT find the file',fp_data)
@@ -177,11 +207,11 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,wo
         c_glat = np.round(np.mean(glat_tile),decimals=2)
         logging.info(f'''c_glon, c_glat for tile{str(it+1)} = {c_glon}, {c_glat}''')
         if ndim_var == 4:
-            out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}'''
-            out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}'''
+            out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}::F{ifhr} '''
+            out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}_f{ifhr}'''
         else:
-            out_title = f'''{out_title_base}{var_nm}::Tile{itp}'''
-            out_fn = f'''{out_fn_base}{var_nm}_tile{itp}'''
+            out_title = f'''{out_title_base}{var_nm}::Tile{itp}::F{ifhr}'''
+            out_fn = f'''{out_fn_base}{var_nm}_tile{itp}_f{ifhr}'''
 
         fig,ax = plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Orthographic(c_glon,c_glat)))
         ax.set_title(out_title, fontsize=6)
@@ -201,11 +231,11 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,wo
 
     # Plot all tiles together
     if ndim_var == 4:
-        out_title = f'''{out_title_base}{var_nm}::L{zlvl}::All tiles'''
-        out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_alltiles'''
+        out_title = f'''{out_title_base}{var_nm}::L{zlvl}::F{ifhr}::All tiles'''
+        out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_alltiles_f{ifhr}'''
     else:
-        out_title = f'''{out_title_base}{var_nm}::All tiles'''
-        out_fn = f'''{out_fn_base}{var_nm}_alltiles'''
+        out_title = f'''{out_title_base}{var_nm}::F{ifhr}::All tiles'''
+        out_fn = f'''{out_fn_base}{var_nm}_alltiles_f{ifhr}'''
 
     fig,ax=plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Robinson(c_lon)))
     ax.set_title(out_title, fontsize=6)
