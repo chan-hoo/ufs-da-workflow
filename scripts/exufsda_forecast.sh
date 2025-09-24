@@ -94,7 +94,7 @@ else
   warm_start=".true."
 
   # ufs.configure
-  allcomp_restart_n="12"
+  allcomp_restart_n="3"
   allcomp_start_type="continue"
 
   # ice_in
