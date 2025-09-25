@@ -200,10 +200,6 @@ def setup_wflow_env(machine):
     if warmstart_dir is None:
         warmstart_dir = os.path.join(fix_dir, "DATA_restart")
 
-    obsdir = config_parm.get("OBSDIR")
-    if obsdir is None:
-        obsdir = os.path.join(fix_dir, "DATA_obs")
-
     # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
     ptmp = config_parm.get("PTMP")
     if ptmp is None:
@@ -226,7 +222,6 @@ def setup_wflow_env(machine):
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
-        'OBSDIR': obsdir,
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
@@ -325,7 +320,6 @@ def set_default_parm():
         "ATM_IO_LAYOUT_Y": 1,
         "ATM_LAYOUT_X": 3,
         "ATM_LAYOUT_Y": 8,
-        "ATMOS_FORC": "gswp3",
         "COMINgdas": "",
         "COMINgfs": "",
         "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
@@ -337,6 +331,7 @@ def set_default_parm():
         "DATE_FIRST_CYCLE": 202103220600,
         "DATE_LAST_CYCLE": 202103230600,
         "DCOMINghcn": "",
+        "DCOMINobs": "",
         "DCOMINsmap": "",
         "DCOMINsmops": "",
         "DO_FREE_FORECAST": "none",
@@ -360,7 +355,6 @@ def set_default_parm():
         "NPROCS_ANALYSIS": 6,
         "NPROCS_FCST_IC": 36,
         "NPZ": 127,
-        "OBSDIR": None,
         "OBS_GHCN_SNOW": "NO",
         "OBS_IMS_SNOW": "NO",
         "OBS_SFCSNO": "NO",

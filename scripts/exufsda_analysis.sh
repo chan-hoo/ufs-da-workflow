@@ -50,71 +50,25 @@ do
   cp -p ${sfc_fn} "${sfc_fn}_ini"
 done
 
-# Replace soil-moisture with external source data ("era5land" or "gfs")
-if [ "${DO_BKG_ANAL_EXT_SRC}" = "YES" ]; then
-  if [ "${BKG_ANAL_EXT_SRC_OPT}" = "era5land" ]; then
-    fn_ext_src="era5_land_${PDY}_data_0.nc"
-    ln -nsf "${DCOMINera5land}/${fn_ext_src}" .
-  elif [ "${BKG_ANAL_EXT_SRC_OPT}" = "gfs" ]; then
-    fn_ext_src="${BKG_ANAL_EXT_SRC_OPT}.${cycle}.sfcanl.nc"
-    ln -nsf "${COMINgfs}/${PDY}${cyc}/${fn_ext_src}" .
-  fi
-  if [ ! -f "${fn_ext_src}" ]; then
-    err_exit "External source data file ${fn_ext_src} does not exist !!!"
-  fi
-
-  fn_oro_base="${FIXlandda}/FV3_fix_tiled/C${RES}/C${RES}_oro_data.tile"
-  fn_oro_ext=".nc"
-  fn_sfc_base="${filedate}.sfc_data.tile"
-  fn_sfc_ext=".nc"
-  # flag for plotting external source data
-  plot_src_data="YES"
-  # flag for plotting new sfc_data
-  plot_sfc_data="YES"
-  cat > bkg_ext_to_sfcdata.yaml << EOF
-BKG_ANAL_EXT_SRC_OPT: '${BKG_ANAL_EXT_SRC_OPT}'
-cartopy_ne_path: '${FIXlandda}/NaturalEarth'
-fn_oro_base: '${fn_oro_base}'
-fn_oro_ext: '${fn_oro_ext}'
-fn_sfc_base: '${fn_sfc_base}'
-fn_sfc_ext: '${fn_sfc_ext}'
-fn_ext_src: '${fn_ext_src}'
-plot_sfc_data: '${plot_sfc_data}'
-plot_src_data: '${plot_src_data}'
-work_dir: '${DATA}'
-PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-EOF
-  # Replacing sfc_data with external source
-  ${USHlandda}/bkg_external_to_sfcdata.py
-  if [ $? -ne 0 ]; then
-    err_exit "Replacing sfc_data with external source data failed !!!"
-  fi
-  # Change sfc_data files
-  for itile in {1..6}
-  do
-    cp -p "${fn_sfc_base}${itile}_${BKG_ANAL_EXT_SRC_OPT}${fn_sfc_ext}" "${filedate}.sfc_data.tile${itile}.nc"
-  done
-fi
-
 # Copy obserbation file to work directory
 mkdir -p ${DATA}/obs
 
 obs_prefix="obs.${PDY}.${cycle}"
 if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-  ln -nsf "${COMINobs}/${obs_prefix}.ghcn_snow.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.ghcn_snow.nc" "${DATA}/obs"
 fi
 if [ "${OBS_IMS_SNOW}" = "YES" ]; then
-  ln -nsf "${COMINobs}/${obs_prefix}.ims_snow.tm00.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.ims_snow.tm00.nc" "${DATA}/obs"
 fi
 if [ "${OBS_SFCSNO}" = "YES" ]; then
-  ln -nsf "${COMINobs}/${obs_prefix}.sfcsno.tm00.bufr_d" "${DATA}/obs"
-  ln -nsf "${PARMlandda}/jedi/bufr_sfcsno_mapping.yaml" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.sfcsno.tm00.bufr_d" "${DATA}/obs"
+  ln -nsf "${PARMufsda}/jedi/bufr_sfcsno_mapping.yaml" "${DATA}/obs"
 fi
 if [ "${OBS_SMAP}" = "YES" ]; then
-  ln -nsf "${COMINobs}/${obs_prefix}.smap_combined.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.smap_combined.nc" "${DATA}/obs"
 fi
 if [ "${OBS_SMOPS}" = "YES" ]; then
-  ln -nsf "${COMINobs}/${obs_prefix}.smops.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.smops.nc" "${DATA}/obs"
 fi
 
 # update coupler.res file
@@ -129,23 +83,23 @@ settings="\
   'hh': !!str ${HH}
 " # End of settings variable
 
-fp_template="${PARMlandda}/templates/template.coupler.res"
+fp_template="${PARMufsda}/templates/template.coupler.res"
 fn_namelist="${DATA}/${filedate}.coupler.res"
-${USHlandda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
-orog_path="${FIXlandda}/FV3_fix_tiled/C${RES}"
+orog_path="${FIXufsda}/FV3_fix_tiled/C${RES}"
 orog_fn_base="C${RES}_oro_data"
 
 # Copy static data files
 mkdir -p ${DATA}/Data/fv3files
-cp -p ${FIXlandda}/DATA_jedi_input/fv3files/fmsmpp.nml ${DATA}/Data/fv3files/.
-cp -p ${FIXlandda}/DATA_jedi_input/fv3files/field_table_ufs ${DATA}/Data/fv3files/field_table
-cp -p ${FIXlandda}/DATA_jedi_input/fv3files/akbk${NPZ}.nc4 ${DATA}/Data/fv3files/akbk.nc4
+cp -p ${FIXufsda}/DATA_jedi_input/fv3files/fmsmpp.nml ${DATA}/Data/fv3files/.
+cp -p ${FIXufsda}/DATA_jedi_input/fv3files/field_table_ufs ${DATA}/Data/fv3files/field_table
+cp -p ${FIXufsda}/DATA_jedi_input/fv3files/akbk${NPZ}.nc4 ${DATA}/Data/fv3files/akbk.nc4
 ln -nsf ${orog_path}/${orog_fn_base}.tile* ${DATA}/Data/fv3files/
 
 # Link snow shadow level nicas data file
 mkdir -p ${DATA}/berror
-ln -nsf ${FIXlandda}/FV3_fix_global/snow_bump_nicas_250km_shadowlevels_nicas.nc ${DATA}/berror/.
+ln -nsf ${FIXufsda}/FV3_fix_global/snow_bump_nicas_250km_shadowlevels_nicas.nc ${DATA}/berror/.
 
 # Set a list of JEDI analyses
 types_jedi_analyses=()
@@ -202,9 +156,9 @@ for jedi_type in "${types_jedi_analyses[@]}"; do
         cp -p ${filedate}.coupler.res ${DATA}/mem${ens}
       done
     
-      ${USHlandda}/letkf_create_ens.py $filedate $snowdepth_vn 30
+      ${USHufsda}/letkf_create_ens.py $filedate $snowdepth_vn 30
       if [[ $? != 0 ]]; then
-        err_exit "letkf-oi create failed"
+        err_exit "FATAL ERROR: letkf-oi create failed"
       fi  
     fi
     # Set JEDI executable
@@ -214,12 +168,12 @@ for jedi_type in "${types_jedi_analyses[@]}"; do
   # JEDI field metadata file
   if [ "${jedi_type}" = "snow" ]; then
     if [ "${FRAC_GRID}" = "YES" ]; then
-      cp -p ${PARMlandda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart.yaml ${DATA}/Data/fv3files/.
+      cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart.yaml ${DATA}/Data/fv3files/.
     else
-      cp -p ${PARMlandda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_nofrac.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
+      cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_nofrac.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
     fi
   elif [ "${jedi_type}" = "soil_moisture" ]; then
-    cp -p ${PARMlandda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_soil_moisture.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
+    cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_soil_moisture.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
   fi
   
   # Copy JEDI input yaml file
@@ -227,7 +181,7 @@ for jedi_type in "${types_jedi_analyses[@]}"; do
   if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
     cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
   else
-    cp -p "${COMIN}/${jedi_nml_fn}" .
+    cp -p "${COMINOUT}/${jedi_nml_fn}" .
   fi
 
   jedi_exe_dir=${JEDI_PATH}/build/bin
@@ -237,7 +191,7 @@ for jedi_type in "${types_jedi_analyses[@]}"; do
   export err=$?; err_chk
   cp errfile errfile_fv3jedi_x
   if [[ $err != 0 ]]; then
-    err_exit "JEDI DA failed"
+    err_exit "FATAL ERROR: JEDI DA failed"
   fi
   
   # save intermediate sfc_data files before applying increment
@@ -285,11 +239,11 @@ EOF
     export pgm="apply_incr.exe"
     . prep_step
     # (n=6): this is fixed, at one task per tile (with minor code change). 
-    ${run_cmd} -n 6 ${EXEClandda}/$pgm >>$pgmout 2>errfile
+    ${run_cmd} -n 6 ${EXECufsda}/$pgm >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_apply_incr
     if [[ $err != 0 ]]; then
-      err_exit "apply snow increment failed"
+      err_exit "FATAL ERROR: apply snow increment failed"
     fi
 
     # Save intermediate sfc_data files after applying increment
@@ -328,9 +282,9 @@ new_sfc_data_fn_suffix: '${new_sfc_data_fn_suffix}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
 
-    ${USHlandda}/sfc_data_replace_var.py
+    ${USHufsda}/sfc_data_replace_var.py
     if [ $? -ne 0 ]; then
-      err_exit "sfc_data var replacement failed"
+      err_exit "FATAL ERROR: sfc_data var replacement failed"
     fi
 
     # Save intermediate sfc_data files after applying increment
@@ -343,10 +297,10 @@ EOF
 
   fi
 
-  # Copy the increment files to COMOUT
+  # Copy the increment files to COMINOUT
   for itile in {1..6}
   do
-    cp -p "${DATA}/${inc_fn_prefix}.tile${itile}.nc" ${COMOUT}
+    cp -p "${DATA}/${inc_fn_prefix}.tile${itile}.nc" ${COMINOUT}
   done
 
   ############################################################
@@ -356,14 +310,14 @@ EOF
   if [ "${DO_PLOT_SFC_COMP}" = "YES" ]; then 
     fn_sfc_base="${filedate}.sfc_data.tile"
     fn_inc_base="${inc_fn_prefix}.tile"
-    out_title_base="Land-DA::SFC-DATA::${jedi_type}::${PDY}::"
-    out_fn_base="landda_comp_sfc_${jedi_type}_${PDY}_"
+    out_title_base="UFS-DA::SFC-DATA::${jedi_type}::${PDY}::"
+    out_fn_base="ufsda_comp_sfc_${jedi_type}_${PDY}_"
     # zlevel_number is valid only for 3-D fields such as stc/smc/slc
     zlevel_number="1"
   
     cat > plot_comp_sfc.yaml <<EOF
 work_dir: '${DATA}'
-fix_dir: '${FIXlandda}'
+fix_dir: '${FIXufsda}'
 fn_sfc_base: '${fn_sfc_base}'
 fn_inc_base: '${fn_inc_base}'
 jedi_exe: '${JEDI_ALGORITHM}'
@@ -376,13 +330,13 @@ PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 zlevel_number: '${zlevel_number}'
 EOF
 
-    ${USHlandda}/plot_comp_sfc_data.py
+    ${USHufsda}/plot_comp_sfc_data.py
     if [ $? -ne 0 ]; then
-      err_exit "sfc_data comparison plot failed"
+      err_exit "FATAL ERROR: sfc_data comparison plot failed"
     fi
   
-    # Copy result file to COMOUT
-    cp -p ${out_fn_base}* ${COMOUTplot}  
+    # Copy result file to COMINOUT
+    cp -p ${out_fn_base}* ${COMINOUTplot}  
   fi
 
   ############################################################
@@ -398,21 +352,21 @@ EOF
   
     # Soft-link the input file to DATA
     if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-      ln -nsf "${COMINobs}/${fn_input_ghcn}" .
+      ln -nsf "${COMINOUTobs}/${fn_input_ghcn}" .
     fi
     if [ "${OBS_IMS_SNOW}" = "YES" ]; then
-      ln -nsf "${COMINobs}/${fn_input_ims}" .
+      ln -nsf "${COMINOUTobs}/${fn_input_ims}" .
     fi
     if [ "${OBS_SMAP}" = "YES" ]; then
-      ln -nsf "${COMINobs}/${fn_input_smap}" .
+      ln -nsf "${COMINOUTobs}/${fn_input_smap}" .
     fi
     if [ "${OBS_SMOPS}" = "YES" ]; then
-      ln -nsf "${COMINobs}/${fn_input_smops}" .
+      ln -nsf "${COMINOUTobs}/${fn_input_smops}" .
     fi
   
     cat > plot_obs_file.yaml << EOF
 work_dir: '${DATA}'
-cartopy_ne_path: '${FIXlandda}/NaturalEarth'
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 fn_input_ghcn: '${fn_input_ghcn}'
 fn_input_ims: '${fn_input_ims}'
 fn_input_smap: '${fn_input_smap}'
@@ -425,25 +379,25 @@ PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
 
-    ${USHlandda}/plot_obs_file.py
+    ${USHufsda}/plot_obs_file.py
     if [ $? -ne 0 ]; then
-      err_exit "Observation file plot failed"
+      err_exit "FATAL ERROR: Observation file plot failed"
     fi
-    # Copy result file to COMOUT
-    cp -p *.png ${COMOUTplot}
+    # Copy result file to COMINOUT
+    cp -p *.png ${COMINOUTplot}
   fi
 
 done
 
-# Copy the final sfc_data files to COMOUT
+# Copy the final sfc_data files to COMINOUT
 for itile in {1..6}
 do
-  cp -p "${DATA}/${filedate}.sfc_data.tile${itile}.nc" ${COMOUT}
+  cp -p "${DATA}/${filedate}.sfc_data.tile${itile}.nc" ${COMINOUT}
 done
 
 if [ -d diags ]; then
-  cp -p diags/* ${COMOUThofx}
-  ln -nsf ${COMOUThofx}/*.nc ${DATA_HOFX}
+  cp -p diags/* ${COMINOUThofx}
+  ln -nsf ${COMINOUThofx}/*.nc ${DATA_HOFX}
 fi
 
 # Create rocoto task-dependency txt file only for free-forecast run

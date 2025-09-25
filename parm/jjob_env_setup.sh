@@ -62,33 +62,45 @@ setpdy.sh
 
 [[ "$WORKFLOW_MANAGER" = "rocoto" ]] && export COMROOT=$COMROOT
 
-# COMIN directories
-export COMIN="${COMIN:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDY}}"
-export COMINm1="${COMINm1:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYm1}}"
+###################################
+# COM directories (input/output)
+###################################
+export COMINOUT="${COMINOUT:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDY}}"
+export COMINOUTm1="${COMINOUTm1:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYm1}}"
+export COMINOUThofx="${COMINOUThofx:-${COMINOUT}/hofx}"
+export COMINOUTplot="${COMINOUTplot:-${COMINOUT}/plot}"
+export COMINOUTrestart="${COMINOUTrestart:-${COMINOUT}/RESTART}"
+mkdir -p ${COMINOUT}
+mkdir -p ${COMINOUThofx}
+mkdir -p ${COMINOUTplot}
+mkdir -p ${COMINOUTrestart}
+
+##################################################################
+# Data directories (model output: COMINmodel, data: DCOMINdata)
+##################################################################
+# Path to GDAS output files
+export COMINgdas="${COMINgdas:-${FIXufsda}/DATA_gdas}"
+# Path to GFS output files
 export COMINgfs="${COMINgfs:-${FIXufsda}/DATA_gfs}"
-export COMINobs=${COMINobs:-${COMIN}/obs}
+# Path to pre-processed observation data files
+export DCOMINobs="${DCOMINobs:-${FIXufsda}/DATA_obs}"
+# Path to GHCN raw data files
+export DCOMINghcn="${DCOMINghcn:-${FIXufsda}/DATA_ghcn}"
+# Path to SMAP raw data files
+export DCOMINsmap="${DCOMINsmap:-${FIXufsda}/DATA_smap}"
+# Path to SMOPS raw data files
+export DCOMINsmops="${DCOMINsmops:-${FIXufsda}/DATA_smops}"
 
-# COMOUT directories
-export COMOUT="${COMOUT:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDY}}"
-mkdir -p ${COMOUT}
-export COMOUThofx="${COMOUThofx:-${COMOUT}/hofx}"
-mkdir -p ${COMOUThofx}
-export COMOUTplot="${COMOUTplot:-${COMOUT}/plot}"
-mkdir -p ${COMOUTplot}
-export COMOUTrestart="${COMOUTrestart:-${COMOUT}/RESTART}"
-mkdir -p ${COMOUTrestart}
-
+########################################
 # Create teomporary share directories
+########################################
 export DATA_HOFX="${DATA_HOFX:-${DATAROOT}/DATA_SHARE/hofx}"
-mkdir -p ${DATA_HOFX}
 export DATA_RESTART="${DATA_RESTART:-${DATAROOT}/DATA_SHARE/RESTART}"
+mkdir -p ${DATA_HOFX}
 mkdir -p ${DATA_RESTART}
 
-# DCOMIN directories
-export DCOMINghcn=${DCOMINghcn:-${FIXufsda}/DATA_ghcn}
-export DCOMINsmap=${DCOMINsmap:-${FIXufsda}/DATA_smap}
-export DCOMINsmops=${DCOMINsmops:-${FIXufsda}/DATA_smops}
-
-# Output file
+#####################
+# Task output file
+#####################
 export pgmout="${DATA}/OUTPUT.$$"
 

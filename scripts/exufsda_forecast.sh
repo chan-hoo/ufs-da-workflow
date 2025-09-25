@@ -297,7 +297,7 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
     data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
   else
-    data_dir="${COMIN}"
+    data_dir="${COMINOUT}"
   fi
   # CICE
   ln -nsf "${data_dir}/cice_model.res.nc" .
@@ -317,7 +317,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINm1}"
+    data_dir="${COMINOUTm1}"
   fi
   # Restart from RESTART and pointer files
   rst_fns=( "ufs.cpld.cpl.r" "iced" )
@@ -393,7 +393,7 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
     data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
   else
-    data_dir="${COMIN}"
+    data_dir="${COMINOUT}"
   fi
   ln -nsf "${data_dir}/gfs_ctrl.nc" .
   for itile in {1..6}
@@ -409,7 +409,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINm1}/RESTART"
+    data_dir="${COMINOUTm1}/RESTART"
   fi
 
   # Tiled files
@@ -451,14 +451,14 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   
   # Files updated by ANALYSIS (JEDI)
   if [ "${DO_FREE_FORECAST}" = "none" ]; then
-    data_dir="${COMIN}"
-  # Files from WARMSTART/COMINm1
+    data_dir="${COMINOUT}"
+  # Files from WARMSTART/COMINOUTm1
   else
     # Set path to directory where restart files exist
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
       data_dir="${WARMSTART_DIR}"
     else
-      data_dir="${COMINm1}/RESTART"
+      data_dir="${COMINOUTm1}/RESTART"
     fi
   fi
   rst_fns=( "sfc_data" )
@@ -504,9 +504,9 @@ if [[ $err != 0 ]]; then
   err_exit "FATAL ERROR: ufs_model failed"
 fi
 
-################################
-# Copy output files to COMOUT
-################################
+##################################
+# Copy output files to COMINOUT
+##################################
 # FV3
 read -ra out_fh <<< "${OUTPUT_FH}"
 out_fh1="${out_fh[0]}"
@@ -521,31 +521,31 @@ do
   ihr_3d=$(printf "%03d" "${ihr}")
   for itile in {1..6}
   do
-    cp -p "${DATA}/atmf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.atm.f${ihr_3d}.c${RES}.tile${itile}.nc"
-    cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
+    cp -p "${DATA}/atmf${ihr_3d}.tile${itile}.nc" "${COMINOUT}/${NET}.${cycle}.atm.f${ihr_3d}.c${RES}.tile${itile}.nc"
+    cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMINOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
   done
 done
 
 # MOM6
-cp -rp "${DATA}/MOM6_OUTPUT" ${COMOUT}
+cp -rp "${DATA}/MOM6_OUTPUT" ${COMINOUT}
 
 # CICE
-cp -rp "${DATA}/history" ${COMOUT}
+cp -rp "${DATA}/history" ${COMINOUT}
 
 # WW3
-cp -p *.out_grd.ww3 ${COMOUT}
-cp -p *.out_pnt.ww3.nc ${COMOUT}
+cp -p *.out_grd.ww3 ${COMINOUT}
+cp -p *.out_pnt.ww3.nc ${COMINOUT}
 
 # cpld
-cp -p ufs.cpld.ww3.r.* ${COMOUT}
+cp -p ufs.cpld.ww3.r.* ${COMINOUT}
 
 # RESTART directory
-cp -p ${DATA}/RESTART/* ${COMOUTrestart}
+cp -p ${DATA}/RESTART/* ${COMINOUTrestart}
 
 # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
 for itile in {1..6};
 do
-  ln -nsf "${COMOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+  ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
 done
 
 

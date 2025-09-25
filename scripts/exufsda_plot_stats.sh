@@ -79,19 +79,19 @@ if [ "${DO_PLOT_STATS}" = "YES" ]; then
   plottype="both"
 
   if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-    cp -p "${COMINhofx}/diag.ghcn_snow_${PDY}${cyc}.nc" ${DATA}
+    cp -p "${COMINOUThofx}/diag.ghcn_snow_${PDY}${cyc}.nc" ${DATA}
   fi
   if [ "${OBS_IMS_SNOW}" = "YES" ]; then
-    cp -p "${COMINhofx}/diag.ims_snow_${PDY}${cyc}.nc" ${DATA}
+    cp -p "${COMINOUThofx}/diag.ims_snow_${PDY}${cyc}.nc" ${DATA}
   fi
   if [ "${OBS_SFCSNO}" = "YES" ]; then
-    cp -p "${COMINhofx}/diag.sfcsno_${PDY}${cyc}.nc" ${DATA}
+    cp -p "${COMINOUThofx}/diag.sfcsno_${PDY}${cyc}.nc" ${DATA}
   fi
   if [ "${OBS_SMAP}" = "YES" ]; then
-    cp -p "${COMINhofx}/diag.smap_soil_moisture_${PDY}${cyc}.nc" ${DATA}
+    cp -p "${COMINOUThofx}/diag.smap_soil_moisture_${PDY}${cyc}.nc" ${DATA}
   fi
   if [ "${OBS_SMOPS}" = "YES" ]; then
-    cp -p "${COMINhofx}/diag.smops_soil_moisture_${PDY}${cyc}.nc" ${DATA}
+    cp -p "${COMINOUThofx}/diag.smops_soil_moisture_${PDY}${cyc}.nc" ${DATA}
   fi
 
   cat > plot_hofx.yaml <<EOF
@@ -117,9 +117,9 @@ EOF
     err_exit "FATAL ERROR: Scatter/Histogram plots failed."
   fi
   
-  # Copy result files to COMOUT
-  cp -p "${DATA}/hofx_omb"* ${COMOUTplot}
-  cp -p "${DATA_HOFX_OMB}/hofx_omb_timehis"* ${COMOUThofx}
+  # Copy result files to COMINOUT
+  cp -p "${DATA}/hofx_omb"* ${COMINOUTplot}
+  cp -p "${DATA_HOFX_OMB}/hofx_omb_timehis"* ${COMINOUThofx}
 fi
 
 ############################################################
@@ -151,8 +151,8 @@ EOF
     err_exit "FATAL ERROR: Time-history plots failed."
   fi
 
-  # Copy result files to COMOUT
-  cp -p ${out_fn_base}* ${COMOUTplot}
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
 ###########################################################
@@ -172,7 +172,7 @@ orog_path: '${orog_path}'
 orog_fn_base: '${orog_fn_base}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
-path_data: '${COMIN}/RESTART'
+path_data: '${COMINOUT}/RESTART'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 zlevel_number: '${zlevel_number}'
 work_dir: '${DATA}'
@@ -183,8 +183,8 @@ EOF
     err_exit "FATAL ERROR: Forecast restart plots failed."
   fi
 
-  # Copy result files to COMOUT
-  cp -p ${out_fn_base}* ${COMOUTplot}
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
 ###########################################################
@@ -205,7 +205,7 @@ fn_base_prefix: '${fn_base_prefix}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
 OUTPUT_FH: '${OUTPUT_FH}'
-path_data: '${COMIN}'
+path_data: '${COMINOUT}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 RES: ${RES}
 var_list_atm:
@@ -224,8 +224,8 @@ EOF
     err_exit "FATAL ERROR: Forecast FV3 output plots failed."
   fi
 
-  # Copy result files to COMOUT
-  cp -p ${out_fn_base}* ${COMOUTplot}
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
 
