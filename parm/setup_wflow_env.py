@@ -188,14 +188,21 @@ def setup_wflow_env(machine):
     jedi_path = config_parm.get("JEDI_PATH")
     if jedi_path is None:
         jedi_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+
     jedi_py_ver = config_parm.get("JEDI_PY_VER")
     jedi_iodaconv_path = os.path.join(jedi_path, "lib", jedi_py_ver)
+
     custom_jedi_config_path = config_parm.get("CUSTOM_JEDI_CONFIG_PATH")
     if custom_jedi_config_path is None:
         custom_jedi_config_path = os.path.join(fix_dir, "DATA_jedi", "custom_yaml")
+
     warmstart_dir = config_parm.get("WARMSTART_DIR")
     if warmstart_dir is None:
         warmstart_dir = os.path.join(fix_dir, "DATA_restart")
+
+    obsdir = config_parm.get("OBSDIR")
+    if obsdir is None:
+        obsdir = os.path.join(fix_dir, "DATA_obs")
 
     # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
     ptmp = config_parm.get("PTMP")
@@ -219,6 +226,7 @@ def setup_wflow_env(machine):
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
+        'OBSDIR': obsdir,
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
@@ -352,7 +360,7 @@ def set_default_parm():
         "NPROCS_ANALYSIS": 6,
         "NPROCS_FCST_IC": 36,
         "NPZ": 127,
-        "OBSDIR": "",
+        "OBSDIR": None,
         "OBS_GHCN_SNOW": "NO",
         "OBS_IMS_SNOW": "NO",
         "OBS_SFCSNO": "NO",

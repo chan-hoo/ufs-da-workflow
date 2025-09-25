@@ -3,6 +3,16 @@
 set -xue
 
 ulimit -s unlimited; ulimit -a;
+#
+#-----------------------------------------------------------------------
+# This part replaces the role of J-job script in the NOAA NCO standards
+#-----------------------------------------------------------------------
+#
+source ${HOMEufsda}/parm/jjob_env_setup.sh
+#
+#-----------------------------------------------------------------------
+#-----------------------------------------------------------------------
+#
 
 # Set other dates
 PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -440,4 +450,18 @@ fi
 if [ "${DO_FREE_FORECAST}" = "first" ] && [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
   touch "${exp_case_path}/task_analysis_done_${PDY}${cyc}.txt"
 fi
+
+
+#
+#-----------------------------------------------------------------------
+# J-job script ending part
+#-----------------------------------------------------------------------
+#
+if [ -e "$pgmout" ]; then
+  cat $pgmout
+fi
+if [ "${KEEPDATA}" = "NO" ]; then
+  rm -rf ${DATA}
+fi
+date
 

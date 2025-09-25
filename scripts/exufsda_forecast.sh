@@ -548,6 +548,7 @@ do
   ln -nsf "${COMOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
 done
 
+
 #
 #-----------------------------------------------------------------------
 # J-job script ending part

@@ -3,6 +3,16 @@
 set -xue
 
 ulimit -s unlimited; ulimit -a;
+#
+#-----------------------------------------------------------------------
+# This part replaces the role of J-job script in the NOAA NCO standards
+#-----------------------------------------------------------------------
+#
+source ${HOMEufsda}/parm/jjob_env_setup.sh
+#
+#-----------------------------------------------------------------------
+#-----------------------------------------------------------------------
+#
 
 # Set other dates
 PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -22,9 +32,6 @@ HP=${PTIME:8:2}
 #####################################################################
 #
 if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-
-  OBSDIR="${OBSDIR:-${FIXlandda}/DA_obs}"
-
   obs_out_fn_ghcn=""
   obs_out_fn_ims=""
   obs_out_fn_smap=""
@@ -404,5 +411,19 @@ if [ "${APP}" = "LND" ]; then
     done
     ln -nsf ${DCOMINera5}/${datm_in_mesh_fn} ${DATA_DATM}
   fi
-
 fi
+
+
+#
+#-----------------------------------------------------------------------
+# J-job script ending part
+#-----------------------------------------------------------------------
+#
+if [ -e "$pgmout" ]; then
+  cat $pgmout
+fi
+if [ "${KEEPDATA}" = "NO" ]; then
+  rm -rf ${DATA}
+fi
+date
+
