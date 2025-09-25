@@ -197,6 +197,11 @@ def setup_wflow_env(machine):
     if warmstart_dir is None:
         warmstart_dir = os.path.join(fix_dir, "DATA_restart")
 
+    # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
+    ptmp = config_parm.get("PTMP")
+    if ptmp is None:
+        ptmp = os.path.join(exp_basedir, "ptmp")
+
     # Update config yaml file
     config_parm.update({
         'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
@@ -215,6 +220,7 @@ def setup_wflow_env(machine):
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
         'partition_default': partition_default,
+        'PTMP': ptmp,
         'queue_default': queue_default,
         'WARMSTART_DIR': warmstart_dir,
         })
@@ -283,9 +289,6 @@ def setup_wflow_env(machine):
     envir = config_parm.get("envir")
     model_ver = config_parm.get("model_ver")
     net = config_parm.get("NET")
-    run = config_parm.get("RUN")
-    # This path (ptmp) need to be changed only for NOAA NCO EE2 compliance (ptmp=OPSROOT)
-    ptmp = os.path.join(exp_basedir, "ptmp")
     log_dir_src = os.path.join(ptmp, envir, "com/output/logs")
     log_dir_dst = os.path.join(exp_case_path, "log_dir")
     tmp_dir_src = os.path.join(ptmp, envir, "tmp")
@@ -357,6 +360,7 @@ def set_default_parm():
         "OBS_SMOPS": "NO",
         "OCN_NPROCS": 20,
         "OUTPUT_FH": "3 -1",
+        "PTMP": None,
         "PY_LOG_LEVEL": "INFO",
         "RES": 96,
         "RESTART_INTERVAL": "12 -1",
