@@ -96,6 +96,34 @@ ExternalProject_Add(ufs_model.fd
   STEP_TARGETS build
   )
 
+# APPLY_INCR for JEDI
+list(APPEND APPLY_INCR_ARGS
+  "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+)
+list(APPEND TARGET LIST apply_incr.fd)
+ExternalProject_Add(apply_incr.fd
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/apply_incr.fd
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/apply_incr.fd
+  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  CMAKE_ARGS ${APPLY_INCR_ARGS}
+  BUILD_ALWAYS TRUE
+  STEP_TARGETS build
+  )
+
+# calcfIMS for IMS snow data
+list(APPEND calcfIMS_ARGS
+  "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+)
+list(APPEND TARGET LIST calcfIMS.fd)
+ExternalProject_Add(calcfIMS.fd
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/calcfIMS.fd
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/calcfIMS.fd
+  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  CMAKE_ARGS ${calcfIMS_ARGS}
+  BUILD_ALWAYS TRUE
+  STEP_TARGETS build
+  )
+
 # C-Test
 #add_subdirectory(test)
 

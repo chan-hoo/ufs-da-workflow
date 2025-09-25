@@ -23,3 +23,7 @@
 	path = sorc/apply_incr.fd
 	url = https://github.com/NOAA-PSL/land-apply_jedi_incr.git
 	ignore = dirty
+[submodule "sorc/calcfIMS.fd"]
+	path = sorc/calcfIMS.fd
+	url = https://github.com/NOAA-EPIC/land-SCF_proc.git
+	ignore = dirty

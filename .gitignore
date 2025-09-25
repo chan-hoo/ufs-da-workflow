@@ -1,6 +1,6 @@
 exec/
 lib/
-lib64
+lib64/
 sorc/build/
 sorc/lib/
 sorc/lib64
