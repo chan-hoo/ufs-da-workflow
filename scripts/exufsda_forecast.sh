@@ -67,10 +67,6 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   nggps_ic=".true."
   nstf_name="2,0,0,0,0"
   warm_start=".false."
-#############################################
-# CHECK: in other cases, nstf_name: 2,1,0,0,0 for coldstart, but in regression test 
-#        'cpld_control_gfsv17_intel' of ufs-weather-model, it is set to 2,0,0,0,0
-#############################################
 
   # ufs.configure
   allcomp_restart_n="3"

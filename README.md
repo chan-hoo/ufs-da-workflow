@@ -40,7 +40,7 @@ where `[machine]` is `gaeac6`, `hera`, `hercules`, `orion`, or `ursa`.
 5. Copy the sample configuration and modify it as needed:
 ```
 cd parm
-cp config_samples/config.S2SWA.free-fcst.coldstart.yaml config.yaml
+cp config_samples/config.S2SWA.free-fcst.restart.yaml config.yaml
 vim config.yaml
 ```
 Change the parameter values such as `ACCOUNT` as needed.
