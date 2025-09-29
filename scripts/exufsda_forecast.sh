@@ -551,7 +551,7 @@ done
 # CICE
 cp -rp "${DATA}/history" ${COMINOUT}
 list_out_fh_cice=$(seq ${OUTPUT_FH_CICE} ${OUTPUT_FH_CICE} ${FCST_HRS})
-for ihr in ${list_out_fh_mom6}
+for ihr in ${list_out_fh_cice}
 do
   idate=$($NDATE ${ihr} $PDY$cyc)
   iyyyy=${idate:0:4}
