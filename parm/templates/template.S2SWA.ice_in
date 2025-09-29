@@ -30,7 +30,7 @@
     dumpfreq_n          = 1000
     dump_last           = .false.
     bfbflag             = 'off'
-    diagfreq            = {{ ice_diagfreq }}
+    diagfreq            = 120
     diag_type           = 'file'
     diag_file           = 'ice_diag.d'
     print_global        = .true.
@@ -48,7 +48,7 @@
     history_deflate     = 0
     history_precision   = 4
     histfreq            = 'm','d','h','1','x'
-    histfreq_n          = {{ ice_histfreq_n }}
+    histfreq_n          = 0, 0, {{ OUTPUT_FH_CICE }}, 0, 1
     hist_avg            = .true.
     hist_suffix         = 'x','x','x','x','x'
     history_dir         = './history/'

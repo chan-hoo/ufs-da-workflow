@@ -111,7 +111,6 @@ runSeq::
 ::
 
 # CMEPS variables
-
 DRIVER_attributes::
 ::
 MED_attributes::
@@ -138,7 +137,7 @@ ALLCOMP_attributes::
       start_type = {{ allcomp_start_type }}
       restart_dir = ./RESTART/
       case_name = ufs.cpld
-      restart_n = {{ allcomp_restart_n }}
+      restart_n = {{ ALLCOMP_RESTART_N }}
       restart_option = nhours
       restart_ymd = -999
       write_restart_at_endofrun = .false.
@@ -146,6 +145,7 @@ ALLCOMP_attributes::
       stop_n = {{ allcomp_stop_n }}
       stop_option = nhours
       stop_ymd = -999
+      read_restart = {{ allcomp_read_restart }}
       orb_eccen = 1.e36
       orb_iyear = 2000
       orb_iyear_align = 2000

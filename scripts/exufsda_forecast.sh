@@ -69,14 +69,12 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   warm_start=".false."
 
   # ufs.configure
-  allcomp_restart_n="3"
+  allcomp_read_restart=".false."
   allcomp_start_type="startup"
 
   # ice_in
   ice_runtype="initial"
   ice_use_restart_time=".false."
-  ice_diagfreq="120"
-  ice_histfreq_n="0, 0, 6, 120, 1"
 else
   # input.nml
   external_ic=".false."
@@ -90,14 +88,12 @@ else
   warm_start=".true."
 
   # ufs.configure
-  allcomp_restart_n="3"
+  allcomp_read_restart=".true."
   allcomp_start_type="continue"
 
   # ice_in
   ice_runtype="continue"
   ice_use_restart_time=".true."
-  ice_diagfreq="60"
-  ice_histfreq_n="0, 0, 6, 0, 0"
 fi
 
 #####################################
@@ -151,7 +147,8 @@ nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 settings="\
   'DT_ATMOS': ${DT_ATMOS}
   'DT_RUNSEQ': ${DT_RUNSEQ}
-  'allcomp_restart_n': ${allcomp_restart_n}
+  'ALLCOMP_RESTART_N': ${ALLCOMP_RESTART_N}
+  'allcomp_read_restart': ${allcomp_read_restart}
   'allcomp_start_type': ${allcomp_start_type}
   'allcomp_stop_n': ${FCST_HRS}
   'atm_model': ${atm_model}
@@ -224,8 +221,7 @@ settings="\
   'ICE_DOMAIN_NPROCS': ${ICE_DOMAIN_NPROCS}
   'ice_runtype': ${ice_runtype}
   'ice_use_restart_time': ${ice_use_restart_time}
-  'ice_diagfreq': ${ice_diagfreq}
-  'ice_histfreq_n': '${ice_histfreq_n}'
+  'OUTPUT_FH_CICE': ${OUTPUT_FH_CICE}
 " # End of settings variable
 
 fp_template="${PARMufsda}/templates/template.${APP}.ice_in"

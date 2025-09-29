@@ -80,46 +80,6 @@ def setup_wflow_env(machine):
         if key in config_parm:
             config_parm[key] = value
 
-    # Check lowercase/uppercase
-    do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
-    do_free_forecast_options = ["first", "all", "none"]
-    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
-    if isinstance(do_free_forecast_orig, bool):
-        logging.error(err_msg)
-        sys.exit(1)
-    elif not do_free_forecast_orig.islower():
-        do_free_forecast = do_free_forecast_orig.lower()
-        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
-    else:
-        do_free_forecast = do_free_forecast_orig
-
-    if do_free_forecast not in do_free_forecast_options:
-        logging.error(err_msg)
-        sys.exit(1)
-
-    # Check for unsupported conditions
-    obs_ghcn_snow = config_parm.get("OBS_GHCN_SNOW")
-    obs_ims_snow = config_parm.get("OBS_IMS_SNOW")
-    obs_sfcsno = config_parm.get("OBS_SFCSNO")
-    obs_smap = config_parm.get("OBS_SMAP")
-    obs_smops = config_parm.get("OBS_SMOPS")
-    if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
-        logging.error("FATAL ERROR: Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
-        sys.exit(1)
-    elif obs_smap == "YES" and obs_smops == "YES":
-        logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
-        sys.exit(1)
-
-    # Set the types of JEDI analyses by the types of observation
-    if obs_ghcn_snow == "YES" or obs_ims_snow == "YES" or obs_sfcsno == "YES":
-        do_jedi_snow = "YES"
-    else:
-        do_jedi_snow = "NO"
-    if obs_smap == "YES" or obs_smops == "YES":
-        do_jedi_soil_moisture = "YES"
-    else:
-        do_jedi_soil_moisture = "NO"
-
     # Create an experimental case directory
     if config_parm.get("EXP_CASE_NAME") is None:
         exp_case_name = f'''{config_parm.get("APP")}_{config_parm.get("RUN")}'''
@@ -184,6 +144,46 @@ def setup_wflow_env(machine):
     else:
         memory_flag = True
 
+    # Check lowercase/uppercase
+    do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
+    do_free_forecast_options = ["first", "all", "none"]
+    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
+    if isinstance(do_free_forecast_orig, bool):
+        logging.error(err_msg)
+        sys.exit(1)
+    elif not do_free_forecast_orig.islower():
+        do_free_forecast = do_free_forecast_orig.lower()
+        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
+    else:
+        do_free_forecast = do_free_forecast_orig
+
+    if do_free_forecast not in do_free_forecast_options:
+        logging.error(err_msg)
+        sys.exit(1)
+
+    # Check for unsupported conditions
+    obs_ghcn_snow = config_parm.get("OBS_GHCN_SNOW")
+    obs_ims_snow = config_parm.get("OBS_IMS_SNOW")
+    obs_sfcsno = config_parm.get("OBS_SFCSNO")
+    obs_smap = config_parm.get("OBS_SMAP")
+    obs_smops = config_parm.get("OBS_SMOPS")
+    if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
+        logging.error("FATAL ERROR: Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
+        sys.exit(1)
+    elif obs_smap == "YES" and obs_smops == "YES":
+        logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
+        sys.exit(1)
+
+    # Set the types of JEDI analyses by the types of observation
+    if obs_ghcn_snow == "YES" or obs_ims_snow == "YES" or obs_sfcsno == "YES":
+        do_jedi_snow = "YES"
+    else:
+        do_jedi_snow = "NO"
+    if obs_smap == "YES" or obs_smops == "YES":
+        do_jedi_soil_moisture = "YES"
+    else:
+        do_jedi_soil_moisture = "NO"
+
     # Set machine-dependent paths if not specified in config.yaml
     jedi_path = config_parm.get("JEDI_PATH")
     if jedi_path is None:
@@ -205,8 +205,32 @@ def setup_wflow_env(machine):
     if ptmp is None:
         ptmp = os.path.join(exp_basedir, "ptmp")
 
+    # Set undefined parameter values
+    ## OUTPUT_FH_CICE: output frequency of CICE
+    output_fh = config_parm.get("OUTPUT_FH")
+    output_fh_list = list(map(int, output_fh.split()))
+    output_fh_cice = config_parm.get("OUTPUT_FH_CICE")
+    if output_fh_cice is None:
+        if output_fh_list[1] == -1:
+            output_fh_cice = output_fh_list[0]
+        else:
+            output_fh_cice = 6
+            logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cicie}" by default.''')
+
+    ## ALLCOMP_RESTART_N: output frequency of mediator (CMEPS) restart files
+    restart_interval = config_parm.get("RESTART_INTERVAL")
+    restart_interval_list = list(map(int, restart_interval.split()))
+    allcomp_restart_n = config_parm.get("ALLCOMP_RESTART_N")
+    if allcomp_restart_n is None:
+        if restart_interval_list[1] == -1:
+            allcomp_restart_n = restart_interval_list[0]
+        else:
+            allcomp_restart_n = 12
+            logging.warning(f''' ALLCOMP_RESTART_N is not specified in config.yaml and RESTART_INTERVAL[1] != -1; ALLCOMP_RESTART_N is set to "{allcomp_restart_n}" by default.''')
+
     # Update config yaml file
     config_parm.update({
+        'ALLCOMP_RESTART_N': allcomp_restart_n,
         'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
         'date_second_cycle': date_second_cycle,
         'DO_FREE_FORECAST': do_free_forecast,
@@ -222,6 +246,7 @@ def setup_wflow_env(machine):
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
+        'OUTPUT_FH_CICE': output_fh_cice,
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
@@ -315,6 +340,7 @@ def set_default_parm():
 
     default_config = {
         "ACCOUNT": "epic",
+        "ALLCOMP_RESTART_N": None,
         "APP": "S2SWA",
         "ATM_IO_LAYOUT_X": 1,
         "ATM_IO_LAYOUT_Y": 1,
@@ -362,6 +388,7 @@ def set_default_parm():
         "OBS_SMOPS": "NO",
         "OCN_NPROCS": 20,
         "OUTPUT_FH": "3 -1",
+        "OUTPUT_FH_CICE": None,
         "PTMP": None,
         "PY_LOG_LEVEL": "INFO",
         "RES": 96,

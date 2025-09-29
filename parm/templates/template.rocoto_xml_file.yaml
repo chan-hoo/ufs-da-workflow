@@ -18,6 +18,7 @@ workflow:
 {%- endif %}
   entities:
     ACCOUNT: "{{ ACCOUNT }}"
+    ALLCOMP_RESTART_N: "{{ ALLCOMP_RESTART_N }}"
     APP: "{{ APP }}"
     ATM_IO_LAYOUT_X: "{{ ATM_IO_LAYOUT_X }}"
     ATM_IO_LAYOUT_Y: "{{ ATM_IO_LAYOUT_Y }}"
@@ -74,6 +75,7 @@ workflow:
     OBS_SMOPS: "{{ OBS_SMOPS }}"
     OCN_NPROCS: "{{ OCN_NPROCS }}"
     OUTPUT_FH: "{{ OUTPUT_FH }}"
+    OUTPUT_FH_CICE: "{{ OUTPUT_FH_CICE }}"
     partition_default: "{{ partition_default }}"
     PTMP: "{{ PTMP }}"
     PY_LOG_LEVEL: "{{ PY_LOG_LEVEL }}"
@@ -240,6 +242,7 @@ workflow:
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"
+        ALLCOMP_RESTART_N: "&ALLCOMP_RESTART_N;"
         APP: "&APP;"
         ATM_IO_LAYOUT_X: "&ATM_IO_LAYOUT_X;"
         ATM_IO_LAYOUT_Y: "&ATM_IO_LAYOUT_Y;"
@@ -274,6 +277,7 @@ workflow:
         nprocs_per_node: "&nprocs_per_node;"
         OCN_NPROCS: "&OCN_NPROCS;"
         OUTPUT_FH: "&OUTPUT_FH;"
+        OUTPUT_FH_CICE: "&OUTPUT_FH_CICE;"
         PDY: "&PDY;"
         PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
         RES: "&RES;"
