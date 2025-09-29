@@ -308,7 +308,7 @@ def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
         cs_max=150.0
         cbar_extend='both'
     else:
-        sys.exit('ERROR: wrong colormap-range flag !!!')
+        sys.exit('FATAL ERROR: wrong colormap-range flag !!!')
 
     logging.info(f''' cs_max= {cs_max}''')
     logging.info(f''' cs_min= {cs_min}''')

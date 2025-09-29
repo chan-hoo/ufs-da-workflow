@@ -199,6 +199,7 @@ settings="\
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh': !!str ${cyc}
+  'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
 " # End of settings variable
 
@@ -231,7 +232,13 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 #####################
 # set ww3_shel.nml
 #####################
-cp -p ${PARMufsda}/templates/template.${APP}.ww3_shel.nml ww3_shel.nml
+settings="\
+  'OUTPUT_FH_WW3': ${OUTPUT_FH_WW3}
+" # End of settings variable
+
+fp_template="${PARMufsda}/templates/template.${APP}.ww3_shel.nml"
+fn_namelist="ww3_shel.nml"
+${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
 #########################################
 # Soft-link or copy FIX (static) files
@@ -285,6 +292,9 @@ mkdir -p MOM6_OUTPUT
 # CICE histoy directory
 ##########################
 mkdir -p history
+if [ "${COLDSTART}" = "NO" ]; then
+  cp -p "${COMINOUTm1}/history/iceh_${cyc}h.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc" history/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc
+fi
 
 ################################################
 # IC (initial condition) files for cold start
@@ -523,10 +533,36 @@ do
 done
 
 # MOM6
+# Time-averaged => output time line is different
 cp -rp "${DATA}/MOM6_OUTPUT" ${COMINOUT}
+out_start_mom6=$(( OUTPUT_FH_MOM6 / 2 ))
+list_out_fh_mom6=$(seq ${out_start_mom6} ${OUTPUT_FH_MOM6} ${FCST_HRS})
+for ihr in ${list_out_fh_mom6}
+do
+  idate=$($NDATE ${ihr} $PDY$cyc)
+  iyyyy=${idate:0:4}
+  imm=${idate:4:2}
+  idd=${idate:6:2}
+  ihh=${idate:8:2}
+  ihr_3d=$(printf "%03d" "${ihr}")
+  cp -p "${DATA}/MOM6_OUTPUT/ocn_${iyyyy}_${imm}_${idd}_${ihh}.nc" "${COMINOUT}/${NET}.${cycle}.ocn.f${ihr_3d}.c${RES}.nc"
+done
 
 # CICE
 cp -rp "${DATA}/history" ${COMINOUT}
+list_out_fh_cice=$(seq ${OUTPUT_FH_CICE} ${OUTPUT_FH_CICE} ${FCST_HRS})
+for ihr in ${list_out_fh_mom6}
+do
+  idate=$($NDATE ${ihr} $PDY$cyc)
+  iyyyy=${idate:0:4}
+  imm=${idate:4:2}
+  idd=${idate:6:2}
+  ihh=${idate:8:2}
+  ihh_sec=$(( ihr * 3600 ))
+  ihh_sec_5d=$(printf "%05d" "${ihh_sec}")
+  ihr_3d=$(printf "%03d" "${ihr}")
+  cp -p "${DATA}/history/iceh_${cyc}h.${iyyyy}-${imm}-${idd}-${ihh_sec_5d}.nc" "${COMINOUT}/${NET}.${cycle}.ice.f${ihr_3d}.c${RES}.nc"
+done
 
 # WW3
 cp -p *.out_grd.ww3 ${COMINOUT}

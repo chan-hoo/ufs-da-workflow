@@ -152,7 +152,7 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     logging.info(f''' length of lat = {lat_len}''')
     logging.info(f''' lenght of sfld = {sfld_len}''')
     if lon_len != lat_len or lon_len != sfld_len or lat_len != sfld_len:
-        sys.exit('ERROR: array size mismatched !!!')
+        sys.exit('FATAL ERROR: array size mismatched !!!')
 
     # Max and Min of the field
     fmax=np.max(sfld)
@@ -184,7 +184,7 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         else:
             cs_max=300.0
     else:
-        sys.exit('ERROR: wrong colormap-range flag !!!')
+        sys.exit('FATAL ERROR: wrong colormap-range flag !!!')
 
     logging.info(f''' cs_max= {cs_max}''')
     logging.info(f''' cs_min= {cs_min}''')

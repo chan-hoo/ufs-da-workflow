@@ -15,9 +15,9 @@
 
 &output_date_nml
   date%field%outffile  = '1'
-  date%field%stride    = '10800'
+  date%field%stride    = '{{ OUTPUT_FH_WW3 }}'
   date%point%outffile  = '1'
-  date%point%stride    = '10800'
+  date%point%stride    = '{{ OUTPUT_FH_WW3 }}'
 /
 &output_path_nml
   path%grd_out = './'

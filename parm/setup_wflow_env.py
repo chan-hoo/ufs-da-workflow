@@ -215,7 +215,35 @@ def setup_wflow_env(machine):
             output_fh_cice = output_fh_list[0]
         else:
             output_fh_cice = 6
-            logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cicie}" by default.''')
+            logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cice}" by default.''')
+
+    ## OUTPUT_FH_MOM6: output frequency of MOM6
+    output_fh_mom6 = config_parm.get("OUTPUT_FH_MOM6")
+    if output_fh_mom6 is None:
+        if output_fh_list[1] == -1:
+            if output_fh_list[0] % 2 == 0:
+                output_fh_mom6 = output_fh_list[0]
+            else:
+                output_fh_mom6 = 6
+                logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[0] is not an even number; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
+        else:
+            output_fh_mom6 = 6
+            logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
+    else:
+        if output_fh_mom6 % 2 != 0:
+            logging.error(f''' FATAL ERROR: OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" in config.yaml, but it is not an even number.''')
+            sys.exit(1)
+
+    ## OUTPUT_FH_WW3: output frequency of WW3
+    output_fh_ww3 = config_parm.get("OUTPUT_FH_WW3")
+    if output_fh_ww3 is None:
+        if output_fh_list[1] == -1:
+            output_fh_hrs = output_fh_list[0]
+            output_fh_sec = output_fh_hrs*3600
+            output_fh_ww3 = output_fh_sec
+        else:
+            output_fh_ww3 = 6*3600
+            logging.warning(f''' OUTPUT_FH_WW3 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_WW3 is set to "{output_fh_ww3}" by default.''')
 
     ## ALLCOMP_RESTART_N: output frequency of mediator (CMEPS) restart files
     restart_interval = config_parm.get("RESTART_INTERVAL")
@@ -247,6 +275,8 @@ def setup_wflow_env(machine):
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
         'OUTPUT_FH_CICE': output_fh_cice,
+        'OUTPUT_FH_MOM6': output_fh_mom6,
+        'OUTPUT_FH_WW3': output_fh_ww3,
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
@@ -389,6 +419,8 @@ def set_default_parm():
         "OCN_NPROCS": 20,
         "OUTPUT_FH": "3 -1",
         "OUTPUT_FH_CICE": None,
+        "OUTPUT_FH_MOM6": None,
+        "OUTPUT_FH_WW3": None,
         "PTMP": None,
         "PY_LOG_LEVEL": "INFO",
         "RES": 96,
