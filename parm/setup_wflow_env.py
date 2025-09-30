@@ -234,16 +234,14 @@ def setup_wflow_env(machine):
             logging.error(f''' FATAL ERROR: OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" in config.yaml, but it is not an even number.''')
             sys.exit(1)
 
-    ## OUTPUT_FH_WW3: output frequency of WW3
+    ## OUTPUT_FH_WW3: output frequency of WW3 ("in hours"), note that this will be converted to seconds in script
     output_fh_ww3 = config_parm.get("OUTPUT_FH_WW3")
     if output_fh_ww3 is None:
         if output_fh_list[1] == -1:
-            output_fh_hrs = output_fh_list[0]
-            output_fh_sec = output_fh_hrs*3600
-            output_fh_ww3 = output_fh_sec
+            output_fh_ww3 = output_fh_list[0]
         else:
-            output_fh_ww3 = 6*3600
-            logging.warning(f''' OUTPUT_FH_WW3 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_WW3 is set to "{output_fh_ww3}" by default.''')
+            output_fh_ww3 = 6
+            logging.warning(f''' OUTPUT_FH_WW3 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_WW3 is set to "{output_fh_ww3} hours" by default.''')
 
     ## ALLCOMP_RESTART_N: output frequency of mediator (CMEPS) restart files
     restart_interval = config_parm.get("RESTART_INTERVAL")

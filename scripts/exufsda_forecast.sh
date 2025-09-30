@@ -232,8 +232,9 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 #####################
 # set ww3_shel.nml
 #####################
+output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
 settings="\
-  'OUTPUT_FH_WW3': ${OUTPUT_FH_WW3}
+  'output_fh_ww3_sec': ${output_fh_ww3_sec}
 " # End of settings variable
 
 fp_template="${PARMufsda}/templates/template.${APP}.ww3_shel.nml"
@@ -558,7 +559,7 @@ do
   imm=${idate:4:2}
   idd=${idate:6:2}
   ihh=${idate:8:2}
-  ihh_sec=$(( ihr * 3600 ))
+  ihh_sec=$(( ihh * 3600 ))
   ihh_sec_5d=$(printf "%05d" "${ihh_sec}")
   ihr_3d=$(printf "%03d" "${ihr}")
   cp -p "${DATA}/history/iceh_${cyc}h.${iyyyy}-${imm}-${idd}-${ihh_sec_5d}.nc" "${COMINOUT}/${NET}.${cycle}.ice.f${ihr_3d}.c${RES}.nc"
@@ -567,6 +568,15 @@ done
 # WW3
 cp -p *.out_grd.ww3 ${COMINOUT}
 cp -p *.out_pnt.ww3.nc ${COMINOUT}
+list_out_fh_ww3=$(seq ${OUTPUT_FH_WW3} ${OUTPUT_FH_WW3} ${FCST_HRS})
+for ihr in ${list_out_fh_ww3}
+do
+  idate=$($NDATE ${ihr} $PDY$cyc)
+  ipdy=${idate:0:8}
+  ihh=${idate:8:2}
+  ihr_3d=$(printf "%03d" "${ihr}")
+  cp -p "${DATA}/${ipdy}.${ihh}0000.out_pnt.ww3.nc" "${COMINOUT}/${NET}.${cycle}.wav.f${ihr_3d}.c${RES}.nc"
+done
 
 # cpld
 cp -p ufs.cpld.ww3.r.* ${COMINOUT}
