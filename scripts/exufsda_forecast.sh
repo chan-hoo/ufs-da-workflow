@@ -293,9 +293,6 @@ mkdir -p MOM6_OUTPUT
 # CICE histoy directory
 ##########################
 mkdir -p history
-if [ "${COLDSTART}" = "NO" ]; then
-  cp -p "${COMINOUTm1}/history/iceh_${cyc}h.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc" history/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc
-fi
 
 ################################################
 # IC (initial condition) files for cold start
@@ -308,7 +305,6 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   fi
   # CICE
   ln -nsf "${data_dir}/cice_model.res.nc" .
-  cp -p "${data_dir}/iceh_ic.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc" history/.
 fi
 
 ################################
@@ -345,7 +341,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
       err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
     fi
   done
-  # Restart from COM
+  # Restart from COMINOUT
   rst_fns=( "ufs.cpld.ww3.r" )
   for ifn in "${rst_fns[@]}" ; do
     r_fn="${ifn}.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
