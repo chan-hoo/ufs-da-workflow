@@ -52,6 +52,7 @@ def main():
     out_title_base = yaml_data['out_title_base']
     out_fn_base = yaml_data['out_fn_base']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
+    snowdepth_vn = yaml_data['snowdepth_vn']
     zlvl = yaml_data['zlevel_number']
     zlvlm1 = int(zlvl)-1
 
@@ -72,9 +73,9 @@ def main():
     cartopy.config['data_dir']=os.path.join(fix_dir,"NaturalEarth")
 
     if jedi_type == "snow":
-        sfc_var_nm="snwdph"
+        sfc_var_nm = snowdepth_vn
     elif jedi_type == "soil_moisture":
-        sfc_var_nm="smc"
+        sfc_var_nm = "smc"
 
     # get lon, lat from orography
     slmsk=get_geo(orog_path,orog_fn_base)

@@ -128,6 +128,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
     'land_obsdataout_path': diags
     'land_obsdataout_prefix': "diag."
     'land_obsdataout_suffix': "_${PDY}${cyc}.nc"
+    'land_orog_files_path': "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
     'snowdepth_vn': ${snowdepth_vn}
     'OBS_GHCN_SNOW': '${OBS_GHCN_SNOW}'
     'OBS_IMS_SNOW': '${OBS_IMS_SNOW}'

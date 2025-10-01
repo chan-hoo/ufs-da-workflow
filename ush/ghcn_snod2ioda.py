@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 from dateutil.parser import parse
 
-jedi_iodaconv_path = os.environ.get('jedi_iodaconv_path')
+jedi_iodaconv_path = os.environ.get('JEDI_IODACONV_PATH')
 print(f'''jedi_iodaconv_path: {jedi_iodaconv_path}''')
 sys.path.append(jedi_iodaconv_path)
 print(f'''sys.path: {sys.path}''')

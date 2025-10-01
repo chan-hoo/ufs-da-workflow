@@ -141,8 +141,8 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     sfld=mdat.groups[svar].variables[gvar][:]
 
     obs_type_upper=obs_type.upper()
-    out_title_fld=f'''Land-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
-    out_fn=f'''landda_obs_{obs_type}_{PDY}_{pvar}'''
+    out_title_fld=f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
+    out_fn=f'''ufsda_obs_{obs_type}_{PDY}_{pvar}'''
 
     # Check array size
     lon_len = len(lon)

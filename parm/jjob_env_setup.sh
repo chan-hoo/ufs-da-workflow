@@ -68,7 +68,7 @@ setpdy.sh
 export COMINOUT="${COMINOUT:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDY}}"
 export COMINOUTm1="${COMINOUTm1:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYm1}}"
 export COMINOUThofx="${COMINOUThofx:-${COMINOUT}/hofx}"
-export COMINOUTobs="${COMINOUThofx:-${COMINOUT}/obs}"
+export COMINOUTobs="${COMINOUTobs:-${COMINOUT}/obs}"
 export COMINOUTplot="${COMINOUTplot:-${COMINOUT}/plot}"
 export COMINOUTrestart="${COMINOUTrestart:-${COMINOUT}/RESTART}"
 mkdir -p ${COMINOUT}

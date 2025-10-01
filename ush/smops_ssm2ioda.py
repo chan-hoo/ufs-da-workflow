@@ -11,7 +11,7 @@ import re
 from datetime import datetime, timedelta
 import sys
 
-jedi_iodaconv_path = os.environ.get('jedi_iodaconv_path')
+jedi_iodaconv_path = os.environ.get('JEDI_IODACONV_PATH')
 print(f'''jedi_iodaconv_path: {jedi_iodaconv_path}''')
 sys.path.append(jedi_iodaconv_path)
 print(f'''sys.path: {sys.path}''')

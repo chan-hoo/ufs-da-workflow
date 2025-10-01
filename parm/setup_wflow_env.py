@@ -196,12 +196,14 @@ def setup_wflow_env(machine):
             logging.info(f'''list_jedi_analyses: {list_jedi_analyses}''')
 
     # Set machine-dependent paths if not specified in config.yaml
-    jedi_path = config_parm.get("JEDI_PATH")
-    if jedi_path is None:
-        jedi_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+    jedi_bin_path = config_parm.get("JEDI_BIN_PATH")
+    if jedi_bin_path is None:
+        jedi_bin_path = os.path.join(exp_basedir, "jedi", "build", "bin")
 
+    jedi_iodaconv_path = config_parm.get("JEDI_IODACONV_PATH")
     jedi_py_ver = config_parm.get("JEDI_PY_VER")
-    jedi_iodaconv_path = os.path.join(jedi_path, "../lib", jedi_py_ver)
+    if jedi_iodaconv_path is None:
+        jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
 
     custom_jedi_config_path = config_parm.get("CUSTOM_JEDI_CONFIG_PATH")
     if custom_jedi_config_path is None:
@@ -272,8 +274,8 @@ def setup_wflow_env(machine):
         'date_second_cycle': date_second_cycle,
         'DO_FREE_FORECAST': do_free_forecast,
         'exp_case_path': exp_case_path,
-        'jedi_iodaconv_path': jedi_iodaconv_path,
-        'JEDI_PATH': jedi_path,
+        'JEDI_BIN_PATH': jedi_bin_path,
+        'JEDI_IODACONV_PATH': jedi_iodaconv_path,
         'memory_flag': memory_flag,
         'native_default': native_default,
         'nnodes_forecast': nnodes_forecast,
@@ -410,8 +412,9 @@ def set_default_parm():
         "IC_FROM_FIX_DIR": "YES",
         "ICE_DOMAIN_NPROCS": 10,
         "JEDI_ALGORITHM": "letkf-oi",
+        "JEDI_BIN_PATH": None,
+        "JEDI_IODACONV_PATH": None,
         "JEDI_PY_VER": "python3.11",
-        "JEDI_PATH": None,
         "KEEPDATA": "YES",
         "MACHINE": "/machine/platform/name",
         "model_ver": "v1.0.0",
