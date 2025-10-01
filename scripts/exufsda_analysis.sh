@@ -112,7 +112,7 @@ fi
 echo "${types_jedi_analyses[@]}"
 
 ################################################
-# RUN JEDI Analyses
+# Run JEDI Analyses
 ################################################
 for jedi_type in "${types_jedi_analyses[@]}"; do
 

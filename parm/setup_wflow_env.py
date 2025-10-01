@@ -174,15 +174,26 @@ def setup_wflow_env(machine):
         logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
         sys.exit(1)
 
-    # Set the types of JEDI analyses by the types of observation
+    # Set the types of JEDI analyses from selection of observations
+    list_jedi_analyses = ""
     if obs_ghcn_snow == "YES" or obs_ims_snow == "YES" or obs_sfcsno == "YES":
-        do_jedi_snow = "YES"
-    else:
-        do_jedi_snow = "NO"
+        if not list_jedi_analyses:
+            list_jedi_analyses = "snow"
+        else:
+            list_jedi_analyses = f"{list_jedi_analyses} snow"
+    
     if obs_smap == "YES" or obs_smops == "YES":
-        do_jedi_soil_moisture = "YES"
-    else:
-        do_jedi_soil_moisture = "NO"
+        if not list_jedi_analyses:
+            list_jedi_analyses = "soil_moisture"
+        else:
+            list_jedi_analyses = f"{list_jedi_analyses} soil_moisture"
+
+    if do_free_forecast == "none":
+        if not list_jedi_analyses:
+            logging.error(f'''FATAL ERROR: parameter "list_jedi_analyses" is empty. Please check the flags for observation.''')
+            sys.exit(1)
+        else:
+            logging.info(f'''list_jedi_analyses: {list_jedi_analyses}''')
 
     # Set machine-dependent paths if not specified in config.yaml
     jedi_path = config_parm.get("JEDI_PATH")
@@ -190,7 +201,7 @@ def setup_wflow_env(machine):
         jedi_path = os.path.join(exp_basedir, "jedi", "build", "bin")
 
     jedi_py_ver = config_parm.get("JEDI_PY_VER")
-    jedi_iodaconv_path = os.path.join(jedi_path, "lib", jedi_py_ver)
+    jedi_iodaconv_path = os.path.join(jedi_path, "../lib", jedi_py_ver)
 
     custom_jedi_config_path = config_parm.get("CUSTOM_JEDI_CONFIG_PATH")
     if custom_jedi_config_path is None:
@@ -260,8 +271,6 @@ def setup_wflow_env(machine):
         'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
         'date_second_cycle': date_second_cycle,
         'DO_FREE_FORECAST': do_free_forecast,
-        'do_jedi_snow': do_jedi_snow,
-        'do_jedi_soil_moisture': do_jedi_soil_moisture,
         'exp_case_path': exp_case_path,
         'jedi_iodaconv_path': jedi_iodaconv_path,
         'JEDI_PATH': jedi_path,
@@ -278,6 +287,7 @@ def setup_wflow_env(machine):
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
+        'list_jedi_analyses': list_jedi_analyses,
         'WARMSTART_DIR': warmstart_dir,
         })
    
@@ -395,7 +405,7 @@ def set_default_parm():
         "envir": "test",
         "FCST_HRS": 24,
         "FHROT": 0,
-        "FRAC_GRID": "NO",
+        "FRAC_GRID": "YES",
         "IC_DATA_MODEL": "gfs",
         "IC_FROM_FIX_DIR": "YES",
         "ICE_DOMAIN_NPROCS": 10,

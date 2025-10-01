@@ -39,8 +39,6 @@ workflow:
     DCOMINsmap: "{{ DCOMINsmap }}"
     DCOMINsmops: "{{ DCOMINsmops }}"
     DO_FREE_FORECAST: "{{ DO_FREE_FORECAST }}"
-    do_jedi_snow: "{{ do_jedi_snow }}"
-    do_jedi_soil_moisture: "{{ do_jedi_soil_moisture }}"
     DT_ATMOS: "{{ DT_ATMOS }}"
     DT_RUNSEQ: "{{ DT_RUNSEQ }}"
     envir: "{{ envir }}"
@@ -56,6 +54,7 @@ workflow:
     jedi_iodaconv_path: "{{ jedi_iodaconv_path }}"
     JEDI_PATH: "{{ JEDI_PATH }}"
     KEEPDATA: "{{ KEEPDATA }}"
+    list_jedi_analyses: "{{ list_jedi_analyses }}"
     MACHINE: "{{ MACHINE }}"
     model_ver: "{{ model_ver }}"
     native_default: "{{ native_default }}"
@@ -106,7 +105,7 @@ workflow:
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if COLDSTART == "NO" and date_second_cycle is not none and DO_FREE_FORECAST == "none" %}
+{%- if date_second_cycle is not none and DO_FREE_FORECAST == "none" %}
     task_prep_data:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -121,6 +120,7 @@ workflow:
         COLDSTART: "&COLDSTART;"
         COMINgdas: "&COMINgdas;"
         COMROOT: "&COMROOT;"
+        CUSTOM_JEDI_CONFIG_FLAG: "&CUSTOM_JEDI_CONFIG_FLAG;"
         cyc: "&cyc;"
         DATAROOT: "&DATAROOT;"
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
@@ -131,11 +131,13 @@ workflow:
         DCOMINsmops: "&DCOMINsmops;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
+        JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         jedi_iodaconv_path: "&jedi_iodaconv_path;"
         KEEPDATA: "&KEEPDATA;"
+        list_jedi_analyses: "&list_jedi_analyses;"
         MACHINE: "&MACHINE;"
         model_ver: "&model_ver;"
-        OBSDIR: "&OBSDIR;"
+        NPZ: "&NPZ;"
         OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"
         OBS_IMS_SNOW: "&OBS_IMS_SNOW;"
         OBS_SFCSNO: "&OBS_SFCSNO;"
@@ -144,6 +146,7 @@ workflow:
         PDY: "&PDY;"
         PY_LOG_LEVEL: "&PY_LOG_LEVEL;"
         RES: "&RES;"
+        res_p1: "&res_p1;"
         SCHED: "&SCHED;"
         SMAP_RAW_WINDOW_SPAN_HALF: "&SMAP_RAW_WINDOW_SPAN_HALF;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
@@ -181,14 +184,13 @@ workflow:
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
-        do_jedi_snow: "&do_jedi_snow;"
-        do_jedi_soil_moisture: "&do_jedi_soil_moisture;"
         exp_case_path: "&exp_case_path;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_PATH: "&JEDI_PATH;"
         KEEPDATA: "&KEEPDATA;"
+        list_jedi_analyses: "&list_jedi_analyses;"
         LOGDIR: "&LOGDIR;"
         MACHINE: "&MACHINE;"
         model_ver: "&model_ver;"

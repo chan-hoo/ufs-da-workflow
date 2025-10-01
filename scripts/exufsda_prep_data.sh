@@ -14,22 +14,150 @@ source ${HOMEufsda}/parm/jjob_env_setup.sh
 #-----------------------------------------------------------------------
 #
 
-# Set other dates
-PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
-
+# Set date and time
 YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
-YYYP=${PTIME:0:4}
-MP=${PTIME:4:2}
-DP=${PTIME:6:2}
-HP=${PTIME:8:2}
 
 PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+YYYYp=${PTIME:0:4}
+MMp=${PTIME:4:2}
+DDp=${PTIME:6:2}
+HHp=${PTIME:8:2}
 PDYcm1=${PTIME:0:8}
 COMINOUTcm1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}"
 
+#
+#####################################################################
+# JCB: JEDI configuration
+#####################################################################
+#
+
+if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
+  cycle_freq_hr_half=$(( DATE_CYCLE_FREQ_HR / 2 ))
+  date_hf=$($NDATE -${cycle_freq_hr_half} $PDY$cyc)
+  yyyy_hf=${date_hf:0:4}
+  mm_hf=${date_hf:4:2}
+  dd_hf=${date_hf:6:2}
+  hh_hf=${date_hf:8:2}
+  
+  # JCB parameters
+  driver_do_posterior_observer="false"
+  driver_do_test_prints="false"
+  driver_save_posterior_ensemble="false"
+  driver_save_posterior_mean_increment="true"
+  driver_update_obs_config_with_geometry_info="false"
+  final_diagnostics_departures="anlmob"
+  inflation_mult="1.0"
+  inflation_rtpp="0.0"
+  inflation_rtps="0.0"
+  local_ensemble_da_solver="${JEDI_ALGORITHM^^}"
+  land_background_time_fv3="${YYYY}${MM}${DD}.${HH}0000"
+  land_background_time_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+  land_fv3jedi_files_path="Data/fv3files"
+  land_window_begin="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
+  land_window_length="PT${DATE_CYCLE_FREQ_HR}H"
+  
+  # Algorithm-specific values
+  if [ "${JEDI_ALGORITHM}" = "letkf-oi" ]; then
+    jedi_algorithm_mod="local_ensemble_da"
+    local_ensemble_da_solver="Deterministic LETKF"
+  else
+    jedi_algorithm_mod="${JEDI_ALGORITHM}"
+  fi
+  
+  # Variable name of snow depth
+  if [ "${FRAC_GRID}" = "YES" ]; then
+    snowdepth_vn="snodl"
+  else
+    snowdepth_vn="snwdph"
+  fi
+   
+  # Run JCB to create JEDI input yaml files
+  list_jedi_types=(${list_jedi_analyses})
+  echo "List of JEDI analyses: ${list_jedi_types[@]}"
+  for jedi_type in "${list_jedi_types[@]}"; do
+    echo "JEDI analysis for ${jedi_type}"
+    if [ "${jedi_type}" = "snow" ]; then
+      driver_save_posterior_mean="false"
+      inc_fn_prefix="snowinc" 
+    elif [ "${jedi_type}" = "soil_moisture" ]; then
+      driver_save_posterior_mean="true"
+      inc_fn_prefix="smcinc"
+    fi
+  
+    # update jcb-base yaml file
+    settings="\
+    'FIXufsda': ${FIXufsda}
+    'JEDI_ALGORITHM': ${JEDI_ALGORITHM}
+    'jedi_algorithm_mod': ${jedi_algorithm_mod}
+    'PARMufsda': ${PARMufsda}
+    'RES': ${RES}
+    'driver_do_posterior_observer': ${driver_do_posterior_observer}
+    'driver_do_test_prints': ${driver_do_test_prints}
+    'driver_save_posterior_ensemble': ${driver_save_posterior_ensemble}
+    'driver_save_posterior_mean': ${driver_save_posterior_mean}
+    'driver_save_posterior_mean_increment': ${driver_save_posterior_mean_increment}
+    'driver_update_obs_config_with_geometry_info': ${driver_update_obs_config_with_geometry_info}
+    'final_diagnostics_departures': ${final_diagnostics_departures}
+    'inc_fn_prefix': ${inc_fn_prefix}
+    'inflation_mult': ${inflation_mult}
+    'inflation_rtpp': ${inflation_rtpp}
+    'inflation_rtps': ${inflation_rtps}
+    'jedi_type': ${jedi_type}
+    'local_ensemble_da_solver': ${local_ensemble_da_solver}
+    'land_window_begin': !!str ${land_window_begin}
+    'land_window_length': ${land_window_length}
+    'land_final_inc_file_path': ./
+    'land_fv3jedi_files_path': ${land_fv3jedi_files_path}
+    'land_layout_x': 1
+    'land_layout_y': 1
+    'land_npx_anl': ${res_p1}
+    'land_npy_anl': ${res_p1}
+    'land_npz_anl': ${NPZ}
+    'land_npx_ges': ${res_p1}
+    'land_npy_ges': ${res_p1}
+    'land_npz_ges': ${NPZ}
+    'land_background_path': bkg
+    'land_background_time_fv3': !!str ${land_background_time_fv3}
+    'land_background_time_iso': !!str ${land_background_time_iso}
+    'land_bump_data_dir': berror
+    'land_obsdatain_path': obs
+    'land_obsdatain_prefix': "obs.${PDY}.${cycle}."
+    'land_obsdataout_path': diags
+    'land_obsdataout_prefix': "diag."
+    'land_obsdataout_suffix': "_${PDY}${cyc}.nc"
+    'snowdepth_vn': ${snowdepth_vn}
+    'OBS_GHCN_SNOW': '${OBS_GHCN_SNOW}'
+    'OBS_IMS_SNOW': '${OBS_IMS_SNOW}'
+    'OBS_SFCSNO': '${OBS_SFCSNO}'
+    'OBS_SMAP': '${OBS_SMAP}'
+    'OBS_SMOPS': '${OBS_SMOPS}'
+  " # End of settings variable
+  
+    template_fp="${PARMufsda}/jedi/jcb-base_land.yaml.j2"
+    jcb_base_fn="jcb-base_${jedi_type}.yaml"
+    jcb_base_fp="${DATA}/${jcb_base_fn}"
+    jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
+      
+    ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}"
+      
+    if [ $? -ne 0 ]; then
+      err_exit "FATAL ERROR: Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
+    fi
+    cp -p ${jcb_out_fn} ${COMINOUT}
+  done
+else
+  list_jedi_types=(${list_jedi_analyses})
+  echo "List of JEDI analyses: ${list_jedi_types[@]}"
+  for jedi_type in "${list_jedi_types[@]}"; do
+    jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+    cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" "${COMINOUT}/${jcb_out_fn}"
+  done
+fi
+echo "================ JCB COMPLETED !!! ==========================="
 #
 #####################################################################
 # Observation Data Files
@@ -43,8 +171,8 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
   if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
     # GHCN are time-stamped at 18. If assimilating at 00, need to use previous day's obs, 
     # so that obs are within DA window.
-    obs_fn="ghcn_snwd_ioda_${YYYP}${MP}${DP}${HP}.nc"
-    obs_dp="${DCOMINobs}/GHCN/${YYYY}"
+    obs_fn="ghcn_snwd_ioda_${YYYYp}${MMp}${DDp}${HHp}.nc"
+    obs_dp="${DCOMINobs}/ghcn/${YYYY}"
     obs_fp="${obs_dp}/${obs_fn}"
     obs_out_fn_ghcn="obs.${PDY}.${cycle}.ghcn_snow.nc"
   
@@ -58,15 +186,15 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
       cp -p "${obs_dp}/${obs_out_fn_ghcn}" .
       cp -p "${obs_dp}/${obs_out_fn_ghcn}" "${COMINOUTobs}/${obs_out_fn_ghcn}"
     else
-      input_ghcn_file="${DCOMINghcn}/${YYYP}.csv"
+      input_ghcn_file="${DCOMINghcn}/${YYYYp}.csv"
       if [ ! -f "${input_ghcn_file}" ]; then
         echo "GHCN raw data path: ${DCOMINghcn}"
-        echo "GHCN raw data file: ${YYYP}.csv"
+        echo "GHCN raw data file: ${YYYYp}.csv"
         err_exit "FATAL ERROR: GHCN raw data file does not exist in designated path !!!"
       fi
       ghcn_station_file="${DCOMINghcn}/ghcnd-stations.txt"
   
-      ${USHufsda}/ghcn_snod2ioda.py -i ${input_ghcn_file} -o ${obs_fn} -f ${ghcn_station_file} -d ${YYYP}${MP}${DP}${HP} -m maskout
+      ${USHufsda}/ghcn_snod2ioda.py -i ${input_ghcn_file} -o ${obs_fn} -f ${ghcn_station_file} -d ${YYYYp}${MMp}${DDp}${HHp} -m maskout
       if [ $? -ne 0 ]; then
         err_exit "FATAL ERROR: Generation of GHCN obs file failed !!!"
       fi
@@ -131,7 +259,7 @@ EOF
       # Copy sfc_data files into work directory
       for itile in {1..6}
       do
-        sfc_m1="${YYYP}${MP}${DP}.${HP}0000.sfc_data.tile${itile}.nc"
+        sfc_m1="${YYYYp}${MMp}${DDp}.${HHp}0000.sfc_data.tile${itile}.nc"
         sfc_m0="${YYYY}${MM}${DD}.${HH}0000.sfc_data.tile${itile}.nc"
         if [ -f ${COMINOUTcm1}/${sfc_m1} ]; then
           ln -nsf ${COMINOUTcm1}/${sfc_m1} ${DATA}/${sfc_m0}
