@@ -9,9 +9,8 @@ DT_ATMOS: 720
 DT_RUNSEQ: 3600
 envir: fcst_baseline
 EXP_CASE_NAME: s2swa_freefcst_baseline
-FCST_HRS: 48
+FCST_HRS: 24
 IC_FROM_FIX_DIR: 'YES'
 NPZ: 127
 OUTPUT_FH: '6 -1'
 RES: 96
-WALLTIME_FORECAST: '00:45:00'

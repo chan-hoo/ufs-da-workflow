@@ -35,6 +35,7 @@ else
 fi
 
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 
 YYYY=${PDY:0:4}
 MM=${PDY:4:2}
@@ -44,6 +45,8 @@ nYYYY=${NTIME:0:4}
 nMM=${NTIME:4:2}
 nDD=${NTIME:6:2}
 nHH=${NTIME:8:2}
+PDYcm1=${PTIME:0:8}
+COMINOUTcm1="${COMINOUTcm1:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}}"
 
 HHsec=$(( HH * 3600 ))
 HHsec_5d=$(printf "%05d" "${HHsec}")
@@ -156,6 +159,7 @@ settings="\
   'atm_petlist_bounds_n2': ${nprocs_atm_m1}
   'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
   'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
+  'ice_stop_n': ${FCST_HRS}
   'med_petlist_bounds_n1': 0
   'med_petlist_bounds_n2': ${nprocs_med_m1}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
@@ -320,7 +324,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINOUTm1}"
+    data_dir="${COMINOUTcm1}"
   fi
   # Restart from RESTART and pointer files
   rst_fns=( "ufs.cpld.cpl.r" "iced" )
@@ -374,10 +378,10 @@ ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid_spec.nc" grid_spec.
 # MOM6 input data files
 ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
           "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "land_mask.nc" \
-	  "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" "MOM6_IC_TS.nc" \
+	  "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" \
 	  "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
-	  "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" "topog.nc" \
-	  "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
+	  "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
+	  "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
 for ifn in "${ocn_fns[@]}" ; do
   ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
   if [ -e "${ifp}" ]; then
@@ -391,19 +395,22 @@ done
 cp -p "${PARMufsda}/templates/template.${APP}.MOM_input" MOM_input
 cp -p "${PARMufsda}/templates/template.${APP}.MOM_override" MOM_override
 
-# GFS IC (initial condition) files for cold start
+# IC (initial condition) files for cold start
 if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
   if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
     data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
   else
     data_dir="${COMINOUT}"
   fi
+  # GFS
   ln -nsf "${data_dir}/gfs_ctrl.nc" .
   for itile in {1..6}
   do
     ln -nsf "${data_dir}/gfs_data.tile${itile}.nc" .
     ln -nsf "${data_dir}/sfc_data.tile${itile}.nc" .
   done
+  # MOM6
+  ln -ns "${data_dir}/MOM6_IC_TS.nc" .
 fi
 
 # Copy restart files
@@ -412,7 +419,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINOUTm1}/RESTART"
+    data_dir="${COMINOUTcm1}/RESTART"
   fi
 
   # Tiled files
@@ -455,13 +462,13 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   # Files updated by ANALYSIS (JEDI)
   if [ "${DO_FREE_FORECAST}" = "none" ]; then
     data_dir="${COMINOUT}"
-  # Files from WARMSTART/COMINOUTm1
+  # Files from WARMSTART/COMINOUTcm1
   else
     # Set path to directory where restart files exist
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
       data_dir="${WARMSTART_DIR}"
     else
-      data_dir="${COMINOUTm1}/RESTART"
+      data_dir="${COMINOUTcm1}/RESTART"
     fi
   fi
   rst_fns=( "sfc_data" )
@@ -564,6 +571,7 @@ done
 # WW3
 cp -p *.out_grd.ww3 ${COMINOUT}
 cp -p *.out_pnt.ww3.nc ${COMINOUT}
+cp -p out.pnt_wght.ww3.nc ${COMINOUT}
 list_out_fh_ww3=$(seq ${OUTPUT_FH_WW3} ${OUTPUT_FH_WW3} ${FCST_HRS})
 for ihr in ${list_out_fh_ww3}
 do

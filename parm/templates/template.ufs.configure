@@ -54,7 +54,7 @@ ICE_attributes::
   OverwriteSlice = true
   mesh_ice = mesh.mx100.nc
   eps_imesh = 2.5e-1
-  stop_n = 3
+  stop_n = {{ ice_stop_n }}
   stop_option = nhours
   stop_ymd = -999
 ::

@@ -26,6 +26,10 @@ MP=${PTIME:4:2}
 DP=${PTIME:6:2}
 HP=${PTIME:8:2}
 
+PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+PDYcm1=${PTIME:0:8}
+COMINOUTcm1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}"
+
 #
 #####################################################################
 # Observation Data Files
@@ -129,8 +133,8 @@ EOF
       do
         sfc_m1="${YYYP}${MP}${DP}.${HP}0000.sfc_data.tile${itile}.nc"
         sfc_m0="${YYYY}${MM}${DD}.${HH}0000.sfc_data.tile${itile}.nc"
-        if [ -f ${COMINOUTm1}/${sfc_m1} ]; then
-          ln -nsf ${COMINOUTm1}/${sfc_m1} ${DATA}/${sfc_m0}
+        if [ -f ${COMINOUTcm1}/${sfc_m1} ]; then
+          ln -nsf ${COMINOUTcm1}/${sfc_m1} ${DATA}/${sfc_m0}
         elif [ -f ${WARMSTART_DIR}/${sfc_m1} ]; then
           ln -nsf ${WARMSTART_DIR}/${sfc_m1} ${DATA}/${sfc_m0}
         else
