@@ -44,6 +44,7 @@ def main():
     out_fn_base = yaml_data['out_fn_base']
     path_data = yaml_data['path_data']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
+    var_list = yaml_data['var_list_restart']
     work_dir = yaml_data['work_dir']
     zlvl = yaml_data['zlevel_number']
 
@@ -233,8 +234,6 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,wo
 
 # Background plot ==================================================== CHJ =====
 def back_plot(ax):
-# ==================================================================== CHJ =====
-
     # Resolution of background natural earth data ('50m' or '110m')
     back_res = '50m'
 
@@ -267,7 +266,6 @@ def back_plot(ax):
 
 # Output file ======================================================= CHJ =====
 def out_file(work_dir,out_file,ndpi):
-# =================================================================== CHJ =====
     # Output figure
     fp_out = os.path.join(work_dir,out_file)
     plt.savefig(fp_out+'.png',dpi=ndpi,bbox_inches='tight')

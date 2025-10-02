@@ -343,7 +343,6 @@ def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
 
 # Background plot ==================================================== CHJ =====
 def back_plot(ax):
-
     # Resolution of background natural earth data ('50m' or '110m')
     back_res='50m'
 
@@ -376,7 +375,6 @@ def back_plot(ax):
 
 # Output file ======================================================= CHJ =====
 def out_file(work_dir,out_file,ndpi):
-
     # Output figure
     fp_out=os.path.join(work_dir,out_file)
     plt.savefig(fp_out+'.png',dpi=ndpi,bbox_inches='tight')

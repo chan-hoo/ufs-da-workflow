@@ -12,34 +12,40 @@ source ${HOMEufsda}/parm/jjob_env_setup.sh
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 #
+# Set the default values of plotting flags
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
+    do_plot_fcst_out_mom6="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="NO"
     do_plot_fcst_out_fv3="NO"
+    do_plot_fcst_out_mom6="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_stats="NO"
   do_plot_time_history="NO"
   do_plot_restart="YES"
   do_plot_fcst_out_fv3="YES"
+  do_plot_fcst_out_mom6="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
+    do_plot_fcst_out_mom6="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
+    do_plot_fcst_out_mom6="YES"
   fi
 fi
 
@@ -47,6 +53,7 @@ DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
 DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 DO_PLOT_RESTART="${DO_PLOT_RESTART:-${do_plot_restart}}"
 DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
+DO_PLOT_FCST_OUT_MOM6="${DO_PLOT_FCST_OUT_MOM6:-${do_plot_fcst_out_mom6}}"
 
 # Set other dates
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -65,6 +72,12 @@ nHH=${NTIME:8:2}
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
 orog_fn_base="C${RES}_oro_data"
 
+# Set variable name for snow depth
+if [ "${FRAC_GRID}" = "YES" ]; then
+  snowdepth_vn="snodl"
+else
+  snowdepth_vn="snwdph"
+fi
 
 ############################################################
 # Stats Plot
@@ -102,7 +115,6 @@ field_range: [${field_range_low},${field_range_high}]
 hofx_data_path: '${DATA_HOFX}'
 nbins: ${nbins}
 plottype: '${plottype}'
-work_dir: '${DATA}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
 OBS_SFCSNO: '${OBS_SFCSNO}'
@@ -110,6 +122,7 @@ OBS_SMAP: '${OBS_SMAP}'
 OBS_SMOPS: '${OBS_SMOPS}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+work_dir: '${DATA}'
 EOF
   
   ${USHufsda}/plot_hofx_stats.py
@@ -174,8 +187,11 @@ out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
 path_data: '${COMINOUT}/RESTART'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-zlevel_number: '${zlevel_number}'
+var_list_restart:
+  - ${snowdepth_vn}
+  - smc
 work_dir: '${DATA}'
+zlevel_number: '${zlevel_number}'
 EOF
 
   ${USHufsda}/plot_forecast_restart.py
@@ -222,6 +238,43 @@ EOF
   ${USHufsda}/plot_forecast_out_fv3.py
   if [ $? -ne 0 ]; then
     err_exit "FATAL ERROR: Forecast FV3 output plots failed."
+  fi
+
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
+fi
+
+###########################################################
+# Plot forecast output file: MOM6
+###########################################################
+if [ "${DO_PLOT_FCST_OUT_MOM6}" = "YES" ]; then
+  fn_base_prefix="${NET}.${cycle}"
+  out_title_base="UFS-DA::OUT::MOM6::${YYYY}-${MM}-${DD}-${HH}::"
+  out_fn_base="ufsda_out_mom6_${YYYY}${MM}${DD}${HH}_"
+  # zlevel_number is valid only for 3-D fields
+  zlevel_number_ocn="1"
+
+  cat > plot_forecast_out_mom6.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+FCST_HRS: ${FCST_HRS}
+fn_base_prefix: '${fn_base_prefix}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base}'
+OUTPUT_FH_MOM6: '${OUTPUT_FH_MOM6}'
+path_data: '${COMINOUT}'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+RES: ${RES}
+var_list_ocn:
+  - SSH
+  - SSS
+  - temp
+work_dir: '${DATA}'
+zlevel_number_ocn: '${zlevel_number_ocn}'
+EOF
+
+  ${USHufsda}/plot_forecast_out_mom6.py
+  if [ $? -ne 0 ]; then
+    err_exit "FATAL ERROR: Forecast MOM6 output plots failed."
   fi
 
   # Copy result files to COMINOUT

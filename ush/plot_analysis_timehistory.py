@@ -285,7 +285,6 @@ def plot_his_omb(var_dict_anal,out_fn_base,work_dir,var_nm,hofx_data_path,obs_ty
 
 # Output file ======================================================= CHJ =====
 def out_file(work_dir,out_file,ndpi):
- 
     # Output figure
     fp_out = os.path.join(work_dir,out_file)
     plt.savefig(fp_out+'.png',dpi=ndpi,bbox_inches='tight')

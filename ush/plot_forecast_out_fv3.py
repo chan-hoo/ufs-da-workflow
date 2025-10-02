@@ -263,8 +263,6 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,out_fn_ba
 
 # Background plot ==================================================== CHJ =====
 def back_plot(ax):
-# ==================================================================== CHJ =====
-
     # Resolution of background natural earth data ('50m' or '110m')
     back_res = '50m'
 
@@ -297,7 +295,6 @@ def back_plot(ax):
 
 # Output file ======================================================= CHJ =====
 def out_file(work_dir,out_file,ndpi):
-# =================================================================== CHJ =====
     # Output figure
     fp_out = os.path.join(work_dir,out_file)
     plt.savefig(fp_out+'.png',dpi=ndpi,bbox_inches='tight')
