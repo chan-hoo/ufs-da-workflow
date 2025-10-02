@@ -99,7 +99,7 @@ cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
 cyc: '${cyc}'
 field_range: [${field_range_low},${field_range_high}]
-hofx_data_path: '${DATA_HOFX_OMB}'
+hofx_data_path: '${DATA_HOFX}'
 nbins: ${nbins}
 plottype: '${plottype}'
 work_dir: '${DATA}'
@@ -112,14 +112,14 @@ PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
   
-  ${USHufsda}/hofx_analysis_stats.py
+  ${USHufsda}/plot_hofx_stats.py
   if [ $? -ne 0 ]; then
     err_exit "FATAL ERROR: Scatter/Histogram plots failed."
   fi
   
   # Copy result files to COMINOUT
   cp -p "${DATA}/hofx_omb"* ${COMINOUTplot}
-  cp -p "${DATA_HOFX_OMB}/hofx_omb_timehis"* ${COMINOUThofx}
+  cp -p "${DATA_HOFX}/hofx_omb_timehis"* ${COMINOUThofx}
 fi
 
 ############################################################
@@ -135,7 +135,7 @@ path_data: '${LOGDIR}'
 work_dir: '${DATA}'
 fn_data_anal_prefix: '${fn_data_anal_prefix}'
 fn_data_anal_suffix: '${fn_data_anal_suffix}'
-hofx_data_path: '${DATA_HOFX_OMB}'
+hofx_data_path: '${DATA_HOFX}'
 jedi_exe: '${JEDI_ALGORITHM}'
 out_fn_base: '${out_fn_base}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
