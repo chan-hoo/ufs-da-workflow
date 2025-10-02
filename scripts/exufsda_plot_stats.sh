@@ -173,8 +173,8 @@ fi
 ###########################################################
 if [ "${DO_PLOT_RESTART}" = "YES" ]; then
   fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile"
-  out_title_base="UFS-DA::RESTART::${nYYYY}-${nMM}-${nDD}-${nHH}::"
-  out_fn_base="ufsda_out_restart_${nYYYY}${nMM}${nDD}${nHH}_"
+  out_title_base="UFS-DA::RESTART::FV3::${nYYYY}-${nMM}-${nDD}-${nHH}::"
+  out_fn_base="ufsda_out_restart_fv3_${nYYYY}${nMM}${nDD}${nHH}_"
   # zlevel_number is valid only for 3-D fields such as stc/smc/slc
   zlevel_number="1"
 
