@@ -43,6 +43,7 @@ def main():
     out_title_base = yaml_data['out_title_base']
     out_fn_base = yaml_data['out_fn_base']
     path_data = yaml_data['path_data']
+    plot_each_tile = yaml_data['plot_each_tile']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
     var_list = yaml_data['var_list_restart']
     work_dir = yaml_data['work_dir']
@@ -70,11 +71,10 @@ def main():
     # get lon, lat from orography
     get_geo(orog_path,orog_fn_base)
 
-    var_list = ["snwdph","smc"]
-
     # plot restart file
     for var_nm in var_list:
-        plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir)
+        plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,
+                  out_fn_base,work_dir,plot_each_tile)
 
 
 # geo lon/lat from orography ======================================== CHJ =====
@@ -118,7 +118,8 @@ def get_geo(orog_path,orog_fn_base):
 
 
 # Get sfc_data from files and plot ================================== CHJ =====
-def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,work_dir):
+def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,
+              work_dir,plot_each_tile):
 
     # center of map
     c_lon = -77.0369
@@ -167,38 +168,39 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,wo
     cbar_extend = 'neither'
 
     # Plot each tile
-    for it in range(num_tiles):
-        itp = it+1
-        glon_tile = np.squeeze(glon[it,:,:])
-        if itp == 1:
-            glon_tile = (glon_tile+180)%360-180
-        glat_tile = np.squeeze(glat[it,:,:])
-        var_tile = np.squeeze(plt_var[it,:,:])
-        c_glon = np.round(np.mean(glon_tile),decimals=2)
-        c_glat = np.round(np.mean(glat_tile),decimals=2)
-        logging.info(f'''c_glon, c_glat for tile{str(it+1)} = {c_glon}, {c_glat}''')
-        if ndim_var == 4:
-            out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}'''
-            out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}'''
-        else:
-            out_title = f'''{out_title_base}{var_nm}::Tile{itp}'''
-            out_fn = f'''{out_fn_base}{var_nm}_tile{itp}'''
-
-        fig,ax = plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Orthographic(c_glon,c_glat)))
-        ax.set_title(out_title, fontsize=6)
-        # Call background plot
-        back_plot(ax)
-        cs=ax.pcolormesh(glon_tile,glat_tile,var_tile,cmap=cs_cmap,
-            rasterized=True,vmin=cs_min,vmax=cs_max,transform=ccrs.PlateCarree())
-        divider=make_axes_locatable(ax)
-        ax_cb=divider.new_horizontal(size="3%",pad=0.1,axes_class=plt.Axes)
-        fig.add_axes(ax_cb)
-        cbar=plt.colorbar(cs,cax=ax_cb,extend='neither')
-        cbar.ax.tick_params(labelsize=6)
-        cbar.set_label(var_nm,fontsize=6)
-        # Output figure
-        ndpi=300
-        out_file(work_dir,out_fn,ndpi)
+    if plot_each_tile == "YES":
+        for it in range(num_tiles):
+            itp = it+1
+            glon_tile = np.squeeze(glon[it,:,:])
+            if itp == 1:
+                glon_tile = (glon_tile+180)%360-180
+            glat_tile = np.squeeze(glat[it,:,:])
+            var_tile = np.squeeze(plt_var[it,:,:])
+            c_glon = np.round(np.mean(glon_tile),decimals=2)
+            c_glat = np.round(np.mean(glat_tile),decimals=2)
+            logging.info(f'''c_glon, c_glat for tile{str(it+1)} = {c_glon}, {c_glat}''')
+            if ndim_var == 4:
+                out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}'''
+                out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}'''
+            else:
+                out_title = f'''{out_title_base}{var_nm}::Tile{itp}'''
+                out_fn = f'''{out_fn_base}{var_nm}_tile{itp}'''
+    
+            fig,ax = plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Orthographic(c_glon,c_glat)))
+            ax.set_title(out_title, fontsize=6)
+            # Call background plot
+            back_plot(ax)
+            cs=ax.pcolormesh(glon_tile,glat_tile,var_tile,cmap=cs_cmap,
+                rasterized=True,vmin=cs_min,vmax=cs_max,transform=ccrs.PlateCarree())
+            divider=make_axes_locatable(ax)
+            ax_cb=divider.new_horizontal(size="3%",pad=0.1,axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar=plt.colorbar(cs,cax=ax_cb,extend='neither')
+            cbar.ax.tick_params(labelsize=6)
+            cbar.set_label(var_nm,fontsize=6)
+            # Output figure
+            ndpi=300
+            out_file(work_dir,out_fn,ndpi)
 
     # Plot all tiles together
     if ndim_var == 4:

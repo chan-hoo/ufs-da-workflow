@@ -186,6 +186,7 @@ orog_fn_base: '${orog_fn_base}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
 path_data: '${COMINOUT}/RESTART'
+plot_each_tile: 'NO'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 var_list_restart:
   - ${snowdepth_vn}
@@ -222,6 +223,7 @@ out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
 OUTPUT_FH: '${OUTPUT_FH}'
 path_data: '${COMINOUT}'
+plot_each_tile: 'NO'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 RES: ${RES}
 var_list_atm:

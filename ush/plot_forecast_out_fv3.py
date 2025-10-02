@@ -43,6 +43,7 @@ def main():
     out_fn_base = yaml_data['out_fn_base']
     OUTPUT_FH = yaml_data['OUTPUT_FH']
     path_data = yaml_data['path_data']
+    plot_each_tile = yaml_data['plot_each_tile']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
     RES = yaml_data['RES']
     var_list_atm = yaml_data['var_list_atm']
@@ -91,7 +92,7 @@ def main():
                 ifhr_3d = f'''{ifhr:03d}'''
                 logging.info(f''' Variable: {var_nm} from "atm", fhr: {ifhr_3d}''')
                 fn_atm_base = f'''{fn_base_prefix}.atm.f{ifhr_3d}.c{RES}.tile'''
-                plot_data(path_data,fn_atm_base,var_nm,ifhr_3d,zlvlm1_atm,out_title_base,out_fn_base,work_dir)
+                plot_data(path_data,fn_atm_base,var_nm,ifhr_3d,zlvlm1_atm,out_title_base,out_fn_base,work_dir,plot_each_tile)
 
     # from 'sfc' file
     logging.info(f''' SFC variable list: {var_list_sfc}''')
@@ -105,7 +106,8 @@ def main():
                 ifhr_3d = f'''{ifhr:03d}'''
                 logging.info(f''' Variable: {var_nm} from "sfc", fhr: {ifhr_3d}''')
                 fn_sfc_base = f'''{fn_base_prefix}.sfc.f{ifhr_3d}.c{RES}.tile'''
-                plot_data(path_data,fn_sfc_base,var_nm,ifhr_3d,zlvlm1_sfc,out_title_base,out_fn_base,work_dir)
+                plot_data(path_data,fn_sfc_base,var_nm,ifhr_3d,zlvlm1_sfc,
+                          out_title_base,out_fn_base,work_dir,plot_each_tile)
 
 
 # geo lon/lat ======================================================= CHJ =====
@@ -147,7 +149,8 @@ def get_geo(path_data,fn_data_base):
 
 
 # Get data from files and plot ====================================== CHJ =====
-def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,out_fn_base,work_dir):
+def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
+              out_fn_base,work_dir,plot_each_tile):
 
     # center of map
     c_lon = -77.0369
@@ -196,38 +199,39 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,out_fn_ba
     cbar_extend = 'neither'
 
     # Plot each tile
-    for it in range(num_tiles):
-        itp = it+1
-        glon_tile = np.squeeze(glon[it,:,:])
-        if itp == 1:
-            glon_tile = (glon_tile+180)%360-180
-        glat_tile = np.squeeze(glat[it,:,:])
-        var_tile = np.squeeze(plt_var[it,:,:])
-        c_glon = np.round(np.mean(glon_tile),decimals=2)
-        c_glat = np.round(np.mean(glat_tile),decimals=2)
-        logging.info(f'''c_glon, c_glat for tile{str(it+1)} = {c_glon}, {c_glat}''')
-        if ndim_var == 4:
-            out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}::F{ifhr} '''
-            out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}_f{ifhr}'''
-        else:
-            out_title = f'''{out_title_base}{var_nm}::Tile{itp}::F{ifhr}'''
-            out_fn = f'''{out_fn_base}{var_nm}_tile{itp}_f{ifhr}'''
-
-        fig,ax = plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Orthographic(c_glon,c_glat)))
-        ax.set_title(out_title, fontsize=6)
-        # Call background plot
-        back_plot(ax)
-        cs=ax.pcolormesh(glon_tile,glat_tile,var_tile,cmap=cs_cmap,
-            rasterized=True,vmin=cs_min,vmax=cs_max,transform=ccrs.PlateCarree())
-        divider=make_axes_locatable(ax)
-        ax_cb=divider.new_horizontal(size="3%",pad=0.1,axes_class=plt.Axes)
-        fig.add_axes(ax_cb)
-        cbar=plt.colorbar(cs,cax=ax_cb,extend='neither')
-        cbar.ax.tick_params(labelsize=6)
-        cbar.set_label(var_nm,fontsize=6)
-        # Output figure
-        ndpi=300
-        out_file(work_dir,out_fn,ndpi)
+    if plot_each_tile == "YES":
+        for it in range(num_tiles):
+            itp = it+1
+            glon_tile = np.squeeze(glon[it,:,:])
+            if itp == 1:
+                glon_tile = (glon_tile+180)%360-180
+            glat_tile = np.squeeze(glat[it,:,:])
+            var_tile = np.squeeze(plt_var[it,:,:])
+            c_glon = np.round(np.mean(glon_tile),decimals=2)
+            c_glat = np.round(np.mean(glat_tile),decimals=2)
+            logging.info(f'''c_glon, c_glat for tile{str(it+1)} = {c_glon}, {c_glat}''')
+            if ndim_var == 4:
+                out_title = f'''{out_title_base}{var_nm}::L{zlvl}::Tile{itp}::F{ifhr} '''
+                out_fn = f'''{out_fn_base}{var_nm}_z{zlvl}_tile{itp}_f{ifhr}'''
+            else:
+                out_title = f'''{out_title_base}{var_nm}::Tile{itp}::F{ifhr}'''
+                out_fn = f'''{out_fn_base}{var_nm}_tile{itp}_f{ifhr}'''
+    
+            fig,ax = plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Orthographic(c_glon,c_glat)))
+            ax.set_title(out_title, fontsize=6)
+            # Call background plot
+            back_plot(ax)
+            cs=ax.pcolormesh(glon_tile,glat_tile,var_tile,cmap=cs_cmap,
+                rasterized=True,vmin=cs_min,vmax=cs_max,transform=ccrs.PlateCarree())
+            divider=make_axes_locatable(ax)
+            ax_cb=divider.new_horizontal(size="3%",pad=0.1,axes_class=plt.Axes)
+            fig.add_axes(ax_cb)
+            cbar=plt.colorbar(cs,cax=ax_cb,extend='neither')
+            cbar.ax.tick_params(labelsize=6)
+            cbar.set_label(var_nm,fontsize=6)
+            # Output figure
+            ndpi=300
+            out_file(work_dir,out_fn,ndpi)
 
     # Plot all tiles together
     if ndim_var == 4:
