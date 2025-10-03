@@ -226,7 +226,7 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
             divider=make_axes_locatable(ax)
             ax_cb=divider.new_horizontal(size="3%",pad=0.1,axes_class=plt.Axes)
             fig.add_axes(ax_cb)
-            cbar=plt.colorbar(cs,cax=ax_cb,extend='neither')
+            cbar=plt.colorbar(cs,cax=ax_cb,extend=cbar_extend)
             cbar.ax.tick_params(labelsize=6)
             cbar.set_label(var_nm,fontsize=6)
             # Output figure

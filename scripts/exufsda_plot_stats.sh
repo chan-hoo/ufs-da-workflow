@@ -20,12 +20,14 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
+    do_plot_fcst_out_cice="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="NO"
     do_plot_fcst_out_fv3="NO"
     do_plot_fcst_out_mom6="NO"
+    do_plot_fcst_out_cice="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_stats="NO"
@@ -33,6 +35,7 @@ elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_restart="YES"
   do_plot_fcst_out_fv3="YES"
   do_plot_fcst_out_mom6="YES"
+  do_plot_fcst_out_cice="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
@@ -40,12 +43,14 @@ else
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
+    do_plot_fcst_out_cice="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
+    do_plot_fcst_out_cice="YES"
   fi
 fi
 
@@ -54,6 +59,7 @@ DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 DO_PLOT_RESTART="${DO_PLOT_RESTART:-${do_plot_restart}}"
 DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
 DO_PLOT_FCST_OUT_MOM6="${DO_PLOT_FCST_OUT_MOM6:-${do_plot_fcst_out_mom6}}"
+DO_PLOT_FCST_OUT_CICE="${DO_PLOT_FCST_OUT_CICE:-${do_plot_fcst_out_cice}}"
 
 # Set other dates
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -228,7 +234,6 @@ PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 RES: ${RES}
 var_list_atm:
   - tmp
-  - o3mr
 var_list_sfc:
   - snod
   - soilm
@@ -277,6 +282,39 @@ EOF
   ${USHufsda}/plot_forecast_out_mom6.py
   if [ $? -ne 0 ]; then
     err_exit "FATAL ERROR: Forecast MOM6 output plots failed."
+  fi
+
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
+fi
+
+###########################################################
+# Plot forecast output file: CICE
+###########################################################
+if [ "${DO_PLOT_FCST_OUT_CICE}" = "YES" ]; then
+  fn_base_prefix="${NET}.${cycle}"
+  out_title_base="UFS-DA::OUT::CICE::${YYYY}-${MM}-${DD}-${HH}::"
+  out_fn_base="ufsda_out_cice_${YYYY}${MM}${DD}${HH}_"
+
+  cat > plot_forecast_out_cice.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+FCST_HRS: ${FCST_HRS}
+fn_base_prefix: '${fn_base_prefix}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base}'
+OUTPUT_FH_CICE: '${OUTPUT_FH_CICE}'
+path_data: '${COMINOUT}'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+RES: ${RES}
+var_list_ice:
+  - hi_h
+  - hs_h
+work_dir: '${DATA}'
+EOF
+
+  ${USHufsda}/plot_forecast_out_cice.py
+  if [ $? -ne 0 ]; then
+    err_exit "FATAL ERROR: Forecast CICE output plots failed."
   fi
 
   # Copy result files to COMINOUT
