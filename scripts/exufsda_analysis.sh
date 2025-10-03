@@ -101,7 +101,7 @@ cp -p ${FIXufsda}/DATA_jedi/fv3files/akbk${NPZ}.nc4 ${DATA}/Data/fv3files/akbk.n
 
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
 orog_fn_base="C${RES}_oro_data"
-ln -nsf ${orog_path}/${orog_fn_base}.tile* ${DATA}/Data/fv3files/
+ln -nsf ${orog_path}/${orog_fn_base}.tile* .
 
 # Link snow shadow level nicas data file
 mkdir -p ${DATA}/berror
