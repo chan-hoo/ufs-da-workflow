@@ -37,6 +37,7 @@ def main():
     f.close()
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
+    colorbar_option = yaml_data['colorbar_option']
     fn_data_base = yaml_data['fn_data_base']
     orog_path = yaml_data['orog_path']
     orog_fn_base = yaml_data['orog_fn_base']
@@ -74,7 +75,7 @@ def main():
     # plot restart file
     for var_nm in var_list:
         plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,
-                  out_fn_base,work_dir,plot_each_tile)
+                  out_fn_base,work_dir,plot_each_tile,colorbar_option)
 
 
 # geo lon/lat from orography ======================================== CHJ =====
@@ -119,7 +120,7 @@ def get_geo(orog_path,orog_fn_base):
 
 # Get sfc_data from files and plot ================================== CHJ =====
 def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,
-              work_dir,plot_each_tile):
+              work_dir,plot_each_tile,colorbar_option):
 
     # center of map
     c_lon = -77.0369
@@ -132,20 +133,24 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,
         itp = it+1
         fn_data = fn_data_base+str(itp)+'.nc'
         fp_data = os.path.join(path_data,fn_data)
-        try: data_raw = nc.Dataset(fp_data)
+        try: data_raw = xr.open_dataset(fp_data)
         except: raise Exception('Could NOT find the file',fp_data)
         if itp == 1:
             logging.info(f''' Variables: {list(data_raw.variables)}''')
 
         # Extract valid variable
-        var_data = np.ma.masked_invalid(data_raw.variables[var_nm])
+        var_orig = data_raw[var_nm]
+        var_data = np.ma.masked_invalid(var_orig.values)
+#        var_nm_long = var_orig.attrs.get("long_name", "No long-name attribute found")
+#        var_nm_unit = var_orig.attrs.get("units", "No units attribute found")
         ndim_var = var_data.ndim
-        logging.info(f''' {var_nm}: number of dimensions = {ndim_var}''')
+        logging.info(f''' Variable: number of dimensions = {ndim_var}''')
+
         if ndim_var == 4:
             logging.info(f''' Dimension of original data = {var_data.shape}, z-level = {zlvl}''')
             var_data_2d = var_data[:,zlvlm1,:,:]
         else:
-            var_data_2d = var_data                
+            var_data_2d = var_data
  
         logging.info(f''' Dimension of data = {var_data_2d.shape}''')
         logging.info(f''' Tile{itp}, Max = {np.max(var_data_2d)}''')
@@ -159,13 +164,31 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,
 
     logging.info(f''' Dimension of data set = {plt_var.shape}''')
 
-    cs_max = np.nanmax(plt_var)
-    cs_min = np.nanmin(plt_var)
-    logging.info(f''' cs_max = {cs_max}''')
-    logging.info(f''' cs_min = {cs_min}''')
-
     cs_cmap = 'gist_ncar_r'
     cbar_extend = 'neither'
+    cbar_label = var_nm
+    if colorbar_option == "fixed":
+        if var_nm == "snodl":
+            cs_max = 800.0
+            cs_min = 0.0
+            cbar_extend = 'max'
+            cbar_label = f'''{var_nm}:: Total snow depth on land (mm)'''
+        elif var_nm == "smc":
+            cs_cmap = 'nipy_spectral'
+            cs_max = 0.4
+            cs_min = 0.0
+            cbar_extend = 'max'
+            cbar_label = f'''{var_nm}:: Total soil water content (m3/m3)'''
+        else:
+            cs_max = np.nanmax(plt_var)
+            cs_min = np.nanmin(plt_var)
+    else:
+        cs_max = np.nanmax(plt_var)
+        cs_min = np.nanmin(plt_var)
+    logging.info(f''' colorbar_option = {colorbar_option}''')
+    logging.info(f''' cs_max = {cs_max}''')
+    logging.info(f''' cs_min = {cs_min}''')
+    logging.info(f''' colorbar_extend = {cbar_extend}''')
 
     # Plot each tile
     if plot_each_tile == "YES":
@@ -228,7 +251,7 @@ def plot_data(path_data,fn_data_base,var_nm,zlvlm1,out_title_base,out_fn_base,
     fig.add_axes(ax_cb)
     cbar=plt.colorbar(cs,cax=ax_cb,extend=cbar_extend)
     cbar.ax.tick_params(labelsize=6)
-    cbar.set_label(var_nm,fontsize=6)
+    cbar.set_label(cbar_label,fontsize=6)
     # Output figure
     ndpi = 300
     out_file(work_dir,out_fn,ndpi)
