@@ -223,6 +223,7 @@ if [ "${DO_PLOT_FCST_OUT_FV3}" = "YES" ]; then
 
   cat > plot_forecast_out_fv3.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
 FCST_HRS: ${FCST_HRS}
 fn_base_prefix: '${fn_base_prefix}'
 out_title_base: '${out_title_base}'

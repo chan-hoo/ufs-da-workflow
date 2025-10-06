@@ -37,6 +37,7 @@ def main():
     f.close()
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
+    colorbar_option = yaml_data['colorbar_option']
     FCST_HRS = yaml_data['FCST_HRS']
     fn_base_prefix = yaml_data['fn_base_prefix']
     out_title_base = yaml_data['out_title_base']
@@ -92,7 +93,8 @@ def main():
                 ifhr_3d = f'''{ifhr:03d}'''
                 logging.info(f''' Variable: {var_nm} from "atm", fhr: {ifhr_3d}''')
                 fn_atm_base = f'''{fn_base_prefix}.atm.f{ifhr_3d}.c{RES}.tile'''
-                plot_data(path_data,fn_atm_base,var_nm,ifhr_3d,zlvlm1_atm,out_title_base,out_fn_base,work_dir,plot_each_tile)
+                plot_data(path_data,fn_atm_base,var_nm,ifhr_3d,zlvlm1_atm,out_title_base,
+                          out_fn_base,work_dir,plot_each_tile,colorbar_option)
 
     # from 'sfc' file
     logging.info(f''' SFC variable list: {var_list_sfc}''')
@@ -107,7 +109,7 @@ def main():
                 logging.info(f''' Variable: {var_nm} from "sfc", fhr: {ifhr_3d}''')
                 fn_sfc_base = f'''{fn_base_prefix}.sfc.f{ifhr_3d}.c{RES}.tile'''
                 plot_data(path_data,fn_sfc_base,var_nm,ifhr_3d,zlvlm1_sfc,
-                          out_title_base,out_fn_base,work_dir,plot_each_tile)
+                          out_title_base,out_fn_base,work_dir,plot_each_tile,colorbar_option)
 
 
 # geo lon/lat ======================================================= CHJ =====
@@ -150,7 +152,7 @@ def get_geo(path_data,fn_data_base):
 
 # Get data from files and plot ====================================== CHJ =====
 def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
-              out_fn_base,work_dir,plot_each_tile):
+              out_fn_base,work_dir,plot_each_tile,colorbar_option):
 
     # center of map
     c_lon = -77.0369
@@ -163,20 +165,23 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
         itp = it+1
         fn_data = f'''{fn_data_base}{itp}.nc'''
         fp_data = os.path.join(path_data,fn_data)
-        try: data_raw = nc.Dataset(fp_data)
+        try: data_raw = xr.open_dataset(fp_data)
         except: raise Exception('Could NOT find the file',fp_data)
         if itp == 1:
             logging.info(f''' Variables: {list(data_raw.variables)}''')
 
         # Extract valid variable
-        var_data = np.ma.masked_invalid(data_raw.variables[var_nm])
+        var_orig = data_raw[var_nm]
+        var_data = np.ma.masked_invalid(var_orig.values)
+        var_nm_long = var_orig.attrs.get("long_name", "No long-name attribute found")
+        var_nm_unit = var_orig.attrs.get("units", "No units attribute found")
         ndim_var = var_data.ndim
-        logging.info(f''' {var_nm}: number of dimensions = {ndim_var}''')
+        logging.info(f''' Variable: {var_nm}: {var_nm_long}: {var_nm_unit}: number of dimensions = {ndim_var}''')
         if ndim_var == 4:
             logging.info(f''' Dimension of original data = {var_data.shape}, z-level = {zlvl}''')
             var_data_2d = var_data[:,zlvlm1,:,:]
         else:
-            var_data_2d = var_data                
+            var_data_2d = var_data        
  
         logging.info(f''' Dimension of data = {var_data_2d.shape}''')
         logging.info(f''' Tile{itp}, Max = {np.max(var_data_2d)}''')
@@ -190,13 +195,36 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
 
     logging.info(f''' Dimension of data set = {plt_var.shape}''')
 
-    cs_max = np.nanmax(plt_var)
-    cs_min = np.nanmin(plt_var)
-    logging.info(f''' cs_max = {cs_max}''')
-    logging.info(f''' cs_min = {cs_min}''')
-
     cs_cmap = 'gist_ncar_r'
     cbar_extend = 'neither'
+    cbar_label = f'''{var_nm}:: {var_nm_long} ({var_nm_unit})'''
+    if colorbar_option == "fixed":
+        if var_nm == "snod":
+            cs_max = 1.2
+            cs_min = 0.0
+            cbar_extend = 'max'
+        elif var_nm == "soilm":
+            cs_max = 2000
+            cs_min = 200
+            cbar_extend = 'min'
+        elif var_nm == "spfh":
+            cs_max = 3.0e-6
+            cs_min = 2.0e-6
+            cbar_extend = 'both'
+        elif var_nm == "tmp":
+            cs_cmap = 'jet'
+            cs_max = 185 
+            cs_min = 175
+        else:
+            cs_max = np.nanmax(plt_var)
+            cs_min = np.nanmin(plt_var)
+    else:
+        cs_max = np.nanmax(plt_var)
+        cs_min = np.nanmin(plt_var)
+    logging.info(f''' colorbar_option = {colorbar_option}''')
+    logging.info(f''' cs_max = {cs_max}''')
+    logging.info(f''' cs_min = {cs_min}''')
+    logging.info(f''' colorbar_extend = {cbar_extend}''')
 
     # Plot each tile
     if plot_each_tile == "YES":
@@ -259,7 +287,7 @@ def plot_data(path_data,fn_data_base,var_nm,ifhr,zlvlm1,out_title_base,
     fig.add_axes(ax_cb)
     cbar=plt.colorbar(cs,cax=ax_cb,extend=cbar_extend)
     cbar.ax.tick_params(labelsize=6)
-    cbar.set_label(var_nm,fontsize=6)
+    cbar.set_label(cbar_label,fontsize=6)
     # Output figure
     ndpi = 300
     out_file(work_dir,out_fn,ndpi)
