@@ -34,6 +34,7 @@ def main():
     f.close()
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
+    colorbar_option = yaml_data['colorbar_option']
     FCST_HRS = yaml_data['FCST_HRS']
     fn_base_prefix = yaml_data['fn_base_prefix']
     out_title_base = yaml_data['out_title_base']
@@ -81,7 +82,7 @@ def main():
                 logging.info(f''' Variable: {var_nm} from "ocn", fhr: {ifhr_3d}''')
                 fn_ocn = f'''{fn_base_prefix}.ocn.f{ifhr_3d}.c{RES}.nc'''
                 plot_data(path_data,fn_ocn,var_nm,glon,glat,ifhr_3d,zlvlm1_ocn,
-                          out_title_base,out_fn_base,work_dir)
+                          out_title_base,out_fn_base,work_dir,colorbar_option)
 
 
 # geo lon/lat ======================================================= CHJ =====
@@ -140,7 +141,7 @@ def get_geo(path_data,fn_data,var_nm):
 
 # Get data from files and plot ====================================== CHJ =====
 def plot_data(path_data,fn_data,var_nm,glon,glat,ifhr,zlvlm1,
-              out_title_base,out_fn_base,work_dir):
+              out_title_base,out_fn_base,work_dir,colorbar_option):
 
     # center of map
     c_lon = -77.0369
@@ -150,18 +151,21 @@ def plot_data(path_data,fn_data,var_nm,glon,glat,ifhr,zlvlm1,
     logging.info(f''' ===== data file: '{var_nm}' ========================''')
     # open the data file
     fp_data = os.path.join(path_data,fn_data)
-    try: data_raw = nc.Dataset(fp_data)
+    try: data_raw = xr.open_dataset(fp_data)
     except: raise Exception('Could NOT find the file',fp_data)
 
     # Extract valid variable
-    var_data = np.ma.masked_invalid(data_raw.variables[var_nm])
+    var_orig = data_raw[var_nm]
+    var_data = np.ma.masked_invalid(var_orig.values)
+    var_nm_long = var_orig.attrs.get("long_name", "No long-name attribute found")
+    var_nm_unit = var_orig.attrs.get("units", "No units attribute found")
     ndim_var = var_data.ndim
-    logging.info(f''' {var_nm}: number of dimensions = {ndim_var}''')
+    logging.info(f''' Variable: {var_nm}: {var_nm_long}: {var_nm_unit}: number of dimensions = {ndim_var}''')
     if ndim_var == 4:
         logging.info(f''' Dimension of original data = {var_data.shape}, z-level = {zlvl}''')
         var_data_2d = var_data[:,zlvlm1,:,:]
     else:
-        var_data_2d = var_data                
+        var_data_2d = var_data
 
     logging.info(f''' Dimension of data = {var_data_2d.shape}''')
     logging.info(f''' {var_nm}, Max = {np.nanmax(var_data_2d)}''')
@@ -172,13 +176,35 @@ def plot_data(path_data,fn_data,var_nm,glon,glat,ifhr,zlvlm1,
 
     logging.info(f''' Dimension of data set = {plt_var.shape}''')
 
-    cs_max = np.nanmax(plt_var)
-    cs_min = np.nanmin(plt_var)
-    logging.info(f''' cs_max = {cs_max}''')
-    logging.info(f''' cs_min = {cs_min}''')
-
     cs_cmap = 'gist_ncar_r'
     cbar_extend = 'neither'
+    cbar_label = f'''{var_nm}:: {var_nm_long} ({var_nm_unit})'''
+    if colorbar_option == "fixed":
+        if var_nm == "SSH":
+            cs_cmap = 'turbo'
+            cs_max = 1.5
+            cs_min = -1.5
+            cbar_extend = 'both'
+        elif var_nm == "SSS":
+            cs_cmap = 'turbo'
+            cs_max = 38
+            cs_min = 30
+            cbar_extend = 'both'
+        elif var_nm == "temp":
+            cs_cmap = 'nipy_spectral'
+            cs_max = 35
+            cs_min = -5
+            cbar_extend = 'both'
+        else:
+            cs_max = np.nanmax(plt_var)
+            cs_min = np.nanmin(plt_var)
+    else:
+        cs_max = np.nanmax(plt_var)
+        cs_min = np.nanmin(plt_var)
+    logging.info(f''' colorbar_option = {colorbar_option}''')
+    logging.info(f''' cs_max = {cs_max}''')
+    logging.info(f''' cs_min = {cs_min}''')
+    logging.info(f''' colorbar_extend = {cbar_extend}''')
 
     if ndim_var == 4:
         out_title = f'''{out_title_base}{var_nm}::L{zlvl}::F{ifhr}'''
@@ -198,7 +224,7 @@ def plot_data(path_data,fn_data,var_nm,glon,glat,ifhr,zlvlm1,
     fig.add_axes(ax_cb)
     cbar=plt.colorbar(cs,cax=ax_cb,extend=cbar_extend)
     cbar.ax.tick_params(labelsize=6)
-    cbar.set_label(var_nm,fontsize=6)
+    cbar.set_label(cbar_label,fontsize=6)
     # Output figure
     ndpi = 300
     out_file(work_dir,out_fn,ndpi)

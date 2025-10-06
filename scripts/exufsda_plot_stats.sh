@@ -186,6 +186,7 @@ if [ "${DO_PLOT_RESTART}" = "YES" ]; then
 
   cat > plot_restart.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
 fn_data_base: '${fn_data_base}'
 orog_path: '${orog_path}'
 orog_fn_base: '${orog_fn_base}'
@@ -264,6 +265,7 @@ if [ "${DO_PLOT_FCST_OUT_MOM6}" = "YES" ]; then
 
   cat > plot_forecast_out_mom6.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
 FCST_HRS: ${FCST_HRS}
 fn_base_prefix: '${fn_base_prefix}'
 out_title_base: '${out_title_base}'
@@ -299,6 +301,7 @@ if [ "${DO_PLOT_FCST_OUT_CICE}" = "YES" ]; then
 
   cat > plot_forecast_out_cice.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
 FCST_HRS: ${FCST_HRS}
 fn_base_prefix: '${fn_base_prefix}'
 out_title_base: '${out_title_base}'
