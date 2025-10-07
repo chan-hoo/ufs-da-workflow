@@ -235,6 +235,43 @@ workflow:
                 age: 5
               value: "&DATADEP_SFC2;"
 {%- endif %}
+{%- if COLDSTART == "YES" and IC_FROM_FIX_DIR == "NO" %}
+    task_fcst_ic:
+      attrs:
+        cycledefs: first_cycle
+        maxtries: 2
+      envars:
+        ACCOUNT: "&ACCOUNT;"
+        APP: "&APP;"
+        COMINgdas: "&COMINgdas;"
+        COMINgfs: "&COMINgfs;"
+        COMROOT: "&COMROOT;"
+        cyc: "&cyc;"
+        DATAROOT: "&DATAROOT;"
+        HOMEufsda: "&HOMEufsda;"
+        IC_DATA_MODEL: "&IC_DATA_MODEL;"
+        KEEPDATA: "&KEEPDATA;"
+        MACHINE: "&MACHINE;"
+        model_ver: "&model_ver;"
+        NPROCS_FCST_IC: "&NPROCS_FCST_IC;"
+        PDY: "&PDY;"
+        RES: "&RES;"
+        SCHED: "&SCHED;"
+      account: "&ACCOUNT;"
+      command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "fcst_ic" "&HOMEufsda;" "&MACHINE;"'
+      jobname: fcst_ic
+      nodes: "1:ppn=&NPROCS_FCST_IC;"
+      walltime: 00:15:00
+{%- if native_default is not none %}
+      native: "&native_default;"
+{%- endif %}
+      partition: "&partition_default;"
+      queue: "&queue_default;"
+      join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
+{%- if memory_flag %}
+      memory: 128G
+{%- endif %}
+{%- endif %}
     task_forecast:
       attrs:
 {%- if DO_FREE_FORECAST == "first" %}
@@ -306,10 +343,16 @@ workflow:
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
       dependency:
         or:
+{%- if IC_FROM_FIX_DIR == "YES" %}
           datadep_coldstart:
             attrs:
               age: 5
             value: "&DATADEP_COLDSTART;"
+{%- else %}
+          taskdep_fcst_ic:
+            attrs:
+              task: fcst_ic
+{%- endif %}
 {%- if DO_FREE_FORECAST == "none" %}
           taskdep_analysis:
             attrs:
