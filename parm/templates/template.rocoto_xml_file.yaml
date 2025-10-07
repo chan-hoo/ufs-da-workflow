@@ -104,7 +104,7 @@ workflow:
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if date_second_cycle is not none and DO_FREE_FORECAST == "none" %}
+{%- if date_second_cycle is not none and ( DO_FREE_FORECAST == "none" or DO_FREE_FORECAST == "first" ) %}
     task_prep_data:
       attrs:
 {%- if COLDSTART == "YES" %}
