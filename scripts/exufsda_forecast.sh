@@ -517,7 +517,9 @@ fi
 ##################################
 # Copy output files to COMINOUT
 ##################################
+########
 # FV3
+########
 read -ra out_fh <<< "${OUTPUT_FH}"
 out_fh1="${out_fh[0]}"
 out_fh2="${out_fh[1]}"
@@ -536,8 +538,10 @@ do
   done
 done
 
+#########
 # MOM6
-# Time-averaged => output time line is different
+#########
+# time-averaged => output time line is different
 cp -rp "${DATA}/MOM6_OUTPUT" ${COMINOUT}
 out_start_mom6=$(( OUTPUT_FH_MOM6 / 2 ))
 list_out_fh_mom6=$(seq ${out_start_mom6} ${OUTPUT_FH_MOM6} ${FCST_HRS})
@@ -552,23 +556,41 @@ do
   cp -p "${DATA}/MOM6_OUTPUT/ocn_${iyyyy}_${imm}_${idd}_${ihh}.nc" "${COMINOUT}/${NET}.${cycle}.ocn.f${ihr_3d}.c${RES}.nc"
 done
 
+#########
 # CICE
+#########
+# time-averaged if hist_avg = true in ice_in
+# output frequency: output time is not based on forecast hours but based on wall-clock hour
 cp -rp "${DATA}/history" ${COMINOUT}
-list_out_fh_cice=$(seq ${OUTPUT_FH_CICE} ${OUTPUT_FH_CICE} ${FCST_HRS})
-for ihr in ${list_out_fh_cice}
-do
-  idate=$($NDATE ${ihr} $PDY$cyc)
-  iyyyy=${idate:0:4}
-  imm=${idate:4:2}
-  idd=${idate:6:2}
-  ihh=${idate:8:2}
-  ihh_sec=$(( ihh * 3600 ))
-  ihh_sec_5d=$(printf "%05d" "${ihh_sec}")
-  ihr_3d=$(printf "%03d" "${ihr}")
-  cp -p "${DATA}/history/iceh_${cyc}h.${iyyyy}-${imm}-${idd}-${ihh_sec_5d}.nc" "${COMINOUT}/${NET}.${cycle}.ice.f${ihr_3d}.c${RES}.nc"
+output_fh_cice_2d=$(printf "%02d" "${OUTPUT_FH_CICE}")
+fdate_fcst=$($NDATE ${FCST_HRS} ${PDY}${cyc})
+idate="${PDY}00"
+ihr="0"
+icnt="0"
+while [ "${idate}" -le "${fdate_fcst}" ]; do
+  if (( "${idate}" > "${PDY}${cyc}" )); then
+    iyyyy=${idate:0:4}
+    imm=${idate:4:2}
+    idd=${idate:6:2}
+    ihh=${idate:8:2}
+    ihh_nz="${ihh#0}"
+    if (( "${icnt}" == 0 )); then
+      ihr0=$(( cyc - ihh_nz ))
+      ihr=$(( ihr + ihr0 ))
+      icnt=$(( icnt + 1 ))
+    fi
+    ihh_sec=$(( ihh_nz * 3600 ))
+    ihh_sec_5d=$(printf "%05d" "${ihh_sec}")
+    ihr=$(( ihr + OUTPUT_FH_CICE ))
+    ihr_3d=$(printf "%03d" "${ihr}")
+    cp -p "${DATA}/history/iceh_${output_fh_cice_2d}h.${iyyyy}-${imm}-${idd}-${ihh_sec_5d}.nc" "${COMINOUT}/${NET}.${cycle}.ice.f${ihr_3d}.c${RES}.nc"
+  fi
+  idate=$($NDATE ${OUTPUT_FH_CICE} ${idate})
 done
 
+########
 # WW3
+########
 cp -p *.out_grd.ww3 ${COMINOUT}
 cp -p *.out_pnt.ww3.nc ${COMINOUT}
 cp -p out.pnt_wght.ww3.nc ${COMINOUT}

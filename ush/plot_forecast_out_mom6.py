@@ -9,6 +9,7 @@
 ###################################################################### CHJ #####
 
 import os, sys
+import re
 import logging
 import yaml
 import numpy as np
@@ -37,12 +38,11 @@ def main():
     colorbar_option = yaml_data['colorbar_option']
     FCST_HRS = yaml_data['FCST_HRS']
     fn_base_prefix = yaml_data['fn_base_prefix']
+    fn_base_suffix = yaml_data['fn_base_suffix']
     out_title_base = yaml_data['out_title_base']
     out_fn_base = yaml_data['out_fn_base']
-    OUTPUT_FH_MOM6 = yaml_data['OUTPUT_FH_MOM6']
     path_data = yaml_data['path_data']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
-    RES = yaml_data['RES']
     var_list_ocn = yaml_data['var_list_ocn']
     work_dir = yaml_data['work_dir']
     zlvl_ocn = yaml_data['zlevel_number_ocn']
@@ -65,9 +65,15 @@ def main():
     # Set the path to Natural Earth dataset
     cartopy.config['data_dir'] = cartopy_ne_path
 
-    # Make list of output hours from OUTPUT_FH_MOM6
-    fhr_1st = int(OUTPUT_FH_MOM6) // 2
-    fhr_list = list(range(fhr_1st, int(FCST_HRS)+1, int(OUTPUT_FH_MOM6)))
+    # Make list of output hours from file names
+    pattern = rf"{re.escape(fn_base_prefix)}(\d+){re.escape(fn_base_suffix)}"
+    fhr_list = []
+    for filename in os.listdir(path_data):
+        match = re.search(pattern, filename)
+        if match:
+            fhr_list.append(int(match.group(1)))
+    fhr_list.sort()
+    fhr_1st = fhr_list[0]
     logging.info(f''' FHR list: {fhr_list}''')
 
     # from 'ocn' file
@@ -75,12 +81,12 @@ def main():
     if var_list_ocn:
         for var_nm in var_list_ocn:
             # get lon, lat
-            fn_ocn = f'''{fn_base_prefix}.ocn.f{fhr_1st:03d}.c{RES}.nc'''
+            fn_ocn = f'''{fn_base_prefix}{fhr_1st:03d}{fn_base_suffix}'''
             glon,glat = get_geo(path_data,fn_ocn,var_nm)
             for ifhr in fhr_list:
                 ifhr_3d = f'''{ifhr:03d}'''
                 logging.info(f''' Variable: {var_nm} from "ocn", fhr: {ifhr_3d}''')
-                fn_ocn = f'''{fn_base_prefix}.ocn.f{ifhr_3d}.c{RES}.nc'''
+                fn_ocn = f'''{fn_base_prefix}{ifhr_3d}{fn_base_suffix}'''
                 plot_data(path_data,fn_ocn,var_nm,glon,glat,ifhr_3d,zlvlm1_ocn,
                           out_title_base,out_fn_base,work_dir,colorbar_option)
 

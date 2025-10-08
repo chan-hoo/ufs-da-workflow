@@ -257,7 +257,8 @@ fi
 # Plot forecast output file: MOM6
 ###########################################################
 if [ "${DO_PLOT_FCST_OUT_MOM6}" = "YES" ]; then
-  fn_base_prefix="${NET}.${cycle}"
+  fn_base_prefix="${NET}.${cycle}.ocn.f"
+  fn_base_suffix=".c${RES}.nc"
   out_title_base="UFS-DA::OUT::MOM6::${YYYY}-${MM}-${DD}-${HH}::"
   out_fn_base="ufsda_out_mom6_${YYYY}${MM}${DD}${HH}_"
   # zlevel_number is valid only for 3-D fields
@@ -268,12 +269,11 @@ cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 colorbar_option: 'fixed'
 FCST_HRS: ${FCST_HRS}
 fn_base_prefix: '${fn_base_prefix}'
+fn_base_suffix: '${fn_base_suffix}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
-OUTPUT_FH_MOM6: '${OUTPUT_FH_MOM6}'
 path_data: '${COMINOUT}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-RES: ${RES}
 var_list_ocn:
   - SSH
   - SSS
@@ -295,7 +295,8 @@ fi
 # Plot forecast output file: CICE
 ###########################################################
 if [ "${DO_PLOT_FCST_OUT_CICE}" = "YES" ]; then
-  fn_base_prefix="${NET}.${cycle}"
+  fn_base_prefix="${NET}.${cycle}.ice.f"
+  fn_base_suffix=".c${RES}.nc"
   out_title_base="UFS-DA::OUT::CICE::${YYYY}-${MM}-${DD}-${HH}::"
   out_fn_base="ufsda_out_cice_${YYYY}${MM}${DD}${HH}_"
 
@@ -304,9 +305,9 @@ cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 colorbar_option: 'fixed'
 FCST_HRS: ${FCST_HRS}
 fn_base_prefix: '${fn_base_prefix}'
+fn_base_suffix: '${fn_base_suffix}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
-OUTPUT_FH_CICE: '${OUTPUT_FH_CICE}'
 path_data: '${COMINOUT}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 RES: ${RES}
