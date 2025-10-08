@@ -283,7 +283,7 @@ new_sfc_data_fn_suffix: '${new_sfc_data_fn_suffix}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF
 
-    ${USHlandda}/sfc_data_replace_var.py
+    ${USHufsda}/sfc_data_replace_var.py
     if [ $? -ne 0 ]; then
       err_exit "FATAL ERROR: sfc_data var replacement failed"
     fi

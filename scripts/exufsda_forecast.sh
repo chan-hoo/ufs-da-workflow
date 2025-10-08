@@ -611,10 +611,14 @@ cp -p ufs.cpld.ww3.r.* ${COMINOUT}
 cp -p ${DATA}/RESTART/* ${COMINOUTrestart}
 
 # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
-for itile in {1..6};
-do
-  ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
-done
+if [ "${DO_FREE_FORECAST}" = "first" ]; then
+  ln -nsf ${COMINOUTrestart}/*.sfc_data.tile*.nc ${DATA_RESTART}
+else
+  for itile in {1..6};
+  do
+    ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+  done
+fi
 
 
 #
