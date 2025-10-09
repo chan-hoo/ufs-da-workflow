@@ -39,11 +39,12 @@ fi
 
 if [ "${IC_DATA_MODEL}" = "gfs" ] || [ "${IC_DATA_MODEL}" = "GFS" ]; then
   fn_data_prefix="gfs"
-  data_dir_input_grid="${COMINgfs}/${PDY}"
+  dcom_path="${COMINgfs}"
 elif [ "${IC_DATA_MODEL}" = "gdas" ] || [ "${IC_DATA_MODEL}" = "GDAS" ]; then
   fn_data_prefix="gdas"
-  data_dir_input_grid="${COMINgdas}/${PDY}"
+  dcom_path="${COMINgdas}"
 fi
+data_dir_input_grid="${dcom_path}/${fn_data_prefix}.${PDY}/${cyc}/atmos"
 
 if [ "${data_format}" = "nemsio" ]; then
   input_type="gaussian_nemsio"
@@ -58,11 +59,11 @@ fi
 # Check whether input files exist
 fp_atm="${data_dir_input_grid}/${fn_atm_data}"
 if [ ! -e "${fp_atm}" ]; then
-  err_exit "input file ${fp_atm} does not exist."
+  err_exit "Input file ${fp_atm} does not exist."
 fi
 fp_sfc="${data_dir_input_grid}/${fn_sfc_data}"
 if [ ! -e "${fp_sfc}" ]; then
-  err_exit "input file ${fp_sfc} does not exist."
+  err_exit "Input file ${fp_sfc} does not exist."
 fi
 
 mkdir -p fix_sfc
