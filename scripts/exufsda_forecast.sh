@@ -261,7 +261,7 @@ for ifn in "${sfc_fns[@]}" ; do
     if [ -e "${ifp}" ]; then
       ln -nsf ${ifp} .
     else
-      err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+      err_exit "Symlink failed: ${ifp} does not exist."
     fi
   done
 done
@@ -273,7 +273,7 @@ for ifn in "${ice_fns[@]}" ; do
   if [ -e "${ifp}" ]; then
     ln -nsf ${ifp} .
   else
-    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+    err_exit "Symlink failed: ${ifp} does not exist."
   fi
 done
 
@@ -284,7 +284,7 @@ for ifn in "${wav_fns[@]}" ; do
   if [ -e "${ifp}" ]; then
     ln -nsf ${ifp} .
   else
-    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+    err_exit "Symlink failed: ${ifp} does not exist."
   fi
 done
 
@@ -342,7 +342,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
         ln -nsf "${r_fp}" .
       fi
     else
-      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+      err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   done
   # Restart from COMINOUT
@@ -353,7 +353,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     if [ -e "${r_fp}" ]; then
         ln -nsf "${r_fp}" .
     else
-      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+      err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   done
 fi
@@ -387,7 +387,7 @@ for ifn in "${ocn_fns[@]}" ; do
   if [ -e "${ifp}" ]; then
     ln -nsf ${ifp} .
   else
-    err_exit "FATAL ERROR: Symlink failed: ${ifp} does not exist."
+    err_exit "Symlink failed: ${ifp} does not exist."
   fi
 done
 
@@ -431,7 +431,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
       if [ -e "${r_fp}" ]; then
         ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
       else
-        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+        err_exit "Symlink failed: ${r_fp} file does not exist."
       fi
     done
   done
@@ -443,7 +443,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     if [ -e "${r_fp}" ]; then
       ln -nsf "${r_fp}" "${ifn}.nc"
     else
-      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+      err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   done
 
@@ -455,7 +455,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     if [ -e "${r_fp}" ]; then
       ln -nsf "${r_fp}" "${r_fn}"
     else
-      err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+      err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   done
   
@@ -479,7 +479,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
       if [ -e "${r_fp}" ]; then
         ln -nsf "${r_fp}" "${ifn}.tile${itile}.nc"
       else
-        err_exit "FATAL ERROR: Symlink failed: ${r_fp} file does not exist."
+        err_exit "Symlink failed: ${r_fp} file does not exist."
       fi
     done
   done
@@ -511,7 +511,7 @@ ${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
-  err_exit "FATAL ERROR: ufs_model failed"
+  err_exit "ufs_model failed"
 fi
 
 ##################################

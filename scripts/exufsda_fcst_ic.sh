@@ -58,11 +58,11 @@ fi
 # Check whether input files exist
 fp_atm="${data_dir_input_grid}/${fn_atm_data}"
 if [ ! -e "${fp_atm}" ]; then
-  err_exit "FATAL ERROR: input file ${fp_atm} does not exist."
+  err_exit "input file ${fp_atm} does not exist."
 fi
 fp_sfc="${data_dir_input_grid}/${fn_sfc_data}"
 if [ ! -e "${fp_sfc}" ]; then
-  err_exit "FATAL ERROR: input file ${fp_sfc} does not exist."
+  err_exit "input file ${fp_sfc} does not exist."
 fi
 
 mkdir -p fix_sfc

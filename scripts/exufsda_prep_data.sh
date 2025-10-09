@@ -146,7 +146,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
     ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}"
       
     if [ $? -ne 0 ]; then
-      err_exit "FATAL ERROR: Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
+      err_exit "Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
     fi
     cp -p ${jcb_out_fn} ${COMINOUT}
   done
@@ -191,13 +191,13 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
       if [ ! -f "${input_ghcn_file}" ]; then
         echo "GHCN raw data path: ${DCOMINghcn}"
         echo "GHCN raw data file: ${YYYYp}.csv"
-        err_exit "FATAL ERROR: GHCN raw data file does not exist in designated path !!!"
+        err_exit "GHCN raw data file does not exist in designated path !!!"
       fi
       ghcn_station_file="${DCOMINghcn}/ghcnd-stations.txt"
   
       ${USHufsda}/ghcn_snod2ioda.py -i ${input_ghcn_file} -o ${obs_fn} -f ${ghcn_station_file} -d ${YYYYp}${MMp}${DDp}${HHp} -m maskout
       if [ $? -ne 0 ]; then
-        err_exit "FATAL ERROR: Generation of GHCN obs file failed !!!"
+        err_exit "Generation of GHCN obs file failed !!!"
       fi
       cp -p "${obs_fn}" "${COMINOUTobs}/${obs_out_fn_ghcn}"
     fi
@@ -267,7 +267,7 @@ EOF
         elif [ -f ${WARMSTART_DIR}/${sfc_m1} ]; then
           ln -nsf ${WARMSTART_DIR}/${sfc_m1} ${DATA}/${sfc_m0}
         else
-          err_exit "FATAL ERROR: sfc_data files do not exist"
+          err_exit "sfc_data files do not exist"
         fi
       done
   
@@ -278,14 +278,14 @@ EOF
       export err=$?; err_chk
       cp errfile errfile_calcfIMS
       if [[ $err != 0 ]]; then
-        err_exit "FATAL ERROR: calcfIMS failed"
+        err_exit "calcfIMS failed"
       fi
 
       # Convert to IODA format
       fims_out_fn="IMSscf.${PDY}.C${RES}_oro_data.nc"
       ${USHufsda}/imsfv3_scf2ioda.py -i ${fims_out_fn} -o ${obs_out_fn_ims}
       if [ $? -ne 0 ]; then
-        err_exit "FATAL ERROR: Generation of IMS obs file failed !!!"
+        err_exit "Generation of IMS obs file failed !!!"
       fi
       cp -p ${obs_out_fn_ims} "${COMINOUTobs}/${obs_out_fn_ims}"
     fi
@@ -335,12 +335,12 @@ EOF
           fi
         done  
         if ! $found; then
-          err_exit "FATAL ERROR: No matching file for ${PDY}${cyc} found in ${ihr_smap_raw_dir}!"
+          err_exit "No matching file for ${PDY}${cyc} found in ${ihr_smap_raw_dir}!"
         fi
 	# Run ioda converting script
         ${USHufsda}/smap_ssm2ioda.py -i "${smap_raw_dir}/${smap_ioda_in_fn}" -o ${obs_out_fn_smap} --maskMissing
         if [ $? -ne 0 ]; then
-          err_exit "FATAL ERROR: Generation of SMAP obs file failed !!!"
+          err_exit "Generation of SMAP obs file failed !!!"
         fi
       else
         hftime_smap=$($NDATE -${SMAP_RAW_WINDOW_SPAN_HALF} $PDY$cyc)
@@ -363,7 +363,7 @@ EOF
             fi
           done        
           if ! $found; then
-            err_exit "FATAL ERROR: No matching file for ${ihr_date} found in ${ihr_smap_raw_dir}!"
+            err_exit "No matching file for ${ihr_date} found in ${ihr_smap_raw_dir}!"
           fi
         done
   
@@ -384,7 +384,7 @@ EOF
         # Run the ioda converting script for SMAP and concatenate the netcdf files
         ${USHufsda}/smap_ioda_concat_files.py
         if [ $? -ne 0 ]; then
-          err_exit "FATAL ERROR: Generation of SMAP_ioda obs file failed !!!"
+          err_exit "Generation of SMAP_ioda obs file failed !!!"
         fi
       fi
       cp -p "${obs_out_fn_smap}" "${COMINOUTobs}/${obs_out_fn_smap}"
@@ -411,13 +411,13 @@ EOF
       if [ -n "${fn_smops_raw}" ]; then
         ln -nsf ${fn_smops_raw} ${smops_ioda_in_fn}
       else
-        err_exit "FATAL ERROR: SMOPS raw data file does not exist in ${DCOMINsmops} !!!"
+        err_exit "SMOPS raw data file does not exist in ${DCOMINsmops} !!!"
       fi
 
       # Run ioda converting script
       ${USHufsda}/smops_ssm2ioda.py -i ${smops_ioda_in_fn} -o ${obs_out_fn_smops}
       if [ $? -ne 0 ]; then
-        err_exit "FATAL ERROR: Generation of SMOPS obs file failed !!!"
+        err_exit "Generation of SMOPS obs file failed !!!"
       fi
       cp -p "${obs_out_fn_smops}" "${COMINOUTobs}/${obs_out_fn_smops}"
     fi

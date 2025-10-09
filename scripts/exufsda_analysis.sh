@@ -45,7 +45,7 @@ do
   elif [ -f ${WARMSTART_DIR}/${sfc_fn} ]; then
     cp -p ${WARMSTART_DIR}/${sfc_fn} .
   else
-    err_exit "FATAL ERROR: Initial sfc_data files do not exist"
+    err_exit "Initial sfc_data files do not exist"
   fi
   # copy sfc_data file for comparison
   cp -p ${sfc_fn} "${sfc_fn}_ini"
@@ -156,7 +156,7 @@ for jedi_type in "${list_jedi_types[@]}"; do
 
       ${USHufsda}/letkf_create_ens.py $filedate $snowdepth_vn 30
       if [[ $? != 0 ]]; then
-        err_exit "FATAL ERROR: letkf-oi create failed"
+        err_exit "letkf-oi create failed"
       fi
     else
       ln -nsf ${orog_path}/${orog_fn_base}.tile*.nc ${DATA}
@@ -192,7 +192,7 @@ for jedi_type in "${list_jedi_types[@]}"; do
   export err=$?; err_chk
   cp errfile errfile_fv3jedi_x
   if [[ $err != 0 ]]; then
-    err_exit "FATAL ERROR: JEDI DA failed"
+    err_exit "JEDI DA failed"
   fi
 
   # save intermediate sfc_data files before applying increment
@@ -244,7 +244,7 @@ EOF
     export err=$?; err_chk
     cp errfile errfile_apply_incr
     if [[ $err != 0 ]]; then
-      err_exit "FATAL ERROR: apply snow increment failed"
+      err_exit "apply snow increment failed"
     fi
 
     # Save intermediate sfc_data files after applying increment
@@ -285,7 +285,7 @@ EOF
 
     ${USHufsda}/sfc_data_replace_var.py
     if [ $? -ne 0 ]; then
-      err_exit "FATAL ERROR: sfc_data var replacement failed"
+      err_exit "sfc_data var replacement failed"
     fi
 
     # Save intermediate sfc_data files after applying increment
@@ -334,7 +334,7 @@ EOF
 
     ${USHufsda}/plot_comp_sfc_data.py
     if [ $? -ne 0 ]; then
-      err_exit "FATAL ERROR: sfc_data comparison plot failed"
+      err_exit "sfc_data comparison plot failed"
     fi
 
     # Copy result file to COMINOUT
@@ -383,7 +383,7 @@ EOF
 
     ${USHufsda}/plot_obs_file.py
     if [ $? -ne 0 ]; then
-      err_exit "FATAL ERROR: Observation file plot failed"
+      err_exit "Observation file plot failed"
     fi
     # Copy result file to COMINOUT
     cp -p *.png ${COMINOUTplot}

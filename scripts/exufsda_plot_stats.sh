@@ -133,7 +133,7 @@ EOF
   
   ${USHufsda}/plot_hofx_stats.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Scatter/Histogram plots failed."
+    err_exit "Scatter/Histogram plots failed."
   fi
   
   # Copy result files to COMINOUT
@@ -167,7 +167,7 @@ EOF
 
   ${USHufsda}/plot_analysis_timehistory.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Time-history plots failed."
+    err_exit "Time-history plots failed."
   fi
 
   # Copy result files to COMINOUT
@@ -204,7 +204,7 @@ EOF
 
   ${USHufsda}/plot_forecast_restart.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Forecast restart plots failed."
+    err_exit "Forecast restart plots failed."
   fi
 
   # Copy result files to COMINOUT
@@ -246,7 +246,7 @@ EOF
 
   ${USHufsda}/plot_forecast_out_fv3.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Forecast FV3 output plots failed."
+    err_exit "Forecast FV3 output plots failed."
   fi
 
   # Copy result files to COMINOUT
@@ -284,7 +284,7 @@ EOF
 
   ${USHufsda}/plot_forecast_out_mom6.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Forecast MOM6 output plots failed."
+    err_exit "Forecast MOM6 output plots failed."
   fi
 
   # Copy result files to COMINOUT
@@ -319,7 +319,7 @@ EOF
 
   ${USHufsda}/plot_forecast_out_cice.py
   if [ $? -ne 0 ]; then
-    err_exit "FATAL ERROR: Forecast CICE output plots failed."
+    err_exit "Forecast CICE output plots failed."
   fi
 
   # Copy result files to COMINOUT
