@@ -130,6 +130,7 @@ workflow:
         DCOMINsmops: "&DCOMINsmops;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
+        IC_DATA_MODEL: "&IC_DATA_MODEL;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
         KEEPDATA: "&KEEPDATA;"
@@ -162,6 +163,18 @@ workflow:
       join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
 {%- if memory_flag %}
       memory: 128G
+{%- endif %}
+{%- if OBS_IMS_SNOW == "YES" %}
+      dependency:
+        or:
+          datadep_sfc1:
+            attrs:
+              age: 5
+            value: "&DATADEP_SFC1;"
+          datadep_sfc2:
+            attrs:
+              age: 5
+            value: "&DATADEP_SFC2;"
 {%- endif %}
     task_analysis:
       attrs:

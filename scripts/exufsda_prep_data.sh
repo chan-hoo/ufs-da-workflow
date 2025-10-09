@@ -253,19 +253,27 @@ EOF
 
       # Copy IMS raw ascii file
       ims_asc_fn="ims${jdate}_${imsres}_v${imsversion}.asc"
-      cp -p "${COMINgdas}/${PDY}/gdas.t${cyc}z.imssnow${RES}.asc" "${DATA}/${ims_asc_fn}"
+      if [ "${IC_DATA_MODEL}" = "gfs" ] || [ "${IC_DATA_MODEL}" = "GFS" ]; then
+        fn_data_prefix="gfs"
+        dcom_path="${COMINgfs}"
+      elif [ "${IC_DATA_MODEL}" = "gdas" ] || [ "${IC_DATA_MODEL}" = "GDAS" ]; then
+        fn_data_prefix="gdas"
+        dcom_path="${COMINgdas}"
+      fi
+      # Since JEDI is supposed to run at 18H, cyc is fixed to 18
+      input_data_dir="${dcom_path}/${fn_data_prefix}.${PDY}/18/atmos"
+      cp -p "${input_data_dir}/${fn_data_prefix}.t18z.imssnow${RES}.asc" "${DATA}/${ims_asc_fn}"
       # Soft-link mapping file
-      ln -nsf "${DCOMINobs}/IMS/fix/IMS4km_to_FV3_mapping.C${RES}_oro_data.nc" .
+      ln -nsf "${FIXufsda}/DATA_ims/IMS4km_to_FV3_mapping.C${RES}_oro_data.nc" .
 
       # Copy sfc_data files into work directory
       for itile in {1..6}
       do
-        sfc_m1="${YYYYp}${MMp}${DDp}.${HHp}0000.sfc_data.tile${itile}.nc"
         sfc_m0="${YYYY}${MM}${DD}.${HH}0000.sfc_data.tile${itile}.nc"
-        if [ -f ${COMINOUTcm1}/${sfc_m1} ]; then
-          ln -nsf ${COMINOUTcm1}/${sfc_m1} ${DATA}/${sfc_m0}
-        elif [ -f ${WARMSTART_DIR}/${sfc_m1} ]; then
-          ln -nsf ${WARMSTART_DIR}/${sfc_m1} ${DATA}/${sfc_m0}
+        if [ -f ${DATA_RESTART}/${sfc_m0} ]; then
+          ln -nsf ${DATA_RESTART}/${sfc_m0} ${DATA}
+        elif [ -f ${WARMSTART_DIR}/${sfc_m0} ]; then
+          ln -nsf ${WARMSTART_DIR}/${sfc_m0} ${DATA}
         else
           err_exit "sfc_data files do not exist"
         fi
