@@ -6,10 +6,10 @@ start_minute:            0
 start_second:            0
 nhours_fcst:             {{ FCST_HRS }}
 fhrot:                   {{ FHROT }}
-
 dt_atmos:                {{ DT_ATMOS }}
-restart_interval:        {{ RESTART_INTERVAL }}
 restart_fh:               
+{%- if APP == "S2SWA" %}
+restart_interval:        {{ RESTART_INTERVAL }}
 
 quilting:                .true.
 quilting_restart:        .false.
@@ -38,3 +38,4 @@ imo:                     384
 jmo:                     190
 output_fh:               {{ OUTPUT_FH }}
 iau_offset:              0
+{%- endif %}

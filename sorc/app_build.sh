@@ -90,7 +90,7 @@ BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
 JEDI_BUILD_DIR="${HOME_DIR}/../jedi"
 COMPILER="intel"
-APPLICATION=""
+APPLICATION="S2SWA"
 CCPP_SUITES=""
 BUILD_TYPE="Release"
 BUILD_JOBS=8
@@ -163,6 +163,7 @@ fi
 APPLICATION=$(echo ${APPLICATION} | tr '[a-z]' '[A-Z]')
 PLATFORM=$(echo ${PLATFORM} | tr '[A-Z]' '[a-z]')
 COMPILER=$(echo ${COMPILER} | tr '[A-Z]' '[a-z]')
+APP_LOWER=$(echo ${APPLICATION} | tr '[A-Z]' '[a-z]')
 
 # check if PLATFORM is set
 if [ -z $PLATFORM ] ; then
@@ -380,6 +381,10 @@ else
     for file in *; do
       [ -x "${file}" ] && cp "${file}" "${HOME_DIR}/exec"
     done
+    # change executable name of ufs_model
+    if [ -f "${HOME_DIR}/exec/ufs_model" ]; then
+      mv "${HOME_DIR}/exec/ufs_model" "${HOME_DIR}/exec/ufs_model_${APP_LOWER}"
+    fi
     # copy libraries
     if [ -d "${BUILD_DIR}/lib64" ]; then
       mkdir -p ${HOME_DIR}/lib64
