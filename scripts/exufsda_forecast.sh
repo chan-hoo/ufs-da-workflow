@@ -169,9 +169,9 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 ######################
 nprocs_atm_m1=$(( nprocs_forecast_atm - 1 ))
 nprocs_med_m1=$(( nprocs_forecast_med - 1 ))
-nprocs_atm_ocn=$(( nprocs_forecast_atm + OCN_NPROCS ))
+nprocs_atm_ocn=$(( nprocs_forecast_atm + NPROCS_OCN ))
 nprocs_atm_ocn_m1=$(( nprocs_atm_ocn - 1 ))
-nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + ICE_DOMAIN_NPROCS ))
+nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
 nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 
@@ -433,7 +433,7 @@ if [ "${ice_model}" = "cice6" ]; then
   'dd': !!str ${DD}
   'hh_sec': !!str ${HHsec_5d}
   'DT_ATMOS': ${DT_ATMOS}
-  'ICE_DOMAIN_NPROCS': ${ICE_DOMAIN_NPROCS}
+  'NPROCS_ICE': ${NPROCS_ICE}
   'ice_runtype': ${ice_runtype}
   'ice_use_restart_time': ${ice_use_restart_time}
   'OUTPUT_FH_CICE': ${OUTPUT_FH_CICE}

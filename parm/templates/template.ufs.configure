@@ -22,6 +22,7 @@ MED_petlist_bounds:             {{ med_petlist_bounds_n1 }} {{ med_petlist_bound
 MED_omp_num_threads:            1
 ::
 
+{%- if atm_model %}
 # ATM #
 ATM_model:                      {{ atm_model }}
 ATM_petlist_bounds:             {{ atm_petlist_bounds_n1 }} {{ atm_petlist_bounds_n2 }}
@@ -42,7 +43,9 @@ ATM_attributes::
   write_restart_at_endofrun = .true.
 {%- endif %}
 ::
+{%- endif %}
 
+{%- if ocn_model %}
 # OCN #
 OCN_model:                      {{ ocn_model }}
 OCN_petlist_bounds:             {{ ocn_petlist_bounds_n1 }} {{ ocn_petlist_bounds_n2 }}
@@ -56,7 +59,9 @@ OCN_attributes::
   use_coldstart = false
   use_mommesh = true
 ::
+{%- endif %}
 
+{%- if ice_model %}
 # ICE #
 ICE_model:                      {{ ice_model }}
 ICE_petlist_bounds:             {{ ice_petlist_bounds_n1 }} {{ ice_petlist_bounds_n2 }}
@@ -72,8 +77,9 @@ ICE_attributes::
   stop_option = nhours
   stop_ymd = -999
 ::
+{%- endif %}
 
-{%- if APP == "S2SWA" %}
+{%- if wav_model %}
 # WAV #
 WAV_model:                      {{ wav_model }}
 WAV_petlist_bounds:             {{ wav_petlist_bounds_n1 }} {{ wav_petlist_bounds_n2 }}
@@ -152,10 +158,16 @@ runSeq::
 DRIVER_attributes::
 ::
 MED_attributes::
+{%- if atm_model %}
       ATM_model = {{ atm_model }}
+{%- endif %}
+{%- if ice_model %}
       ICE_model = {{ ice_model }}
+{%- endif %}
+{%- if ocn_model %}
       OCN_model = {{ ocn_model }}
-{%- if APP == "S2SWA" %}
+{%- endif %}
+{%- if wav_model %}
       WAV_model = {{ wav_model }}
 {%- endif %}
       coupling_mode = ufs.frac

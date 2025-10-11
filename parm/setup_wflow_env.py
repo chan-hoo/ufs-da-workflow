@@ -106,15 +106,19 @@ def setup_wflow_env(machine):
     atm_layout_y = config_parm.get("ATM_LAYOUT_Y")
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
     atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
-    ice_domain_nprocs = config_parm.get("ICE_DOMAIN_NPROCS")
-    ocn_nprocs = config_parm.get("OCN_NPROCS")
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
-    wav_nprocs = config_parm.get("WAV_NPROCS")
+    nprocs_ice = config_parm.get("NPROCS_ICE")
+    nprocs_ocn = config_parm.get("NPROCS_OCN")   
+    nprocs_wav = config_parm.get("NPROCS_WAV")
 
     if app == "S2SWA":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
-        nprocs_forecast = nprocs_forecast_atm + ocn_nprocs + ice_domain_nprocs + wav_nprocs
+        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav
+    elif app == "NG-GODAS":
+        nprocs_forecast_med = nprocs_ice
+        nprocs_forecast_atm = nprocs_forecast_med
+        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice
 
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
@@ -410,7 +414,6 @@ def set_default_parm():
         "FRAC_GRID": "YES",
         "IC_DATA_MODEL": "gfs",
         "IC_FROM_FIX_DIR": "YES",
-        "ICE_DOMAIN_NPROCS": 10,
         "JEDI_ALGORITHM": "letkf-oi",
         "JEDI_BIN_PATH": None,
         "JEDI_IODACONV_PATH": None,
@@ -421,13 +424,15 @@ def set_default_parm():
         "NET": "ufsda",
         "NPROCS_ANALYSIS": 6,
         "NPROCS_FCST_IC": 36,
+        "NPROCS_ICE": 10,
+        "NPROCS_OCN": 20,
+        "NPROCS_WAV": 60,
         "NPZ": 127,
         "OBS_GHCN_SNOW": "NO",
         "OBS_IMS_SNOW": "NO",
         "OBS_SFCSNO": "NO",
         "OBS_SMAP": "NO",
         "OBS_SMOPS": "NO",
-        "OCN_NPROCS": 20,
         "OUTPUT_FH": "3 -1",
         "OUTPUT_FH_CICE": None,
         "OUTPUT_FH_MOM6": None,
@@ -440,7 +445,6 @@ def set_default_parm():
         "SMAP_RAW_WINDOW_SPAN_HALF": 5,
         "WALLTIME_FORECAST": "00:30:00",
         "WARMSTART_DIR": None,
-        "WAV_NPROCS": 60,
         "WRITE_GROUPS": 1,
         "WRITE_TASKS_PER_GROUP": 6,
     }
