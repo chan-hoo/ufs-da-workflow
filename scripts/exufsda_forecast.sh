@@ -160,7 +160,6 @@ settings="\
   'res_p1': ${res_p1}
   'warm_start': '${warm_start}'
 " # End of settings variable
-
 fp_template="${PARMufsda}/templates/${fn_template}"
 fn_namelist="input.nml"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
@@ -205,7 +204,6 @@ settings="\
   'wav_petlist_bounds_n1': ${nprocs_atm_ocn_ice}
   'wav_petlist_bounds_n2': ${nprocs_forecast_m1}
 " # End of settings variable
-
 fp_template="${PARMufsda}/templates/template.ufs.configure"
 fn_namelist="ufs.configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
@@ -227,7 +225,6 @@ settings="\
   'WRITE_GROUPS': ${WRITE_GROUPS}
   'WRITE_TASKS_PER_GROUP': ${WRITE_TASKS_PER_GROUP}
 " # End of settings variable
-
 fp_template="${PARMufsda}/templates/template.model_configure"
 fn_namelist="model_configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
@@ -244,7 +241,6 @@ settings="\
   'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
 " # End of settings variable
-
 fp_template="${PARMufsda}/templates/template.${APP}.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
@@ -361,7 +357,6 @@ if [ "${atm_model}" = "fv3" ]; then
     'dd': !!str ${DD}
     'hh': !!str ${HH}
 " # End of settings variable
-
     fp_template="${PARMufsda}/templates/template.coupler.res"
     fn_namelist="coupler.res"
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
@@ -481,31 +476,12 @@ if [ "${ice_model}" = "cice6" ]; then
     r_fn="iced.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
     r_fp="${data_dir}/RESTART/${r_fn}"
     if [ -e "${r_fp}" ]; then
-      ln -nsf "${r_fp}" .
-      ls -1 "${r_fn}">rpointer.cpl
+      ln -nsf "${r_fp}" "RESTART/${r_fn}"
+      ls -1 "./RESTART/${r_fn}">ice.restart_file
     else
       err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   fi
-
-  # INPUT directory
-  cd ${DATA}/INPUT
-  ## Copy restart files
-  if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-      data_dir="${WARMSTART_DIR}"
-    else
-      data_dir="${COMINOUTcm1}/RESTART"
-    fi
-    r_fn="iced.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-    r_fp="${data_dir}/${r_fn}"
-    if [ -e "${r_fp}" ]; then
-      ln -nsf "${r_fp}" "${r_fn}"
-    else
-      err_exit "Symlink failed: ${r_fp} file does not exist."
-    fi
-  fi
-  cd ${DATA}
 fi
 
 ##############
@@ -571,7 +547,8 @@ fi
 ##########################
 # Run ufs-weather-model
 ##########################
-export pgm="ufs_model_${APP,,}"
+app_lower=$(echo ${APP} | tr '[A-Z]' '[a-z]')
+export pgm="ufs_model_${app_lower}"
 . prep_step
 ${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
