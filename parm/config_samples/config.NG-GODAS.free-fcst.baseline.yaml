@@ -8,7 +8,7 @@ DO_FREE_FORECAST: first
 DT_ATMOS: 900
 DT_RUNSEQ: 3600
 envir: ng_fcst_baseline
-EXP_CASE_NAME: ng-godas_freefcst_baseline
+EXP_CASE_NAME: ng_freefcst_baseline
 FCST_HRS: 24
 IC_FROM_FIX_DIR: 'YES'
 NPROCS_ICE: 12
