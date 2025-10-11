@@ -149,6 +149,8 @@ def setup_wflow_env(machine):
         memory_flag = True
 
     # Check lowercase/uppercase
+    datm_data_type_orig = config_parm.get("DATM_DATA_TYPE")
+    datm_data_tyype = datm_data_type_orig.lower()
     do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
     do_free_forecast_options = ["first", "all", "none"]
     err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
@@ -276,6 +278,7 @@ def setup_wflow_env(machine):
         'ALLCOMP_RESTART_N': allcomp_restart_n,
         'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
         'date_second_cycle': date_second_cycle,
+        'DATM_DATA_TYPE': datm_data_type,
         'DO_FREE_FORECAST': do_free_forecast,
         'exp_case_path': exp_case_path,
         'JEDI_BIN_PATH': jedi_bin_path,
@@ -400,6 +403,7 @@ def set_default_parm():
         "DATE_CYCLE_FREQ_HR": 24,
         "DATE_FIRST_CYCLE": 202103220600,
         "DATE_LAST_CYCLE": 202103230600,
+        "DATM_DATA_TYPE": "gfs",
         "DCOMINghcn": "",
         "DCOMINobs": "",
         "DCOMINsmap": "",

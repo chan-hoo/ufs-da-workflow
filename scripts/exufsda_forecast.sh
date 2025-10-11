@@ -127,12 +127,10 @@ fi
 #####################################
 # Copy app-independent input files
 #####################################
-# field_table
-cp -p "${PARMufsda}/templates/template.${APP}.field_table" field_table
 # fd_ufs.yaml
-cp -p "${PARMufsda}/templates/template.${APP}.fd_ufs.yaml" fd_ufs.yaml
+cp -p "${PARMufsda}/templates/template.fd_ufs.yaml" fd_ufs.yaml
 # data_table
-cp -p "${PARMufsda}/templates/template.${APP}.data_table" data_table
+cp -p "${PARMufsda}/templates/template.data_table" data_table
 
 ##################
 # Set input.nml
@@ -245,11 +243,16 @@ fp_template="${PARMufsda}/templates/template.${APP}.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
-
-###############
-# FV3 files
-###############
+########################
+# ATM model component
+########################
 if [ "${atm_model}" = "fv3" ]; then
+  ###############
+  # FV3 files
+  ###############
+  # field_table
+  cp -p "${PARMufsda}/templates/template.${APP}.field_table" field_table
+
   # FV3 global fix files
   ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
 
@@ -362,12 +365,76 @@ if [ "${atm_model}" = "fv3" ]; then
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
   fi
   cd ${DATA}
+
+elif [ "${atm_model}" = "datm" ]; then
+  ###############
+  # DATM files
+  ###############
+  if [ "${DATM_DATA_TYPE}" = "gfs" ]; then
+    datm_datamode="GEFS"
+    datm_model_maskfile="INPUT/mesh.datm.3072x1536.nc"
+    datm_model_meshfile="INPUT/mesh.datm.3072x1536.nc"
+    datm_nx_global="3072"
+    datm_ny_global="1536"
+    datm_export_all=".false."
+    stream_info="gfs.01"
+    stream_mesh_file="INPUT/mesh.datm.3072x1536.nc"
+    stream_data_file=""
+  elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
+    datm_datamode="GEFS"
+    datm_model_maskfile="INPUT/mesh.datm.1760x880.nc"
+    datm_model_meshfile="INPUT/mesh.datm.1760x880.nc"
+    datm_nx_global="1760"
+    datm_ny_global="880"
+    datm_export_all=".false."
+    stream_info="cfsr.01"
+    stream_mesh_file="INPUT/mesh.datm.1760x880.nc"
+    stream_data_file=""
+  fi
+  # datm_in
+  settings="\
+  'datm_datamode': ${datm_datamode}
+  'datm_model_maskfile': ${datm_model_maskfile}
+  'datm_model_meshfile': ${datm_model_meshfile}
+  'datm_nx_global': ${datm_nx_global}
+  'datm_ny_global': ${datm_ny_global}
+  'datm_export_all': ${datm_export_all}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.datm_in"
+  fn_namelist="datm_in"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  
+  # datm.streams
+  settings="\
+  'year_first': !!str ${YYYY}
+  'year_last': !!str ${nYYYY}
+  'yyear_align': !!str ${YYYY}
+  'stream_info': ${stream_info}
+  'stream_mesh_file': ${stream_mesh_file}
+  'stream_data_file': ${stream_data_file}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.datm.streams"
+  fn_namelist="datm.streams"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+  # INPUT directory
+  cd ${DATA}/INPUT
+  ## DATM forcing data
+
+    ### CFSR
+
+    ### GFS
+
+  cd ${DATA}
 fi
 
-###############
-# MOM6 files
-###############
+########################
+# OCN model component
+########################
 if [ "${ocn_model}" = "mom6" ]; then
+  ###############
+  # MOM6 files
+  ###############
   # output directory
   mkdir -p MOM6_OUTPUT
 
@@ -419,10 +486,13 @@ if [ "${ocn_model}" = "mom6" ]; then
   cd ${DATA}
 fi
 
-###############
-# CICE files
-###############
+########################
+# ICE model component
+########################
 if [ "${ice_model}" = "cice6" ]; then
+  ###############
+  # CICE files
+  ###############
   # set ice_in
   settings="\
   'yyyymmdd': !!str ${PDY}
@@ -484,10 +554,13 @@ if [ "${ice_model}" = "cice6" ]; then
   fi
 fi
 
-##############
-# WW3 files
-##############
+########################
+# WAV model component
+########################
 if [ "${wav_model}" = "ww3" ]; then
+  ##############
+  # WW3 files
+  ##############
   # set ww3_shel.nml
   output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
   settings="\
