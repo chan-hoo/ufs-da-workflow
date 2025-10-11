@@ -471,10 +471,10 @@ if [ "${ice_model}" = "cice6" ]; then
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
       data_dir="${WARMSTART_DIR}"
     else
-      data_dir="${COMINOUTcm1}"
+      data_dir="${COMINOUTcm1}/RESTART"
     fi
     r_fn="iced.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-    r_fp="${data_dir}/RESTART/${r_fn}"
+    r_fp="${data_dir}/${r_fn}"
     if [ -e "${r_fp}" ]; then
       ln -nsf "${r_fp}" "RESTART/${r_fn}"
       ls -1 "./RESTART/${r_fn}">ice.restart_file
@@ -531,11 +531,11 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINOUTcm1}"
+    data_dir="${COMINOUTcm1}/RESTART"
   fi
   # Restart from RESTART and pointer files
   r_fn="ufs.cpld.cpl.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
-  r_fp="${data_dir}/RESTART/${r_fn}"
+  r_fp="${data_dir}/${r_fn}"
   if [ -e "${r_fp}" ]; then
     ln -nsf "${r_fp}" .
     ls -1 "${r_fn}">rpointer.cpl
