@@ -239,7 +239,7 @@ settings="\
   'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
 " # End of settings variable
-fp_template="${PARMufsda}/templates/template.${APP}.diag_table"
+fp_template="${PARMufsda}/templates/template.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
@@ -377,7 +377,7 @@ elif [ "${atm_model}" = "datm" ]; then
   while [ "${cmonth}" -le "${NTIME:0:6}" ]; do
     list_stream_data_files+=("\"INPUT/${DATM_DATA_TYPE}.${cmonth}.nc\"")
     list_stream_fn+=("${DATM_DATA_TYPE}.${cmonth}.nc")
-    cmonth=$(date -d "${cmonth}01 +1 month +%Y%m)
+    cmonth=$(date -d "${cmonth}01 +1 month" +%Y%m)
   done
   # GFS
   if [ "${DATM_DATA_TYPE}" = "gfs" ]; then
@@ -390,7 +390,7 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_export_all=".false."
     stream_info="gfs.01"
     stream_mesh_file="INPUT/${datm_model_fix_fn}"
-    stream_data_files="${list_stream_data_files}"
+    stream_data_files="${list_stream_data_files[@]}"
   # CFSR
   elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
     datm_datamode="GEFS"
@@ -402,7 +402,7 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_export_all=".false."
     stream_info="cfsr.01"
     stream_mesh_file="INPUT/${datm_model_fix_fn}"
-    stream_data_files="${list_stream_data_files}"
+    stream_data_files="${list_stream_data_files[@]}"
   fi
 
   # datm_in
@@ -422,7 +422,7 @@ elif [ "${atm_model}" = "datm" ]; then
   settings="\
   'year_first': !!str ${YYYY}
   'year_last': !!str ${nYYYY}
-  'yyear_align': !!str ${YYYY}
+  'year_align': !!str ${YYYY}
   'stream_info': ${stream_info}
   'stream_mesh_file': ${stream_mesh_file}
   'stream_data_files': ${stream_data_files}
