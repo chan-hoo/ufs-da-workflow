@@ -367,30 +367,44 @@ if [ "${atm_model}" = "fv3" ]; then
   cd ${DATA}
 
 elif [ "${atm_model}" = "datm" ]; then
-  ###############
-  # DATM files
-  ###############
+  ######################
+  # DATM forcing data
+  ######################
+  # List of stream data files
+  list_stream_data_files=()
+  list_stream_fn=()
+  cmonth=$(date -d "${PDY:0:6}01" +%Y%m)
+  while [ "${cmonth}" -le "${NTIME:0:6}" ]; do
+    list_stream_data_files+=("\"INPUT/${DATM_DATA_TYPE}.${cmonth}.nc\"")
+    list_stream_fn+=("${DATM_DATA_TYPE}.${cmonth}.nc")
+    cmonth=$(date -d "${cmonth}01 +1 month +%Y%m)
+  done
+  # GFS
   if [ "${DATM_DATA_TYPE}" = "gfs" ]; then
     datm_datamode="GEFS"
-    datm_model_maskfile="INPUT/mesh.datm.3072x1536.nc"
-    datm_model_meshfile="INPUT/mesh.datm.3072x1536.nc"
     datm_nx_global="3072"
     datm_ny_global="1536"
+    datm_model_fix_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
+    datm_model_maskfile="INPUT/${datm_model_fix_fn}"
+    datm_model_meshfile="INPUT/${datm_model_fix_fn}"
     datm_export_all=".false."
     stream_info="gfs.01"
-    stream_mesh_file="INPUT/mesh.datm.3072x1536.nc"
-    stream_data_file=""
+    stream_mesh_file="INPUT/${datm_model_fix_fn}"
+    stream_data_files="${list_stream_data_files}"
+  # CFSR
   elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
     datm_datamode="GEFS"
-    datm_model_maskfile="INPUT/mesh.datm.1760x880.nc"
-    datm_model_meshfile="INPUT/mesh.datm.1760x880.nc"
     datm_nx_global="1760"
     datm_ny_global="880"
+    datm_model_fix_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
+    datm_model_maskfile="INPUT/${datm_model_fix_fn}"
+    datm_model_meshfile="INPUT/${datm_model_fix_fn}"
     datm_export_all=".false."
     stream_info="cfsr.01"
-    stream_mesh_file="INPUT/mesh.datm.1760x880.nc"
-    stream_data_file=""
+    stream_mesh_file="INPUT/${datm_model_fix_fn}"
+    stream_data_files="${list_stream_data_files}"
   fi
+
   # datm_in
   settings="\
   'datm_datamode': ${datm_datamode}
@@ -411,7 +425,7 @@ elif [ "${atm_model}" = "datm" ]; then
   'yyear_align': !!str ${YYYY}
   'stream_info': ${stream_info}
   'stream_mesh_file': ${stream_mesh_file}
-  'stream_data_file': ${stream_data_file}
+  'stream_data_files': ${stream_data_files}
 " # End of settings variable
   fp_template="${PARMufsda}/templates/template.datm.streams"
   fn_namelist="datm.streams"
@@ -419,13 +433,32 @@ elif [ "${atm_model}" = "datm" ]; then
 
   # INPUT directory
   cd ${DATA}/INPUT
-  ## DATM forcing data
-
-    ### CFSR
-
-    ### GFS
-
+  ## Fix (mesh) file
+  ln -nsf "${FIXufsda}/DATA_fix/DATM/${DATM_DATA_TYPE}/${datm_model_fix_fn}" .
+  ## Forcing data files
+  for ifn in "${list_stream_fn[@]}" ; do
+    ln -nsf "${FIXufsda}/DATA_datm/${DATM_DATA_TYPE}/${ifn}" .
+  done
   cd ${DATA}
+
+  # Restart files
+  if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+      data_dir="${WARMSTART_DIR}"
+    else
+      data_dir="${COMINOUTcm1}/RESTART"
+    fi
+    datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
+    r_fn="DATM_${datm_data_type_upper}.datm.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
+    r_fp="${data_dir}/${r_fn}"
+    if [ -e "${r_fp}" ]; then
+      ln -nsf "${r_fp}" .
+      ls -1 "${r_fn}">rpointer.atm
+    else
+      err_exit "Symlink failed: ${r_fp} file does not exist."
+    fi
+  fi
+
 fi
 
 ########################
@@ -442,10 +475,10 @@ if [ "${ocn_model}" = "mom6" ]; then
   cd ${DATA}/INPUT
   ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
             "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "land_mask.nc" \
-  	  "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" \
-  	  "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
-  	  "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
-  	  "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
+            "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" \
+            "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
+            "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
+            "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
   for ifn in "${ocn_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -456,8 +489,20 @@ if [ "${ocn_model}" = "mom6" ]; then
   done
   
   ## MOM6 input namelist files
-  cp -p "${PARMufsda}/templates/template.${APP}.MOM_input" MOM_input
-  cp -p "${PARMufsda}/templates/template.${APP}.MOM_override" MOM_override
+  ### MOM_input
+  if [ "${wav_model}" ]; then
+    mom6_use_waves="True"
+  else
+    mom6_use_waves="False"
+  fi
+  settings="\
+  'mom6_use_waves': ${mom6_use_waves}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.MOM_input"
+  fn_namelist="MOM_input"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  ### MOM_override
+  cp -p "${PARMufsda}/templates/template.MOM_override" MOM_override
 
   ## IC (initial condition) files for cold start
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -466,7 +511,7 @@ if [ "${ocn_model}" = "mom6" ]; then
     else
       data_dir="${COMINOUT}"
     fi
-    ln -nsf "${data_dir}/MOM6_IC_TS.nc" .
+    ln -nsf "${data_dir}/MOM6_IC_TS_${PDY}${cyc}.nc" "MOM6_IC_TS.nc"
   fi
 
   ## restart files

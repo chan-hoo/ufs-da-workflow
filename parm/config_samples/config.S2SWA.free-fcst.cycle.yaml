@@ -7,8 +7,8 @@ DATE_LAST_CYCLE: 2021032218
 DO_FREE_FORECAST: all
 DT_ATMOS: 720
 DT_RUNSEQ: 3600
-envir: fcst_restart
-EXP_CASE_NAME: s2swa_freefcst_restart
+envir: fcst_cycle
+EXP_CASE_NAME: s2swa_freefcst_cycle
 FCST_HRS: 12
 IC_FROM_FIX_DIR: 'YES'
 NPZ: 127
