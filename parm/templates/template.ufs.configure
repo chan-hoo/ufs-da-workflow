@@ -170,25 +170,29 @@ MED_attributes::
 {%- if wav_model %}
       WAV_model = {{ wav_model }}
 {%- endif %}
-      coupling_mode = ufs.frac
+      coupling_mode = {{ cmeps_coupling_mode }}
+      mapuv_with_cart3d = {{ cmeps_mapuv_with_cart3d | lower }}
+      ocean_albedo_limit = 0.06
       pio_typename = pnetcdf
       pio_numiotasks = -99
       pio_stride = 4
       pio_rearranger = box
       pio_root = -99
-      ocean_albedo_limit = 0.06
-      mapuv_with_cart3d = true
 ::
 
 ALLCOMP_attributes::
       ScalarFieldCount = 3
       ScalarFieldIdxGridNX = 1
       ScalarFieldIdxGridNY = 2
+{%- if APP == "S2SWA" %}
       ScalarFieldIdxGridNTile = 3
+{%- elif APP == "NG-GODAS" %}
+      ScalarFieldIdxNextSwCday = 3
+{%- endif %}
       ScalarFieldName = cpl_scalars
       start_type = {{ allcomp_start_type }}
       restart_dir = ./RESTART/
-      case_name = ufs.cpld
+      case_name = {{ allcomp_case_name }}
       restart_n = {{ ALLCOMP_RESTART_N }}
       restart_option = nhours
       restart_ymd = -999
@@ -204,4 +208,11 @@ ALLCOMP_attributes::
       orb_mode = fixed_year
       orb_mvelp = 1.e36
       orb_obliq = 1.e36
+{%- if APP == "NG-GODAS" %}
+      coldair_outbreak_mod = .false.
+      flds_wiso = .false.
+      flux_convergence = 0.0
+      flux_max_iteration = 2
+      ocn_surface_flux_scheme = 0
+{%- endif %}
 ::
