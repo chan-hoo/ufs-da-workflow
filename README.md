@@ -1,5 +1,8 @@
 # ufs-da-workflow
 UFS DA (Data Assimilation) Workflow
+- Available coupling configurations:
+ 1. S2SWA: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3)
+ 2. NG-GODAS: ATM (DATM) + OCN (MOM6) + ICE (CICE)
 
 ## Quick Start Guide
 
@@ -16,12 +19,13 @@ cd ufs-da-workflow/sorc
 3. Run the build script:
 - Workflow components: YES, JEDI-bundle: NO
 ```
-./app_build.sh
+./app_build.sh -a=[APP]
 ```
+where `[APP]` is `S2SWA` or `NG-GODAS`.
 
 - Workflow components: YES, JEDI-bundle: YES
 ```
-./app_build.sh --jedi=on
+./app_build.sh -a=[APP] --jedi=on
 ```
 
 - Workflow components: NO, JEDI-bundle: YES
@@ -37,10 +41,10 @@ module load wflow_[machine]
 ```
 where `[machine]` is `gaeac6`, `hera`, `hercules`, `orion`, or `ursa`.
 
-5. Copy the sample configuration and modify it as needed:
+5. Copy a sample configuration and modify it as needed:
 ```
 cd parm
-cp config_samples/config.S2SWA.snow-DA.letkf-oi.ghcn.ic_from_dir.yaml config.yaml
+cp config_samples/config.[sample_case].yaml config.yaml
 vim config.yaml
 ```
 Change the parameter values such as `ACCOUNT` as needed.
