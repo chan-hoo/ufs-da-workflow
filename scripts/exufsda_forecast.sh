@@ -148,7 +148,7 @@ if [ "${atm_model}" = "fv3" ]; then
   # FV3 files
   ###############
   # field_table
-  cp -p "${PARMufsda}/templates/template.${APP}.field_table" field_table
+  cp -p "${PARMufsda}/templates/template.field_table" field_table
 
   # FV3 global fix files
   ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
@@ -399,7 +399,7 @@ if [ "${ocn_model}" = "mom6" ]; then
   settings="\
   'mom6_use_waves': ${mom6_use_waves}
 " # End of settings variable
-  fp_template="${PARMufsda}/templates/template.${APP}.MOM_input"
+  fp_template="${PARMufsda}/templates/template.MOM_input"
   fn_namelist="MOM_input"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
@@ -519,7 +519,7 @@ if [ "${wav_model}" = "ww3" ]; then
   settings="\
   'output_fh_ww3_sec': ${output_fh_ww3_sec}
 " # End of settings variable
-  fp_template="${PARMufsda}/templates/template.${APP}.ww3_shel.nml"
+  fp_template="${PARMufsda}/templates/template.ww3_shel.nml"
   fn_namelist="ww3_shel.nml"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
@@ -577,8 +577,6 @@ fi
 cp -p "${PARMufsda}/templates/template.fd_ufs.yaml" fd_ufs.yaml
 # data_table
 cp -p "${PARMufsda}/templates/template.data_table" data_table
-# noahmptable.tbl
-cp -p "${FIXufsda}/DATA_fix/Noah-MP/noahmptable.tbl" .
 
 ##################
 # Set input.nml
@@ -690,7 +688,7 @@ settings="\
   'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
 " # End of settings variable
-fp_template="${PARMufsda}/templates/template.${APP}.diag_table"
+fp_template="${PARMufsda}/templates/template.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 

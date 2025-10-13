@@ -53,6 +53,11 @@ else
     do_plot_fcst_out_cice="YES"
   fi
 fi
+# Turn off fv3 and restart plots for DATM
+if [ "${APP}" = "NG-GODAS" ]; then
+  do_plot_restart="NO"
+  do_plot_fcst_out_fv3="NO"
+fi
 
 DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
 DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
