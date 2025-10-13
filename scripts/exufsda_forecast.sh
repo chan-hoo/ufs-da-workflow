@@ -287,7 +287,6 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_export_all=".false."
     stream_info="gfs.01"
     stream_mesh_file="INPUT/${datm_mesh_fn}"
-    stream_data_files="${list_stream_data_files[@]}"
   # CFSR
   elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
     datm_datamode="GEFS"
@@ -299,7 +298,6 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_export_all=".false."
     stream_info="cfsr.01"
     stream_mesh_file="INPUT/${datm_mesh_fn}"
-    stream_data_files="${list_stream_data_files[@]}"
   fi
 
   # datm_in
@@ -322,7 +320,7 @@ elif [ "${atm_model}" = "datm" ]; then
   'year_align': !!str ${YYYY}
   'stream_info': ${stream_info}
   'stream_mesh_file': ${stream_mesh_file}
-  'stream_data_files': ${stream_data_files}
+  'stream_data_files': '${list_stream_data_files[@]}'
 " # End of settings variable
   fp_template="${PARMufsda}/templates/template.datm.streams"
   fn_namelist="datm.streams"
@@ -713,9 +711,10 @@ fi
 ##################################
 # Copy output files to COMINOUT
 ##################################
-########
-# FV3
-########
+########################
+# ATM model component
+########################
+## FV3
 if [ "${atm_model}" = "fv3" ]; then
   read -ra out_fh <<< "${OUTPUT_FH}"
   out_fh1="${out_fh[0]}"
@@ -734,6 +733,12 @@ if [ "${atm_model}" = "fv3" ]; then
       cp -p "${DATA}/sfcf${ihr_3d}.tile${itile}.nc" "${COMINOUT}/${NET}.${cycle}.sfc.f${ihr_3d}.c${RES}.tile${itile}.nc"
     done
   done
+
+## DATM
+elif [ "${atm_model}" = "datm" ]; then
+  ### Restart and point files
+  cp -p "DATM_${datm_data_type_upper}.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" ${COMINOUT}
+  cp -r "rpointer.atm.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}" ${COMINOUT}
 fi
 
 #########
@@ -809,10 +814,14 @@ if [ "${wav_model}" = "ww3" ]; then
   cp -p ufs.cpld.ww3.r.* ${COMINOUT}
 fi
 
+######################
 # RESTART directory
+######################
 cp -p ${DATA}/RESTART/* ${COMINOUTrestart}
 
+########################################################################
 # Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
+########################################################################
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   ln -nsf ${COMINOUTrestart}/*.sfc_data.tile*.nc ${DATA_RESTART}
 else
