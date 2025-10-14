@@ -560,7 +560,12 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     data_dir="${COMINOUTcm1}/RESTART"
   fi
   # Restart from RESTART and pointer files
-  r_fn="ufs.cpld.cpl.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
+  if [ "${atm_model}" = "fv3" ]; then
+    r_fn_prefix="ufs.cpld"
+  elif [ "${atm_model}" = "datm" ]; then
+    r_fn_prefix="DATM_${datm_data_type_upper}"
+  fi
+  r_fn="${r_fn_prefix}.cpl.r.${YYYY}-${MM}-${DD}-${HHsec_5d}.nc"
   r_fp="${data_dir}/${r_fn}"
   if [ -e "${r_fp}" ]; then
     ln -nsf "${r_fp}" .
@@ -734,9 +739,8 @@ if [ "${atm_model}" = "fv3" ]; then
 
 ## DATM
 elif [ "${atm_model}" = "datm" ]; then
-  ### Restart and point files
-  cp -p "DATM_${datm_data_type_upper}.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" ${COMINOUT}
-  cp -r "rpointer.atm.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}" ${COMINOUT}
+  ### Restart file
+  cp -p "DATM_${datm_data_type_upper}.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" "${COMINOUT}/RESTART"
 fi
 
 #########
@@ -817,16 +821,26 @@ fi
 ######################
 cp -p ${DATA}/RESTART/* ${COMINOUTrestart}
 
-########################################################################
-# Set sfc_data to DATA_RESTART to trigger ANALYSIS task in next cycle
-########################################################################
-if [ "${DO_FREE_FORECAST}" = "first" ]; then
-  ln -nsf ${COMINOUTrestart}/*.sfc_data.tile*.nc ${DATA_RESTART}
-else
-  for itile in {1..6};
-  do
-    ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
-  done
+#########################################################
+# Set soft-links to DATA_RESTART to trigger next tasks
+#########################################################
+# sfc_data
+if [ "${atm_model}" = "fv3" ]; then
+  if [ "${DO_FREE_FORECAST}" = "first" ]; then
+    ln -nsf ${COMINOUTrestart}/*.sfc_data.tile*.nc ${DATA_RESTART}
+  else
+    for itile in {1..6};
+    do
+      ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile${itile}.nc" ${DATA_RESTART}/.
+    done
+  fi
+fi
+if [ "${ocn_model}" = "mom6" ]; then
+  if [ "${DO_FREE_FORECAST}" = "first" ]; then
+    ln -nsf ${COMINOUTrestart}/*.MOM.res.nc ${DATA_RESTART}
+  else
+    ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc" ${DATA_RESTART}/.
+  fi
 fi
 
 

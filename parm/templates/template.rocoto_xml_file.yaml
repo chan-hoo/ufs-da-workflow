@@ -102,6 +102,8 @@ workflow:
     DATADEP_COLDSTART: "<cyclestr>&exp_case_path;/task_skip_coldstart_@Y@m@d@H.txt</cyclestr>"
     DATADEP_SFC1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>" 
     DATADEP_SFC2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>"
+    DATADEP_MOM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.MOM.res.nc</cyclestr>"
+    DATADEP_MOM2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.MOM.res.nc</cyclestr>"
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
@@ -373,6 +375,7 @@ workflow:
             attrs:
               task: analysis
 {%- else %}
+{%- if APP == "S2SWA" %}
           datadep_sfc1:
             attrs:
               age: 5
@@ -381,6 +384,16 @@ workflow:
             attrs:
               age: 5
             value: "&DATADEP_SFC2;"
+{%- elif APP == "NG-GODAS" %}
+          datadep_mom1:
+            attrs:
+              age: 5
+            value: "&DATADEP_MOM1;"
+          datadep_mom2:
+            attrs:
+              age: 5
+            value: "&DATADEP_MOM2;"
+{%- endif %}
 {%- endif %}
     task_plot_stats:
       attrs:
@@ -388,6 +401,7 @@ workflow:
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"
+        APP: "&APP;"
         COLDSTART: "&COLDSTART;"
         COMROOT: "&COMROOT;"
         cyc: "&cyc;"

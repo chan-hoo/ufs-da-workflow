@@ -391,7 +391,9 @@ EOF
 
 done
 
+##############################################
 # Copy the final sfc_data files to COMINOUT
+##############################################
 for itile in {1..6}
 do
   cp -p "${DATA}/${filedate}.sfc_data.tile${itile}.nc" ${COMINOUT}
