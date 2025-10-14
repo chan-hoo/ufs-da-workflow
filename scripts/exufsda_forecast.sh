@@ -819,7 +819,8 @@ fi
 ######################
 # RESTART directory
 ######################
-cp -p ${DATA}/RESTART/* ${COMINOUTrestart}
+# Copy files and replace if exist
+cp -f ${DATA}/RESTART/* ${COMINOUTrestart}
 
 #########################################################
 # Set soft-links to DATA_RESTART to trigger next tasks
