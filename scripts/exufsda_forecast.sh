@@ -263,6 +263,9 @@ if [ "${atm_model}" = "fv3" ]; then
   fi
   cd ${DATA}
 
+  # Declaration of variables not for fv3 but for template
+  datm_mesh_fn=""
+
 elif [ "${atm_model}" = "datm" ]; then
   ######################
   # DATM forcing data
