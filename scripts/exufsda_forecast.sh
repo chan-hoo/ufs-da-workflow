@@ -819,8 +819,8 @@ fi
 ######################
 # RESTART directory
 ######################
-# Copy files and replace if exist
-cp -f ${DATA}/RESTART/* ${COMINOUTrestart}
+# Copy only newer files and exclude all symlinks
+rsync -av --update --no-links ${DATA}/RESTART/ ${COMINOUTrestart}
 
 #########################################################
 # Set soft-links to DATA_RESTART to trigger next tasks
