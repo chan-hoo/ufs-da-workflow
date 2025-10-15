@@ -67,6 +67,6 @@ where `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
 where the default value of `[time interval in seconds]` is 30. This means that the launch script `launch_rocoto_wflow.sh` is submitted every 30 seconds.
 
 9. Check the result and log files:
-- `com_dir': symlink to the directory containing the result files
-- `log_dir': symlink to the directory containing the log files
-- `tmp_dir': symlink to the directory containing the working directories
+- `com_dir`: symlink to the directory containing the result files
+- `log_dir`: symlink to the directory containing the log files
+- `tmp_dir`: symlink to the directory containing the working directories
