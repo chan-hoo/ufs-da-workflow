@@ -17,54 +17,66 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
-    do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
     do_plot_fcst_out_cice="YES"
+    do_plot_fcst_restart_fv3="YES"
+    do_plot_fcst_restart_mom6="YES"
+    do_plot_fcst_restart_cice="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
-    do_plot_restart="NO"
     do_plot_fcst_out_fv3="NO"
     do_plot_fcst_out_mom6="NO"
     do_plot_fcst_out_cice="NO"
+    do_plot_fcst_restart_fv3="NO"
+    do_plot_fcst_restart_mom6="NO"
+    do_plot_fcst_restart_cice="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_stats="NO"
   do_plot_time_history="NO"
-  do_plot_restart="YES"
   do_plot_fcst_out_fv3="YES"
   do_plot_fcst_out_mom6="YES"
   do_plot_fcst_out_cice="YES"
+  do_plot_fcst_restart_fv3="YES"
+  do_plot_fcst_restart_mom6="YES"
+  do_plot_fcst_restart_cice="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_stats="NO"
     do_plot_time_history="NO"
-    do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
     do_plot_fcst_out_cice="YES"
+    do_plot_fcst_restart_fv3="YES"
+    do_plot_fcst_restart_mom6="YES"
+    do_plot_fcst_restart_cice="YES"
   else
     do_plot_stats="YES"
     do_plot_time_history="YES"
-    do_plot_restart="YES"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
     do_plot_fcst_out_cice="YES"
+    do_plot_fcst_restart_fv3="YES"
+    do_plot_fcst_restart_mom6="YES"
+    do_plot_fcst_restart_cice="YES"
   fi
 fi
 # Turn off fv3 and restart plots for DATM
 if [ "${APP}" = "NG-GODAS" ]; then
-  do_plot_restart="NO"
   do_plot_fcst_out_fv3="NO"
+  do_plot_fcst_restart_fv3="NO"
 fi
 
 DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
 DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
-DO_PLOT_RESTART="${DO_PLOT_RESTART:-${do_plot_restart}}"
 DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
 DO_PLOT_FCST_OUT_MOM6="${DO_PLOT_FCST_OUT_MOM6:-${do_plot_fcst_out_mom6}}"
 DO_PLOT_FCST_OUT_CICE="${DO_PLOT_FCST_OUT_CICE:-${do_plot_fcst_out_cice}}"
+DO_PLOT_FCST_RESTART_FV3="${DO_PLOT_FCST_RESTART_FV3:-${do_plot_fcst_restart_fv3}}"
+DO_PLOT_FCST_RESTART_MOM6="${DO_PLOT_FCST_RESTART_MOM6:-${do_plot_fcst_restart_mom6}}"
+DO_PLOT_FCST_RESTART_CICE="${DO_PLOT_FCST_RESTART_CICE:-${do_plot_fcst_restart_cice}}"
 
 # Set other dates
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -90,9 +102,9 @@ else
   snowdepth_vn="snwdph"
 fi
 
-############################################################
-# Stats Plot
-############################################################
+##########################
+# Stats Plot: H(x); OMB
+##########################
 if [ "${DO_PLOT_STATS}" = "YES" ]; then
   # Field Range for scatter plot: [Low,High]
   field_range_low=-200
@@ -146,9 +158,9 @@ EOF
   cp -p "${DATA_HOFX}/hofx_omb_timehis"* ${COMINOUThofx}
 fi
 
-############################################################
-# Time-history Plot
-############################################################
+###########################
+# Time-history Plot: OMB
+###########################
 if [ "${DO_PLOT_TIME_HISTORY}" = "YES" ]; then
   fn_data_anal_prefix="analysis_"
   fn_data_anal_suffix=".log"
@@ -179,46 +191,9 @@ EOF
   cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
-###########################################################
-# Plot restart tiles
-###########################################################
-if [ "${DO_PLOT_RESTART}" = "YES" ]; then
-  fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile"
-  out_title_base="UFS-DA::RESTART::FV3::${nYYYY}-${nMM}-${nDD}-${nHH}::"
-  out_fn_base="ufsda_out_restart_fv3_${nYYYY}${nMM}${nDD}${nHH}_"
-  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
-  zlevel_number="1"
-
-  cat > plot_restart.yaml <<EOF
-cartopy_ne_path: '${FIXufsda}/NaturalEarth'
-colorbar_option: 'fixed'
-fn_data_base: '${fn_data_base}'
-orog_path: '${orog_path}'
-orog_fn_base: '${orog_fn_base}'
-out_title_base: '${out_title_base}'
-out_fn_base: '${out_fn_base}'
-path_data: '${COMINOUT}/RESTART'
-plot_each_tile: 'NO'
-PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-var_list_restart:
-  - ${snowdepth_vn}
-  - smc
-work_dir: '${DATA}'
-zlevel_number: '${zlevel_number}'
-EOF
-
-  ${USHufsda}/plot_forecast_restart.py
-  if [ $? -ne 0 ]; then
-    err_exit "Forecast restart plots failed."
-  fi
-
-  # Copy result files to COMINOUT
-  cp -p ${out_fn_base}* ${COMINOUTplot}
-fi
-
-###########################################################
+####################################
 # Plot forecast output tiles: FV3
-###########################################################
+####################################
 if [ "${DO_PLOT_FCST_OUT_FV3}" = "YES" ]; then
   fn_base_prefix="${NET}.${cycle}"
   out_title_base="UFS-DA::OUT::FV3::${YYYY}-${MM}-${DD}-${HH}::"
@@ -258,9 +233,9 @@ EOF
   cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
-###########################################################
+####################################
 # Plot forecast output file: MOM6
-###########################################################
+####################################
 if [ "${DO_PLOT_FCST_OUT_MOM6}" = "YES" ]; then
   fn_base_prefix="${NET}.${cycle}.ocn.f"
   fn_base_suffix=".c${RES}.nc"
@@ -296,9 +271,9 @@ EOF
   cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
 
-###########################################################
+####################################
 # Plot forecast output file: CICE
-###########################################################
+####################################
 if [ "${DO_PLOT_FCST_OUT_CICE}" = "YES" ]; then
   fn_base_prefix="${NET}.${cycle}.ice.f"
   fn_base_suffix=".c${RES}.nc"
@@ -325,6 +300,78 @@ EOF
   ${USHufsda}/plot_forecast_out_cice.py
   if [ $? -ne 0 ]; then
     err_exit "Forecast CICE output plots failed."
+  fi
+
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
+fi
+
+#####################################
+# Plot forecast restart tiles: FV3
+#####################################
+if [ "${DO_PLOT_FCST_RESTART_FV3}" = "YES" ]; then
+  fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.sfc_data.tile"
+  out_title_base="UFS-DA::RESTART::FV3::${nYYYY}-${nMM}-${nDD}-${nHH}::"
+  out_fn_base="ufsda_out_restart_fv3_${nYYYY}${nMM}${nDD}${nHH}_"
+  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
+  zlevel_number="1"
+
+  cat > plot_forecast_restart_fv3.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
+fn_data_base: '${fn_data_base}'
+orog_path: '${orog_path}'
+orog_fn_base: '${orog_fn_base}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base}'
+path_data: '${COMINOUT}/RESTART'
+plot_each_tile: 'NO'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+var_list_restart:
+  - ${snowdepth_vn}
+  - smc
+work_dir: '${DATA}'
+zlevel_number: '${zlevel_number}'
+EOF
+
+  ${USHufsda}/plot_forecast_restart_fv3.py
+  if [ $? -ne 0 ]; then
+    err_exit "Forecast restart plots for FV3 failed."
+  fi
+
+  # Copy result files to COMINOUT
+  cp -p ${out_fn_base}* ${COMINOUTplot}
+fi
+
+######################################
+# Plot forecast restart tiles: MOM6
+######################################
+if [ "${DO_PLOT_FCST_RESTART_MOM6}" = "YES" ]; then
+  fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc"
+  out_title_base="UFS-DA::RESTART::MOM6::${nYYYY}-${nMM}-${nDD}-${nHH}::"
+  out_fn_base="ufsda_out_restart_mom6_${nYYYY}${nMM}${nDD}${nHH}_"
+  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
+  zlevel_number="1"
+
+  cat > plot_forecast_restart_mom6.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
+fn_data_base: '${fn_data_base}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base}'
+path_data: '${COMINOUT}/RESTART'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+var_list_restart:
+  - Salt
+  - sfc
+  - Temp
+work_dir: '${DATA}'
+zlevel_number: '${zlevel_number}'
+EOF
+
+  ${USHufsda}/plot_forecast_restart_mom6.py
+  if [ $? -ne 0 ]; then
+    err_exit "Forecast restart plots for MOM6 failed."
   fi
 
   # Copy result files to COMINOUT

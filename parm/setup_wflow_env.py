@@ -152,7 +152,7 @@ def setup_wflow_env(machine):
     datm_data_type_orig = config_parm.get("DATM_DATA_TYPE")
     datm_data_type = datm_data_type_orig.lower()
     do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
-    do_free_forecast_options = ["first", "all", "none"]
+    do_free_forecast_options = ["first", "all", "none", "ctest"]
     err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
     if isinstance(do_free_forecast_orig, bool):
         logging.error(err_msg)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 ###################################################################### CHJ #####
-## Name		: plot_forecast_restart.py
-## Usage	: Plot restart output file of UFS DA workflow
+## Name		: plot_forecast_restart_fv3.py
+## Usage	: Plot restart output file for FV3 in UFS DA workflow
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2025/09/19: Chan-Hoo Jeon : Preliminary version
@@ -31,7 +31,7 @@ def main():
 
     global num_tiles
 
-    yaml_file = "plot_restart.yaml"
+    yaml_file = "plot_forecast_restart_fv3.yaml"
     with open(yaml_file, 'r') as f:
         yaml_data = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
