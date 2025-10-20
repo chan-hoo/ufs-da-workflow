@@ -110,8 +110,7 @@ workflow:
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or DO_FREE_FORECAST == "ctest" %}
-{%- if DO_FREE_FORECAST != "ctest" }
+{%- if date_second_cycle is not none and ( DO_FREE_FORECAST == "none" or DO_FREE_FORECAST == "first" ) %}
     task_prep_data:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -135,7 +134,6 @@ workflow:
         DCOMINghcn: "&DCOMINghcn;"
         DCOMINsmap: "&DCOMINsmap;"
         DCOMINsmops: "&DCOMINsmops;"
-        DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
         IC_DATA_MODEL: "&IC_DATA_MODEL;"
@@ -185,6 +183,7 @@ workflow:
             value: "&DATADEP_SFC2;"
 {%- endif %}
 {%- endif %}
+{%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or DO_FREE_FORECAST == "ctest" %}
     task_analysis:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -299,6 +298,7 @@ workflow:
       memory: 128G
 {%- endif %}
 {%- endif %}
+{%- if DO_FREE_FORECAST != "ctest" %}
     task_forecast:
       attrs:
 {%- if DO_FREE_FORECAST == "first" %}
@@ -404,6 +404,7 @@ workflow:
             attrs:
               age: 5
             value: "&DATADEP_MOM2;"
+{%- endif %}
 {%- endif %}
 {%- endif %}
     task_plot_stats:
