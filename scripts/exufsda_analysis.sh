@@ -34,6 +34,16 @@ else
   run_cmd=`which mpiexec`
 fi
 
+###################################
+# C-test of JEDI model component
+###################################
+if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+  if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+
+  fi
+  exit
+fi
+
 ###################################################################
 # Copy sfc_data files from RESTART/WARMSTART into work directory
 ###################################################################
@@ -51,9 +61,9 @@ do
   cp -p ${sfc_fn} "${sfc_fn}_ini"
 done
 
-############################################
+#############################################
 # Copy obserbation files to work directory
-############################################
+#############################################
 mkdir -p ${DATA}/obs
 obs_prefix="obs.${PDY}.${cycle}"
 if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
@@ -144,7 +154,7 @@ for jedi_type in "${list_jedi_types[@]}"; do
     # Set JEDI executable
     jedi_exe_fn="fv3jedi_var.x"
 
-  else # letkf-oi
+  elif [ "${JEDI_ALGORITHM}" = "letkf-oi" ]; then
     if [ "${jedi_type}" = "snow" ]; then
       for ens in {1..2}
       do

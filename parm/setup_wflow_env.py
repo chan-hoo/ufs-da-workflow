@@ -180,26 +180,52 @@ def setup_wflow_env(machine):
         logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
         sys.exit(1)
 
-    # Set the types of JEDI analyses from selection of observations
+    # Set list of JEDI analyses from JEDI types and observations
+    jedi_type_snow = config_parm.get("JEDI_TYPE_SNOW")
+    jedi_type_soca = config_parm.get("JEDI_TYPE_SOCA")
+    jedi_type_soil_moisture = config_parm.get("JEDI_TYPE_SOIL_MOISTURE")
+
     list_jedi_analyses = ""
-    if obs_ghcn_snow == "YES" or obs_ims_snow == "YES" or obs_sfcsno == "YES":
+    if jedi_type_snow == "YES":
         if not list_jedi_analyses:
             list_jedi_analyses = "snow"
         else:
             list_jedi_analyses = f"{list_jedi_analyses} snow"
     
-    if obs_smap == "YES" or obs_smops == "YES":
+    if jedi_type_soil_moisture == "YES":
         if not list_jedi_analyses:
             list_jedi_analyses = "soil_moisture"
         else:
             list_jedi_analyses = f"{list_jedi_analyses} soil_moisture"
 
+    if jedi_type_soca == "YES":
+        if not list_jedi_analyses:
+            list_jedi_analyses = "soca"
+        else:
+            list_jedi_analyses = f"{list_jedi_analyses} soca"
+
     if do_free_forecast == "none":
         if not list_jedi_analyses:
-            logging.error(f'''FATAL ERROR: parameter "list_jedi_analyses" is empty. Please check the flags for observation.''')
+            logging.error(f'''FATAL ERROR: parameter "list_jedi_analyses" is empty. Please check the flags for JEDI_TYPE.''')
             sys.exit(1)
         else:
             logging.info(f'''list_jedi_analyses: {list_jedi_analyses}''')
+
+        if jedi_type_snow == "YES" and \
+           (obs_ghcn_snow == "NO" and obs_ims_snow == "NO" and obs_sfcsno == "NO"):
+            logging.error(f'''FATAL ERROR: JEDI_TYPE_SNOW = "YES", but all snow observation options are off !!!''')
+            sys.exit(1)
+        elif jedi_type_snow == "NO" and \
+           (obs_ghcn_snow == "YES" or obs_ims_snow == "YES" or obs_sfcsno == "YES"):
+            logging.error(f'''FATAL ERROR: JEDI_TYPE_SNOW = "NO", but snow observations are on: GHCN ({obs_ghcn_snow}), IMS (${obs_ims_snow}), SFCSNO (${obs_sfcsno}) !!!''')
+            sys.exit(1)
+    
+        if jedi_type_soil_moisture == "YES" and (obs_smap == "NO" and obs_smops == "NO"):
+            logging.error(f'''FATAL ERROR: JEDI_TYPE_SOIL_MOISTURE = "YES", but all soil moisture observation options are off !!!''')
+            sys.exit(1)
+        elif jedi_type_soil_moisture == "NO" and (obs_smap == "YES" or obs_smops == "YES"):
+            logging.error(f'''FATAL ERROR: JEDI_TYPE_SOIL_MOISTURE = "NO", but soil moisture observations are on: SMAP ({obs_smap}) and SMOPS ({obs_smops})!!!''')
+            sys.exit(1)
 
     # Set machine-dependent paths if not specified in config.yaml
     jedi_bin_path = config_parm.get("JEDI_BIN_PATH")
@@ -422,6 +448,9 @@ def set_default_parm():
         "JEDI_BIN_PATH": None,
         "JEDI_IODACONV_PATH": None,
         "JEDI_PY_VER": "python3.11",
+        "JEDI_TYPE_SNOW": "NO",
+        "JEDI_TYPE_SOIL_MOISTURE": "NO",
+        "JEDI_TYPE_SOCA": "NO",
         "KEEPDATA": "YES",
         "MACHINE": "/machine/platform/name",
         "model_ver": "v1.0.0",
@@ -437,7 +466,7 @@ def set_default_parm():
         "OBS_SFCSNO": "NO",
         "OBS_SMAP": "NO",
         "OBS_SMOPS": "NO",
-        "OUTPUT_FH": "3 -1",
+        "OUTPUT_FH": "6 -1",
         "OUTPUT_FH_CICE": None,
         "OUTPUT_FH_MOM6": None,
         "OUTPUT_FH_WW3": None,

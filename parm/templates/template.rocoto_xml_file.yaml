@@ -53,6 +53,9 @@ workflow:
     JEDI_ALGORITHM: "{{ JEDI_ALGORITHM }}"
     JEDI_BIN_PATH: "{{ JEDI_BIN_PATH }}"
     JEDI_IODACONV_PATH: "{{ JEDI_IODACONV_PATH }}"
+    JEDI_TYPE_SNOW: "{{ JEDI_TYPE_SNOW }}"
+    JEDI_TYPE_SOCA: "{{ JEDI_TYPE_SOCA }}"
+    JEDI_TYPE_SOIL_MOISTURE: "{{ JEDI_TYPE_SOIL_MOISTURE }}"
     KEEPDATA: "{{ KEEPDATA }}"
     list_jedi_analyses: "{{ list_jedi_analyses }}"
     MACHINE: "{{ MACHINE }}"
@@ -108,6 +111,7 @@ workflow:
     value: "&LOGDIR;/workflow.log"
   tasks:
 {%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or DO_FREE_FORECAST == "ctest" %}
+{%- if DO_FREE_FORECAST != "ctest" }
     task_prep_data:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -131,6 +135,7 @@ workflow:
         DCOMINghcn: "&DCOMINghcn;"
         DCOMINsmap: "&DCOMINsmap;"
         DCOMINsmops: "&DCOMINsmops;"
+        DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
         IC_DATA_MODEL: "&IC_DATA_MODEL;"
@@ -179,6 +184,7 @@ workflow:
               age: 5
             value: "&DATADEP_SFC2;"
 {%- endif %}
+{%- endif %}
     task_analysis:
       attrs:
 {%- if COLDSTART == "YES" %}
@@ -204,6 +210,9 @@ workflow:
         HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_BIN_PATH: "&JEDI_BIN_PATH;"
+        JEDI_TYPE_SNOW: "&JEDI_TYPE_SNOW;"
+        JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
+        JEDI_TYPE_SOIL_MOISTURE: "&JEDI_TYPE_SOIL_MOISTURE;"
         KEEPDATA: "&KEEPDATA;"
         list_jedi_analyses: "&list_jedi_analyses;"
         LOGDIR: "&LOGDIR;"
@@ -236,6 +245,7 @@ workflow:
 {%- if MACHINE == "ursa" %}
       memory: 32G
 {%- endif %}
+{%- if DO_FREE_FORECAST != "ctest" %}
       dependency:
         and:
           taskdep_prep_data:
@@ -250,6 +260,7 @@ workflow:
               attrs:
                 age: 5
               value: "&DATADEP_SFC2;"
+{%- endif %}
 {%- endif %}
 {%- if COLDSTART == "YES" and IC_FROM_FIX_DIR == "NO" %}
     task_fcst_ic:
@@ -288,7 +299,6 @@ workflow:
       memory: 128G
 {%- endif %}
 {%- endif %}
-{%- if DO_FREE_FORECAST != "ctest" %}
     task_forecast:
       attrs:
 {%- if DO_FREE_FORECAST == "first" %}
@@ -394,7 +404,6 @@ workflow:
             attrs:
               age: 5
             value: "&DATADEP_MOM2;"
-{%- endif %}
 {%- endif %}
 {%- endif %}
     task_plot_stats:
