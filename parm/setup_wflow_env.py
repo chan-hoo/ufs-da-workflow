@@ -185,31 +185,23 @@ def setup_wflow_env(machine):
     jedi_type_soca = config_parm.get("JEDI_TYPE_SOCA")
     jedi_type_soil_moisture = config_parm.get("JEDI_TYPE_SOIL_MOISTURE")
 
-    list_jedi_analyses = ""
+    list_jedi_land = ""
     if jedi_type_snow == "YES":
-        if not list_jedi_analyses:
-            list_jedi_analyses = "snow"
+        if not list_jedi_land:
+            list_jedi_land = "snow"
         else:
-            list_jedi_analyses = f"{list_jedi_analyses} snow"
+            list_jedi_land = f"{list_jedi_land} snow"
     
     if jedi_type_soil_moisture == "YES":
-        if not list_jedi_analyses:
-            list_jedi_analyses = "soil_moisture"
+        if not list_jedi_land:
+            list_jedi_land = "soil_moisture"
         else:
-            list_jedi_analyses = f"{list_jedi_analyses} soil_moisture"
-
-    if jedi_type_soca == "YES":
-        if not list_jedi_analyses:
-            list_jedi_analyses = "soca"
-        else:
-            list_jedi_analyses = f"{list_jedi_analyses} soca"
+            list_jedi_land = f"{list_jedi_land} soil_moisture"
 
     if do_free_forecast == "none":
-        if not list_jedi_analyses:
-            logging.error(f'''FATAL ERROR: parameter "list_jedi_analyses" is empty. Please check the flags for JEDI_TYPE.''')
+        if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca:
+            logging.error(f'''FATAL ERROR: All JEDI_TYPE flags are off. Please check the flags for JEDI_TYPE.''')
             sys.exit(1)
-        else:
-            logging.info(f'''list_jedi_analyses: {list_jedi_analyses}''')
 
         if jedi_type_snow == "YES" and \
            (obs_ghcn_snow == "NO" and obs_ims_snow == "NO" and obs_sfcsno == "NO"):
@@ -322,7 +314,7 @@ def setup_wflow_env(machine):
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
-        'list_jedi_analyses': list_jedi_analyses,
+        'list_jedi_land': list_jedi_land,
         'WARMSTART_DIR': warmstart_dir,
         })
    

@@ -75,7 +75,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
   fi
    
   # Run JCB to create JEDI input yaml files
-  list_jedi_types=(${list_jedi_analyses})
+  list_jedi_types=(${list_jedi_land})
   echo "List of JEDI analyses: ${list_jedi_types[@]}"
   for jedi_type in "${list_jedi_types[@]}"; do
     echo "JEDI analysis for ${jedi_type}"
@@ -151,8 +151,8 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
     cp -p ${jcb_out_fn} ${COMINOUT}
   done
 else
-  list_jedi_types=(${list_jedi_analyses})
-  echo "List of JEDI analyses: ${list_jedi_types[@]}"
+  list_jedi_types=(${list_jedi_land})
+  echo "List of JEDI analyses for land: ${list_jedi_types[@]}"
   for jedi_type in "${list_jedi_types[@]}"; do
     jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
     cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" "${COMINOUT}/${jcb_out_fn}"

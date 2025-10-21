@@ -126,8 +126,8 @@ if [ "${JEDI_TYPE_SNOW}" = "YES" ] || [ "${JEDI_TYPE_SOIL_MOISTURE}" = "YES" ]; 
   else
     snowdepth_vn="snwdph"
   fi
-  list_jedi_types=(${list_jedi_analyses})
-  echo "List of JEDI analyses: ${list_jedi_types[@]}"
+  list_jedi_types=(${list_jedi_land})
+  echo "List of JEDI analyses for land: ${list_jedi_types[@]}"
   for jedi_type in "${list_jedi_types[@]}"; do
     echo "JEDI analysis for ${jedi_type}"
     # Intermediate/Output directories
