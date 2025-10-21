@@ -38,23 +38,75 @@ fi
 # C-test of JEDI model component
 ###################################
 if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+  # SOCA
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
-    echo "test"
+    ## Path to data set
+    path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+    mkdir -p data_output
+    mkdir -p testoutput
+    mkdir -p data_generated
+
+    ## Symlink data/input directories
+    ln -nsf "${path_soca_data}/Data" "data_static"
+    ln -nsf "${path_soca_data}/testinput" .
+    ln -nsf "${path_soca_data}/testref" .
+
+    ### Symlink data files for gridgen
+    ln -nsf "data_static/workdir/diag_table" .
+    ln -nsf "data_static/workdir/field_table" .
+
+    #########################################################################################
+    ## Run "gridgen", "setcorscales", "parameters_diffusion", "JEDI_ALGORITHM" in sequence
+    #########################################################################################
+    list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
+    for isoca in "${list_soca_tasks[@]}"; do
+      ### JEDI input yaml file
+      jedi_nml_fn="${isoca}.yml"
+      cp -p "${path_soca_data}/testinput/${jedi_nml_fn}" .
+  
+      ### Run JEDI executable
+      list_exe_var=( "3dvar" "3dvarfgat_pseudo" "4denvar" )
+      if [ "${isoca}" = "parameters_diffusion" ]; then
+        jedi_exe_fn="soca_error_covariance_toolbox.x"
+      else
+        if [[ ${list_exe_var[@]} =~ "${isoca}" ]]; then
+          jedi_exe_fn="soca_var.x"
+	else
+          jedi_exe_fn="soca_${isoca}.x"
+	fi
+      fi
+      export pgm="${jedi_exe_fn}"
+      . prep_step
+      ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+      export err=$?; err_chk
+      cp errfile errfile_ctest_${isoca}
+      if [[ $err != 0 ]]; then
+        err_exit "JEDI SOCA C-test for ${isoca} failed"
+      fi
+  
+      ### Copy output files
+      mkdir -p "data_generated/${isoca}"
+      cp -p data_output/* "data_generated/${isoca}"
+      
+      echo "========== SOCA task ${isoca} completed !!! =========="
+    done
+
   fi
-  exit
+  # Copy output to COMINOUT
+  cp -p data_output/* ${COMINOUT}
 fi
 
 ##################
 # SOCA analysis
 ##################
-if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   echo "test"
 fi
 
 ##################################
 # Snow / Soil-moisture analysis
 ##################################
-if [ "${JEDI_TYPE_SNOW}" = "YES" ] || [ "${JEDI_TYPE_SOIL_MOISTURE}" = "YES" ]; then
+if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Copy sfc_data files from RESTART/WARMSTART into work directory
   for itile in {1..6}
   do
