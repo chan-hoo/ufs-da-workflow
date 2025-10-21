@@ -66,7 +66,7 @@ def main():
     # plot restart file
     for var_nm in var_list:
         glon,glat = get_geo(path_data,fn_data,var_nm)
-        plot_data(path_data,fn_data,var_nm,zlvlm1,out_title_base,
+        plot_data(path_data,fn_data,var_nm,glon,glat,zlvlm1,out_title_base,
                   out_fn_base,work_dir,colorbar_option)
 
 
@@ -75,8 +75,8 @@ def get_geo(path_data,fn_data,var_nm):
 
     logging.info(f''' ===== geo data files ====================================''')
     # open the data file
-    fp_data=os.path.join(path_data,fn_data)
-    try: data_raw=nc.Dataset(fp_data)
+    fp_data = os.path.join(path_data,fn_data)
+    try: data_raw = nc.Dataset(fp_data)
     except: raise Exception('Could NOT find the file',fp_data)
     logging.info(f''' Variables: {list(data_raw.variables)}''')
     # Extract geo data
@@ -86,6 +86,8 @@ def get_geo(path_data,fn_data,var_nm):
     # lonq/latq
     lon_q = np.ma.masked_invalid(data_raw.variables['lonq'])
     lat_q = np.ma.masked_invalid(data_raw.variables['latq'])
+
+    data_raw.close()
 
     list_hh = [ "Temp", "Salt", "h", "frazil", "ave_ssh", "sfc", "MEKE", "MEKE_Kh",
                 "Kd_shear", "Kv_shear", "MLD", "h_ML", "SFC_BFLX", "MDL_MLE_filtered" ]
@@ -114,8 +116,8 @@ def get_geo(path_data,fn_data,var_nm):
 
 
 # Get data from files and plot ====================================== CHJ =====
-def plot_data(path_data,fn_data,var_nm,glon,glat,zlvlm1,
-              out_title_base,out_fn_base,work_dir,colorbar_option):
+def plot_data(path_data,fn_data,var_nm,glon,glat,zlvlm1,out_title_base,
+              out_fn_base,work_dir,colorbar_option):
 
     # center of map
     c_lon = -77.0369
@@ -125,14 +127,20 @@ def plot_data(path_data,fn_data,var_nm,glon,glat,zlvlm1,
     logging.info(f''' ===== data file: '{var_nm}' ========================''')
     # open the data file
     fp_data = os.path.join(path_data,fn_data)
-    try: data_raw = xr.open_dataset(fp_data)
+    try: data_raw = nc.Dataset(fp_data)
     except: raise Exception('Could NOT find the file',fp_data)
 
     # Extract valid variable
-    var_orig = data_raw[var_nm]
-    var_data = np.ma.masked_invalid(var_orig.values)
-    var_nm_long = var_orig.attrs.get("long_name", "No long-name attribute found")
-    var_nm_unit = var_orig.attrs.get("units", "No units attribute found")
+    var_orig = data_raw.variables[var_nm]
+    var_data = np.ma.masked_invalid(var_orig)
+    if hasattr(var_orig, 'long_name'):
+        var_nm_long = var_orig.long_name
+    else:
+        logging.error(f'''No long_name attribute found''')
+    if hasattr(var_orig, 'units'):
+        var_nm_unit = var_orig.units
+    else:
+        logging.error(f'''No units attribute found''')
     ndim_var = var_data.ndim
     logging.info(f''' Variable: {var_nm}: {var_nm_long}: {var_nm_unit}: number of dimensions = {ndim_var}''')
     if ndim_var == 4:

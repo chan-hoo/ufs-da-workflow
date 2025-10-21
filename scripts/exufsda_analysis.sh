@@ -39,7 +39,7 @@ fi
 ###################################
 if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
-
+    echo "test"
   fi
   exit
 fi
@@ -48,9 +48,7 @@ fi
 # SOCA analysis
 ##################
 if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
-
-
-
+  echo "test"
 fi
 
 ##################################
