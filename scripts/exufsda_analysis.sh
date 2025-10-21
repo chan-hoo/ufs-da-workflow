@@ -94,6 +94,13 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   fi
   # Copy output to COMINOUT
   cp -p data_output/* ${COMINOUT}
+  cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
+  cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
+  cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
+  cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
+  cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
+  cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
+  cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
 fi
 
 ##################
