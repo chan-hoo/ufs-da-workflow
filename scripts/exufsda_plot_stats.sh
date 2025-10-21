@@ -15,6 +15,7 @@ source ${HOMEufsda}/parm/jjob_env_setup.sh
 # Set the default values of plotting flags
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    do_plot_obs="NO"
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_fcst_out_fv3="YES"
@@ -24,6 +25,7 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_fcst_restart_mom6="YES"
     do_plot_fcst_restart_cice="YES"
   else
+    do_plot_obs="YES"
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_fcst_out_fv3="NO"
@@ -34,6 +36,7 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_fcst_restart_cice="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
+  do_plot_obs="NO"
   do_plot_stats="NO"
   do_plot_time_history="NO"
   do_plot_fcst_out_fv3="YES"
@@ -44,6 +47,7 @@ elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_fcst_restart_cice="YES"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    do_plot_obs="NO"
     do_plot_stats="NO"
     do_plot_time_history="NO"
     do_plot_fcst_out_fv3="YES"
@@ -53,6 +57,7 @@ else
     do_plot_fcst_restart_mom6="YES"
     do_plot_fcst_restart_cice="YES"
   else
+    do_plot_obs="YES"
     do_plot_stats="YES"
     do_plot_time_history="YES"
     do_plot_fcst_out_fv3="YES"
@@ -69,6 +74,7 @@ if [ "${APP}" = "NG-GODAS" ]; then
   do_plot_fcst_restart_fv3="NO"
 fi
 
+DO_PLOT_OBS="${DO_PLOT_OBS:-${do_plot_obs}}"
 DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
 DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
@@ -100,6 +106,53 @@ if [ "${FRAC_GRID}" = "YES" ]; then
   snowdepth_vn="snodl"
 else
   snowdepth_vn="snwdph"
+fi
+
+############################################################
+# Observation File Plot
+############################################################
+if [ "${DO_PLOT_OBS}" = "YES" ]; then
+  obs_prefix="obs.${PDY}.${cycle}"
+  fn_input_ghcn="${obs_prefix}.ghcn_snow.nc"
+  fn_input_ims="${obs_prefix}.ims_snow.tm00.nc"
+  fn_input_smap="${obs_prefix}.smap_combined.nc"
+  fn_input_smops="${obs_prefix}.smops.nc"
+
+  # Soft-link the input file to DATA
+  if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${fn_input_ghcn}" .
+  fi
+  if [ "${OBS_IMS_SNOW}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${fn_input_ims}" .
+  fi
+  if [ "${OBS_SMAP}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${fn_input_smap}" .
+  fi
+  if [ "${OBS_SMOPS}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${fn_input_smops}" .
+  fi
+
+  cat > plot_obs_file.yaml << EOF
+work_dir: '${DATA}'
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+fn_input_ghcn: '${fn_input_ghcn}'
+fn_input_ims: '${fn_input_ims}'
+fn_input_smap: '${fn_input_smap}'
+fn_input_smops: '${fn_input_smops}'
+OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
+OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
+OBS_SMAP: '${OBS_SMAP}'
+OBS_SMOPS: '${OBS_SMOPS}'
+PDY: '${PDY}'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+EOF
+
+  ${USHufsda}/plot_obs_file.py
+  if [ $? -ne 0 ]; then
+    err_exit "Observation file plot failed"
+  fi
+  # Copy result file to COMINOUT
+  cp -p *.png ${COMINOUTplot}
 fi
 
 ##########################
@@ -347,7 +400,7 @@ fi
 # Plot forecast restart tiles: MOM6
 ######################################
 if [ "${DO_PLOT_FCST_RESTART_MOM6}" = "YES" ]; then
-  fn_data_base="${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc"
+  fn_data="${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc"
   out_title_base="UFS-DA::RESTART::MOM6::${nYYYY}-${nMM}-${nDD}-${nHH}::"
   out_fn_base="ufsda_out_restart_mom6_${nYYYY}${nMM}${nDD}${nHH}_"
   # zlevel_number is valid only for 3-D fields such as stc/smc/slc
@@ -356,7 +409,7 @@ if [ "${DO_PLOT_FCST_RESTART_MOM6}" = "YES" ]; then
   cat > plot_forecast_restart_mom6.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 colorbar_option: 'fixed'
-fn_data_base: '${fn_data_base}'
+fn_data: '${fn_data}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base}'
 path_data: '${COMINOUT}/RESTART'
