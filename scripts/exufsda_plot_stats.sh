@@ -45,6 +45,16 @@ elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_fcst_restart_fv3="YES"
   do_plot_fcst_restart_mom6="YES"
   do_plot_fcst_restart_cice="YES"
+elif [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+  do_plot_obs="YES"
+  do_plot_stats="YES"
+  do_plot_time_history="YES"
+  do_plot_fcst_out_fv3="NO"
+  do_plot_fcst_out_mom6="NO"
+  do_plot_fcst_out_cice="NO"
+  do_plot_fcst_restart_fv3="NO"
+  do_plot_fcst_restart_mom6="NO"
+  do_plot_fcst_restart_cice="NO"
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_obs="NO"
@@ -112,37 +122,19 @@ fi
 # Observation File Plot
 ############################################################
 if [ "${DO_PLOT_OBS}" = "YES" ]; then
-  obs_prefix="obs.${PDY}.${cycle}"
-  fn_input_ghcn="${obs_prefix}.ghcn_snow.nc"
-  fn_input_ims="${obs_prefix}.ims_snow.tm00.nc"
-  fn_input_smap="${obs_prefix}.smap_combined.nc"
-  fn_input_smops="${obs_prefix}.smops.nc"
-
-  # Soft-link the input file to DATA
-  if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-    ln -nsf "${COMINOUTobs}/${fn_input_ghcn}" .
-  fi
-  if [ "${OBS_IMS_SNOW}" = "YES" ]; then
-    ln -nsf "${COMINOUTobs}/${fn_input_ims}" .
-  fi
-  if [ "${OBS_SMAP}" = "YES" ]; then
-    ln -nsf "${COMINOUTobs}/${fn_input_smap}" .
-  fi
-  if [ "${OBS_SMOPS}" = "YES" ]; then
-    ln -nsf "${COMINOUTobs}/${fn_input_smops}" .
-  fi
+  # Soft-link the observation files to DATA
+  ln -nsf ${COMINOUTobs}/* .
 
   cat > plot_obs_file.yaml << EOF
 work_dir: '${DATA}'
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
-fn_input_ghcn: '${fn_input_ghcn}'
-fn_input_ims: '${fn_input_ims}'
-fn_input_smap: '${fn_input_smap}'
-fn_input_smops: '${fn_input_smops}'
+DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
 OBS_SMAP: '${OBS_SMAP}'
 OBS_SMOPS: '${OBS_SMOPS}'
+obs_prefix: 'obs.${PDY}.${cycle}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 EOF

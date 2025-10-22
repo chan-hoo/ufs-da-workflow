@@ -7,6 +7,7 @@
 ## History ===============================
 ## V000: 2024/12/03: Chan-Hoo Jeon : Preliminary version
 ## V001: 2025/04/17: Chan-Hoo Jeon : Add IMS option
+## V002: 2025/10/22: Chan-Hoo Jeon : Add SOCA C-test option
 ###################################################################### CHJ #####
 
 import os, sys
@@ -29,18 +30,17 @@ def main():
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    work_dir=yaml_data['work_dir']
-    cartopy_ne_path=yaml_data['cartopy_ne_path']
-    fn_input_ghcn=yaml_data['fn_input_ghcn']
-    fn_input_ims=yaml_data['fn_input_ims']
-    fn_input_smap=yaml_data['fn_input_smap']
-    fn_input_smops=yaml_data['fn_input_smops']
-    OBS_GHCN_SNOW=yaml_data['OBS_GHCN_SNOW']
-    OBS_IMS_SNOW=yaml_data['OBS_IMS_SNOW']
-    OBS_SMAP=yaml_data['OBS_SMAP']
-    OBS_SMOPS=yaml_data['OBS_SMOPS']
-    PDY=yaml_data['PDY']
-    PY_LOG_LEVEL=yaml_data['PY_LOG_LEVEL']
+    work_dir = yaml_data['work_dir']
+    cartopy_ne_path = yaml_data['cartopy_ne_path']
+    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
+    OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
+    OBS_IMS_SNOW = yaml_data['OBS_IMS_SNOW']
+    OBS_SMAP = yaml_data['OBS_SMAP']
+    OBS_SMOPS = yaml_data['OBS_SMOPS']
+    obs_prefix = yaml_data['obs_prefix']
+    PDY = yaml_data['PDY']
+    PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
     
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
@@ -60,26 +60,34 @@ def main():
 
     # Plot GHCN
     if OBS_GHCN_SNOW == "YES":
-       obs_plot("ghcn",PDY,work_dir,fn_input_ghcn)
+        obs_plot("ghcn",PDY,work_dir,obs_prefix,"ghcn_snow")
     # Plot IMS
     if OBS_IMS_SNOW == "YES":
-       obs_plot("ims",PDY,work_dir,fn_input_ims)
+        obs_plot("ims",PDY,work_dir,obs_prefix,"ims_snow.tm00")
     # Plot SMAP
     if OBS_SMAP == "YES":
-       obs_plot("smap",PDY,work_dir,fn_input_smap)
+        obs_plot("smap",PDY,work_dir,obs_prefix,"smap_combined")
     # Plot SMOPS
     if OBS_SMOPS == "YES":
-       obs_plot("smops",PDY,work_dir,fn_input_smops)
+        obs_plot("smops",PDY,work_dir,obs_prefix,"smops")
+    # Plot C-test of SOCA
+    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
+        obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
+        obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss")
+        obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt")
+        obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof")
+        obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof")
+        obs_plot("soca_icec",PDY,work_dir,obs_prefix,"icec")
 
 
 # obs plot =============================================== CHJ =====
-def obs_plot(obs_type,PDY,work_dir,fn_input):
-
-    logging.info(f''' ===== INPUT:: {obs_type}:: '{fn_input}' ================================''')
+def obs_plot(obs_type,PDY,work_dir,fn_prefix,fn_suffix):
 
     # open the data file
-    fpath=os.path.join(work_dir,fn_input)
-    try: mdat=nc.Dataset(fpath)
+    fn_input = f'''{fn_prefix}.{fn_suffix}.nc'''
+    logging.info(f''' ===== INPUT:: {obs_type}:: '{fn_input}' ================================''')
+    fpath = os.path.join(work_dir,fn_input)
+    try: mdat = nc.Dataset(fpath)
     except: raise Exception('Could NOT find the file',fpath)
 
     logging.debug(" MetaData:", mdat.groups['MetaData'])
@@ -132,17 +140,38 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
 
     # Extract data array
     if obs_type == "smap" or obs_type == "smops":
-        gvar="soilMoistureVolumetric"
-        pvar="SoilMoisture"
+        gvar = "soilMoistureVolumetric"
+        pvar = "Soil Moisture"
+    elif obs_type == "ghcn" or obs_type == "ims":
+        gvar = "totalSnowDepth"
+        pvar = "Snow Depth"
+    elif obs_type == "soca_sst":
+        gvar = "seaSurfaceTemperature"
+        pvar = "Sea Surface Temperature"
+    elif obs_type == "soca_sss":
+        gvar = "seaSurfaceSalinity"
+        pvar = "Sea Surface Salinity"
+    elif obs_type == "soca_adt":
+        gvar = "absoluteDynamicTopography"
+        pvar = "Absolute Dynamic Topography"
+    elif obs_type == "soca_icec":
+        gvar = "seaIceFraction"
+        pvar = "Sea Ice Fraction"
+    elif obs_type == "soca_prof_t":
+        gvar = "waterTemperature"
+        pvar = "Insitu Temperature"
+    elif obs_type == "soca_prof_s":
+        gvar = "salinity"
+        pvar = "Insitu Salinity"
     else:
-        gvar="totalSnowDepth"
-        pvar="SnowDepth"
+        gvar = svar
+        pvar = svar
 
-    sfld=mdat.groups[svar].variables[gvar][:]
+    sfld = mdat.groups[svar].variables[gvar][:]
 
-    obs_type_upper=obs_type.upper()
-    out_title_fld=f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
-    out_fn=f'''ufsda_obs_{obs_type}_{PDY}_{pvar}'''
+    obs_type_upper = obs_type.upper()
+    out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
+    out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}'''
 
     # Check array size
     lon_len = len(lon)
@@ -155,8 +184,8 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         sys.exit('FATAL ERROR: array size mismatched !!!')
 
     # Max and Min of the field
-    fmax=np.max(sfld)
-    fmin=np.min(sfld)
+    fmax = np.max(sfld)
+    fmin = np.min(sfld)
     logging.info(f''' Max of {pvar}= {fmax}''')
     logging.info(f''' Min of {pvar}= {fmin}''')
 
@@ -181,6 +210,19 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         elif obs_type == 'smap' or obs_type == 'smops':
             cs_max=1.0
             cs_min=0.0
+        elif obs_type == 'soca_sst' or obs_type == 'soca_prof_t':
+            cs_max = 35
+            cs_min = -5
+        elif obs_type == 'soca_sss' or obs_type == 'soca_prof_s':
+            cs_max = 38
+            cs_min = 30
+        elif obs_type == 'soca_adt':
+            cs_max = 1.4
+            cs_min = -1.4
+            cs_cmap = 'turbo'
+        elif obs_type == 'soca_icec':
+            cs_max = 1
+            cs_min = 0
         else:
             cs_max=300.0
     else:
@@ -191,10 +233,11 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
 
     # Plot field
     fig,ax=plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Robinson(c_lon)))
-    if obs_type == "smap" or obs_type == "smops":
-        ax.set_global()
-    else:
+    if obs_type == "ghcn":
         ax.set_extent(extent, ccrs.PlateCarree())
+    else:
+        ax.set_global()
+
     # Call background plot
     back_plot(ax)
     ax.set_title(out_title_fld,fontsize=8)

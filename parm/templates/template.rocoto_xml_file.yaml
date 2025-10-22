@@ -426,6 +426,7 @@ workflow:
         FRAC_GRID: "&FRAC_GRID;"
         HOMEufsda: "&HOMEufsda;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
+        JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
         KEEPDATA: "&KEEPDATA;"
         LOGDIR: "&LOGDIR;"
         MACHINE: "&MACHINE;"

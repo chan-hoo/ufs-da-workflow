@@ -38,7 +38,9 @@ fi
 # C-test of JEDI model component
 ###################################
 if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+  #########
   # SOCA
+  #########
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
     ## Path to data set
     path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
@@ -51,29 +53,33 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ln -nsf "${path_soca_data}/testinput" .
     ln -nsf "${path_soca_data}/testref" .
 
-    ### Symlink data files for gridgen
+    ## Symlink data files for gridgen
     ln -nsf "data_static/workdir/diag_table" .
     ln -nsf "data_static/workdir/field_table" .
 
-    #########################################################################################
-    ## Run "gridgen", "setcorscales", "parameters_diffusion", "JEDI_ALGORITHM" in sequence
-    #########################################################################################
-    list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
+    ##################################################################
+    ## Run "JEDI_ALGORITHM" and its pre-requisite tasks in sequence
+    ##################################################################
+    ## Set list of tasks and executable name for jedi algorithm
+    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_var.x"
+    else
+      list_soca_tasks=("${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_${JEDI_ALGORITHM}.x"
+    fi
     for isoca in "${list_soca_tasks[@]}"; do
       ### JEDI input yaml file
       jedi_nml_fn="${isoca}.yml"
       cp -p "${path_soca_data}/testinput/${jedi_nml_fn}" .
-  
+ 
       ### Run JEDI executable
-      list_exe_var=( "3dvar" "3dvarfgat_pseudo" "4denvar" )
-      if [ "${isoca}" = "parameters_diffusion" ]; then
+      if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
+	jedi_exe_fn="${jedi_exe_soca_fn}"
+      elif [ "${isoca}" = "parameters_diffusion" ]; then
         jedi_exe_fn="soca_error_covariance_toolbox.x"
       else
-        if [[ ${list_exe_var[@]} =~ "${isoca}" ]]; then
-          jedi_exe_fn="soca_var.x"
-	else
-          jedi_exe_fn="soca_${isoca}.x"
-	fi
+        jedi_exe_fn="soca_${isoca}.x"
       fi
       export pgm="${jedi_exe_fn}"
       . prep_step
@@ -92,8 +98,15 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     done
 
   fi
-  # Copy output to COMINOUT
-  cp -p data_output/* ${COMINOUT}
+
+  # Copy observation files to COMINOUT
+  cp -p data_static/obs/sst.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sst.nc"
+  cp -p data_static/obs/sss.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sss.nc"
+  cp -p data_static/obs/adt.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.adt.nc"
+  cp -p data_static/obs/prof.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.prof.nc"
+  cp -p data_static/obs/icec.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.icec.nc"
+
+  # Copy H(x) output to COMINOUT
   cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
   cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
   cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
@@ -101,6 +114,9 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
   cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
   cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
+
+  # Copy output to COMINOUT
+  cp -rp data_generated/* ${COMINOUT}
 fi
 
 ##################
