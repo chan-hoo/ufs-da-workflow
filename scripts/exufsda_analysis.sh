@@ -117,6 +117,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
 
   # Copy output to COMINOUT
   cp -rp data_generated/* ${COMINOUT}
+  cp -p data_output/* ${COMINOUT}
 fi
 
 ##################
