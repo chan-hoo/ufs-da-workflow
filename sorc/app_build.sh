@@ -262,16 +262,19 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     set -eu
     if [ "${PLATFORM}" = "gaeac6" ]; then
       module reset
-      module load git-lfs
-    elif [ "${PLATFORM}" = "hera" ]; then
-      module purge
-      git lfs install --skip-repo
     else
       module purge
-      module load git-lfs
     fi
     module use ${SORC_DIR}/jedi-bundle/modulefiles
     module load ${PLATFORM}.${COMPILER}
+    if [ "${PLATFORM}" = "gaeac6" ]; then
+      module load git
+      git lfs install --skip-repo
+    elif [ "${PLATFORM}" = "hera" ]; then
+      git lfs install --skip-repo
+    else
+      module load git-lfs
+    fi
     module list
     mkdir -p ${JEDI_BUILD_DIR}
     cd "${JEDI_BUILD_DIR}"
