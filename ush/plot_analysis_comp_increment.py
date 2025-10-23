@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 ###################################################################### CHJ #####
-## Name		: plot_comp_sfc_data.py
-## Usage	: Plot comparison of sfc_data files by analysis task
-## Input files  : sfc_data.tile#.nc
+## Name		: plot_analysis_comp_increment.py
+## Usage	: Plot comparison of JEDI increment by analysis task
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2024/12/10: Chan-Hoo Jeon : Preliminary version
+## V001: 2025/10/23: Chan-Hoo Jeon : Add options for SOCA C-test
 ###################################################################### CHJ #####
 
 import os, sys
@@ -30,30 +30,37 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # Main part (will be called at the end) ============================= CHJ =====
 def main():
 
-    global num_tiles,c_lon,work_dir,out_title_base,out_fn_base
-
+    global num_tiles,c_lon
     num_tiles=6
     # center of map
     c_lon=-77.0369
 
-    yaml_file="plot_comp_sfc.yaml"
+    yaml_file="plot_analysis_comp_increment.yaml"
     with open(yaml_file, 'r') as f:
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    work_dir = yaml_data['work_dir']
-    fix_dir = yaml_data['fix_dir']
-    fn_sfc_base = yaml_data['fn_sfc_base']
-    fn_inc_base = yaml_data['fn_inc_base']
-    jedi_exe = yaml_data['jedi_exe']
-    jedi_type = yaml_data['jedi_type']
+    cartopy_ne_path = yaml_data['cartopy_ne_path']
+    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    fn_ice_data = yaml_data['fn_ice_data']
+    fn_ice_incr = yaml_data['fn_ice_incr']
+    fn_ocn_data = yaml_data['fn_ocn_data']
+    fn_ocn_incr = yaml_data['fn_ocn_incr']
+    fn_sfc_data = yaml_data['fn_sfc_data']
+    fn_sfc_incr = yaml_data['fn_sfc_incr']
+    JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
+    JEDI_TYPE_SNOW = yaml_data['JEDI_TYPE_SNOW']
+    JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
+    JEDI_TYPE_SOIL_MOISTURE = yaml_data['JEDI_TYPE_SOIL_MOISTURE']
     orog_path = yaml_data['orog_path']
     orog_fn_base = yaml_data['orog_fn_base']
-    out_title_base = yaml_data['out_title_base']
-    out_fn_base = yaml_data['out_fn_base']
+    out_fn_base_prefix = yaml_data['out_fn_base_prefix']
+    PDY = yaml_data['PDY']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
     snowdepth_vn = yaml_data['snowdepth_vn']
+    work_dir = yaml_data['work_dir']
     zlvl = yaml_data['zlevel_number']
+
     zlvlm1 = int(zlvl)-1
 
     # Set logging config
@@ -70,171 +77,134 @@ def main():
     logging.info(f''' YAML Data: {yaml_data}''')
 
     # Set the path to Natural Earth dataset
-    cartopy.config['data_dir']=os.path.join(fix_dir,"NaturalEarth")
+    cartopy.config['data_dir'] = cartopy_ne_path
 
-    if jedi_type == "snow":
-        sfc_var_nm = snowdepth_vn
-    elif jedi_type == "soil_moisture":
-        sfc_var_nm = "smc"
+    list_jedi_type = []
+    if JEDI_TYPE_SNOW == "YES":
+        list_jedi_type.append("snow")
+    if JEDI_TYPE_SOIL_MOISTURE == "YES":
+        list_jedi_type.append = "soil_moisture"
+    if JEDI_TYPE_SOCA == "YES" and DO_FREE_FORECAST == "ctest":
+        list_jedi_type.append = "soca_ctest"
+    logging.info(f''' list of JEDI types: {list_jedi_type}''')
 
-    # get lon, lat from orography
-    slmsk=get_geo(orog_path,orog_fn_base)
-    # get sfc data before analysis
-    sfc1_data, sfc1_slmsk = get_sfc(work_dir,fn_sfc_base,sfc_var_nm,zlvlm1,jedi_exe,jedi_type,'before')
-    # get sfc data after analysis
-    sfc2_data, sfc2_slmsk = get_sfc(work_dir,fn_sfc_base,sfc_var_nm,zlvlm1,jedi_exe,jedi_type,'after')
-    # get sfc increment data of analysis
-    sfc_xainc_data, sfc_xainc_slmsk = get_sfc(work_dir,fn_inc_base,sfc_var_nm,zlvlm1,jedi_exe,jedi_type,'inc')
-    # compare sfc1 and sfc2
-    compare_sfc(sfc1_data,sfc2_data,sfc_xainc_data,sfc_var_nm,zlvlm1,jedi_type)
-    # diagnosis
-    diag_tool=True
-    if diag_tool:
-        diag_data(sfc1_data,sfc2_data,sfc_xainc_data,slmsk,sfc1_slmsk,sfc2_slmsk,sfc_xainc_slmsk,sfc_var_nm)
+    var_list_sfc = []
+    var_list_ocn = []
+    var_list_ice = []
+    for jtype in list_jedi_type:
+        if jtype == "snow":
+            var_list_sfc.append(snowdepth_vn)
+        elif jtype == "soil_moisture":
+            var_list_sfc.append("smc")
+        elif jtype == "soca_ctest":
+            var_list_sfc.append(["sw_rad", "latent_heat", "fric_vel"])
+            var_list_ocn.append(["Salt", "Temp", "ave_ssh"])
+            var_list_ice.append(["hi_h", "hs_h"])
+        logging.info(f''' list of vars for sfc: {var_list_sfc}''')
+        logging.info(f''' list of vars for ocn: {var_list_ocn}''')
+        logging.info(f''' list of vars for ice: {var_list_ice}''')
 
-
-# diagnosis of sfc_data ============================================= CHJ =====
-def diag_data(sfc1_data,sfc2_data,sfc_xainc_data,slmsk,sfc1_slmsk,sfc2_slmsk,sfc_xainc_slmsk,sfc_var_nm):
-
-    logging.info(f' ===== Diagnosis of SFC_DATA =======================================')
-    logging.info(f'''slmsk: original: {slmsk.shape} : max={np.nanmax(slmsk)} : min={np.nanmin(slmsk)}''')
-    logging.info(f'''slmsk: before  : {sfc1_slmsk.shape} : max={np.nanmax(sfc1_slmsk)} : min={np.nanmin(sfc1_slmsk)}''')
-    logging.info(f'''slmsk: after   : {sfc2_slmsk.shape} : max={np.nanmax(sfc2_slmsk)} : min={np.nanmin(sfc2_slmsk)}''')
-    logging.info(f'''slmsk: inc     : {sfc_xainc_slmsk.shape} : max={np.nanmax(sfc_xainc_slmsk)} : min={np.nanmin(sfc_xainc_slmsk)}''')
-    logging.info(f''' orog     :: 0 = non-land, 1 = land ''')
-    logging.info(f''' sfc_data :: 0 = sea     , 1 = land, 2 = sea-ice ''')
-    logging.info(f''' ===== Cross-check of Sea-Land masks =====''')
-    comp_slmsk(slmsk,sfc1_slmsk,"orog-before")
-    comp_slmsk(sfc1_slmsk,sfc2_slmsk,"before-after")
-
-
-# compare sea-land masks ============================================ CHJ =====
-def comp_slmsk(slmsk1,slmsk2,txt):
-
-    # change sea-ice to sea
-    slmsk1[slmsk1 == 2] = 0
-    slmsk2[slmsk2 == 2] = 0
-    for it in range(num_tiles):
-        itp=it+1
-        chk_slmsk1 = np.sum(slmsk1[it,:,:] - slmsk2[it,:,:])
-        logging.info(f'''Check S-L mask :: {txt} :: Tile {itp} = {chk_slmsk1}''')
+        # sfc file
+        if var_list_sfc:
+            if jtype == "snow" or jtype == "soil_moisture":
+                # get lon, lat from orography
+                get_geo_tile(orog_path,orog_fn_base)
+                for var_nm in var_list_sfc:
+                    # Set output file name and title base
+                    out_title_base=f'''UFS-DA::COMP::SFC::{jtype}::{JEDI_ALGORITHM}::{var_nm}::{PDY}::'''
+                    out_fn_base=f'''{out_fn_base_prefix}sfc_{jtype}_{JEDI_ALGORITHM}_{var_nm}_{PDY}_'''
+                    # get data before analysis
+                    var_data1 = get_data_tile(work_dir,fn_sfc_data,var_nm,zlvlm1,jtype,
+                                              out_title_base,out_fn_base,'before')
+                    # get data after analysis
+                    var_data2 = get_data_tile(work_dir,fn_sfc_data,var_nm,zlvlm1,jtype,
+                                              out_title_base,out_fn_base,'after')
+                    # get increment data of analysis
+                    var_data_inc = get_data_tile(work_dir,fn_sfc_incr,var_nm,zlvlm1,jtype,
+                                                 out_title_base,out_fn_base,'inc')
+                    # compare data1 and data2
+                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                                 out_title_base,out_fn_base,work_dir)
 
 
 # geo lon/lat from orography ======================================== CHJ =====
-def get_geo(orog_path,orog_fn_base):
+def get_geo_tile(orog_path,orog_fn_base):
 
     global glon,glat
-
     logging.info(f''' ===== geo data files ==============================================''')
-
     cres=orog_fn_base.split('_')[0]
-
     glon_all=[]
     glat_all=[]
-    slmsk_all=[]
     for it in range(num_tiles):
         itp=it+1
         fn_orog=f'''{orog_fn_base}.tile{itp}.nc'''
         fp_orog=os.path.join(orog_path,fn_orog)
-
         try: orog=xr.open_dataset(fp_orog)
         except: raise Exception('Could NOT find the file',fp_orog)
-
         # Extract longitudes, and latitudes
         geolon=np.ma.masked_invalid(orog['geolon'].data)
         geolat=np.ma.masked_invalid(orog['geolat'].data)
-        slmsk0=np.ma.masked_invalid(orog['slmsk'].data)
         glon_all.append(geolon[None,:])
         glat_all.append(geolat[None,:])
-        slmsk_all.append(slmsk0[None,:])
-
-        if itp==1:
-            print(orog)
-            print(slmsk0.shape)
 
     glon=np.vstack(glon_all)
     glat=np.vstack(glat_all)
-    slmsk=np.vstack(slmsk_all)
-    logging.debug(f''' slmsk size= {slmsk.shape}''')
-
-    return slmsk
 
 
-# Get sfc_data from files and plot ================================== CHJ =====
-def get_sfc(path_sfc,fn_sfc_base,sfc_var_nm,zlvl,jedi_exe,jedi_type,sfc_opt):
+# Get data tiles from files and plot ================================ CHJ =====
+def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,out_fn_base,data_opt):
 
-    logging.info(f''' ===== sfc files: {sfc_var_nm} :: {sfc_opt} ===============================''')
-    sfc_data_all=[]
-    sfc_slmsk_all=[]
-    if sfc_opt == 'before':
-        fn_sfc_ext=f'''.nc_{jedi_type}_before_inc'''
-    elif sfc_opt == 'after':
-        fn_sfc_ext=f'''.nc_{jedi_type}_after_inc'''
+    logging.info(f''' ===== sfc files: {var_nm} :: {data_opt} ===============================''')
+    var_data_all=[]
+    if data_opt == 'before':
+        fn_data_ext=f'''.nc_{jtype}_before_inc'''
+    elif data_opt == 'after':
+        fn_data_ext=f'''.nc_{jtype}_after_inc'''
     else:
-        fn_sfc_ext=".nc"
+        fn_data_ext=".nc"
 
     for it in range(num_tiles):
         itp=it+1
-        fn_sfc=f'''{fn_sfc_base}{itp}{fn_sfc_ext}'''
-        fp_sfc=os.path.join(path_sfc,fn_sfc)
-
-        try: sfc=xr.open_dataset(fp_sfc)
-        except: raise Exception('Could NOT find the file',fp_sfc)
-
-        # Extract variable
-        sfc_data=np.ma.masked_invalid(sfc[sfc_var_nm].data)
-        if jedi_exe == '3dvar' and sfc_opt == 'inc':
-            slmsk_data=np.zeros(sfc_data.shape)
-            if itp == 1:
-                logging.warning(f'''!!! S-L mask is not available in inc files for 3D-VAR: set to zeros !!!''')
+        fn_data = f'''{fn_data_base}{itp}{fn_data_ext}'''
+        fp_data = os.path.join(path_data,fn_data)
+        try: ds = xr.open_dataset(fp_data)
+        except: raise Exception('Could NOT find the file',fp_data)
+        var_data = np.ma.masked_invalid(ds[var_nm].data)
+        if var_nm == 'stc' or var_nm == 'smc' or var_nm == 'slc':
+            var_data3d = np.squeeze(var_data,axis=0)
+            var_data2d = var_data3d[zlvl,:,:]
         else:
-          slmsk_data=np.ma.masked_invalid(sfc['slmsk'].data)
+            var_data2d = np.squeeze(var_data,axis=0)
+        var_data_all.append(var_data2d[None,:])
 
-        if itp == 1:
-            print(sfc)
-            logging.debug(f''' sfc_data size= {sfc_data.shape}''')
-            logging.debug(f''' slmsk size= {slmsk_data.shape}''')
+    data_var = np.vstack(var_data_all)
 
-        slmsk_data2d=np.squeeze(slmsk_data,axis=0)
-        if sfc_var_nm == 'stc' or sfc_var_nm == 'smc' or sfc_var_nm == 'slc':
-            sfc_data3d=np.squeeze(sfc_data,axis=0)
-            sfc_data2d=sfc_data3d[zlvl,:,:]
-        else:
-            sfc_data2d=np.squeeze(sfc_data,axis=0)
-
-        sfc_data_all.append(sfc_data2d[None,:])
-        sfc_slmsk_all.append(slmsk_data2d[None,:])
-
-    sfc_var=np.vstack(sfc_data_all)
-    sfc_slmsk=np.vstack(sfc_slmsk_all)
-
-    if sfc_opt == 'inc':
-        plot_increment(sfc_var,sfc_var_nm,sfc_opt,zlvl,jedi_type)
+    if data_opt == 'inc':
+        plot_increment(data_var,var_nm,data_opt,zlvl,jtype,out_title_base,out_fn_base,path_data)
     else:
-        plot_data(sfc_var,sfc_var_nm,sfc_opt,zlvl,jedi_type)
+        plot_data(data_var,var_nm,data_opt,zlvl,jtype,out_title_base,out_fn_base,path_data)
    
-    return sfc_var, sfc_slmsk
+    return data_var
 
 
 # Compare two data set and plot ===================================== CHJ =====
-def compare_sfc(sfc_data1,sfc_data2,inc_data,sfc_var_nm,zlvl,jedi_type):
+def compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvl,jtype,out_title_base,out_fn_base,work_dir):
 
     logging.info(f''' ===== compare files ===============================================''')
-    logging.info(f''' data 1= {sfc_data1.shape}''')
-    logging.info(f''' data 2= {sfc_data2.shape}''')
-
-    diff_data=sfc_data2-sfc_data1
+    logging.info(f''' data 1= {var_data1.shape}''')
+    logging.info(f''' data 2= {var_data2.shape}''')
+    diff_data = var_data2 - var_data1
     logging.info(f''' diff. data= {diff_data.shape}''')
-    plot_increment(diff_data,sfc_var_nm,'diff_sfc',zlvl,jedi_type)
+    plot_increment(diff_data,var_nm,'diff_sfc',zlvl,jtype,out_title_base,out_fn_base,work_dir)
 
 
 # increment/difference plot ========================================== CHJ =====
-def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
+def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jtype,out_title_base,out_fn_base,work_dir):
 
     var_max=np.nanmax(plt_var)
     var_min=np.nanmin(plt_var)
-    logging.info(f''' {plt_var_nm}: diff : var_max= {var_max}''')
-    logging.info(f''' {plt_var_nm}: diff : var_min= {var_min}''')
+    logging.info(f''' {plt_var_nm}: {plt_out_txt} : var_max= {var_max}''')
+    logging.info(f''' {plt_var_nm}: {plt_out_txt} : var_min= {var_min}''')
 
     if var_max == var_min:
         cs_max = max(abs(var_max),abs(var_min))+0.1
@@ -248,12 +218,12 @@ def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
     n_rnd=0
     cbar_extend='neither'
 
-    if jedi_type == 'soil_moisture':
-        out_title=f'''{out_title_base}{plt_var_nm}::L{zlvl+1}::{plt_out_txt}'''
-        out_fn=f'''{out_fn_base}{plt_var_nm}_z{zlvl+1}_{plt_out_txt}'''
+    if jtype == 'soil_moisture':
+        out_title=f'''{out_title_base}L{zlvl+1}::{plt_out_txt}'''
+        out_fn=f'''{out_fn_base}z{zlvl+1}_{plt_out_txt}'''
     else:
-        out_title=f'''{out_title_base}{plt_var_nm}::{plt_out_txt}'''
-        out_fn=f'''{out_fn_base}{plt_var_nm}_{plt_out_txt}'''
+        out_title=f'''{out_title_base}{plt_out_txt}'''
+        out_fn=f'''{out_fn_base}{plt_out_txt}'''
 
     fig,ax=plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Robinson(c_lon)))
     ax.set_title(out_title, fontsize=6)
@@ -276,7 +246,7 @@ def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
 
 
 # data plot ========================================================== CHJ =====
-def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
+def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type,out_title_base,out_fn_base,work_dir):
 
     var_max=np.nanmax(plt_var)
     var_min=np.nanmin(plt_var)
@@ -315,11 +285,11 @@ def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type):
     logging.info(f''' cs_min= {cs_min}''')
 
     if jedi_type == 'soil_moisture':
-        out_title=f'''{out_title_base}{plt_var_nm}::L{zlvl+1}::{plt_out_txt}'''
-        out_fn=f'''{out_fn_base}{plt_var_nm}_z{zlvl+1}_{plt_out_txt}'''
+        out_title=f'''{out_title_base}L{zlvl+1}::{plt_out_txt}'''
+        out_fn=f'''{out_fn_base}z{zlvl+1}_{plt_out_txt}'''
     else:
-        out_title=f'''{out_title_base}{plt_var_nm}::{plt_out_txt}'''
-        out_fn=f'''{out_fn_base}{plt_var_nm}_{plt_out_txt}'''
+        out_title=f'''{out_title_base}{plt_out_txt}'''
+        out_fn=f'''{out_fn_base}{plt_out_txt}'''
 
     fig,ax=plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Robinson(c_lon)))
     ax.set_title(out_title, fontsize=6)

@@ -34,6 +34,14 @@ else
   run_cmd=`which mpiexec`
 fi
 
+# Initial file names of output/increment for plotting
+fn_ice_data=""
+fn_ice_incr=""
+fn_ocn_data=""
+fn_ocn_incr=""
+fn_sfc_data=""
+fn_sfc_incr=""
+
 ###################################
 # C-test of JEDI model component
 ###################################
@@ -118,6 +126,20 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   # Copy output to COMINOUT
   cp -rp data_generated/* ${COMINOUT}
   cp -p data_output/* ${COMINOUT}
+
+  # Set and symlink output/increment file names for plotting
+  fn_ice_data="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ice_incr="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ocn_data="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ocn_incr="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_sfc_data="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_sfc_incr="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  ln -nsf data_output/${fn_ice_data} .
+  ln -nsf data_output/${fn_ice_incr} .
+  ln -nsf data_output/${fn_ocn_data} .
+  ln -nsf data_output/${fn_ocn_incr} .
+  ln -nsf data_output/${fn_sfc_data} .
+  ln -nsf data_output/${fn_sfc_incr} .  
 fi
 
 ##################
@@ -385,43 +407,7 @@ EOF
     for itile in {1..6}
     do
       cp -p "${DATA}/${inc_fn_prefix}.tile${itile}.nc" ${COMINOUT}
-    done
-  
-    # Comparison plot of sfc_data by JEDI increment
-    DO_PLOT_SFC_COMP="${DO_PLOT_SFC_COMP:-YES}"
-    if [ "${DO_PLOT_SFC_COMP}" = "YES" ]; then
-      fn_sfc_base="${filedate}.sfc_data.tile"
-      fn_inc_base="${inc_fn_prefix}.tile"
-      out_title_base="UFS-DA::SFC-DATA::${jedi_type}::${PDY}::"
-      out_fn_base="ufsda_comp_sfc_${jedi_type}_${PDY}_"
-      # zlevel_number is valid only for 3-D fields such as stc/smc/slc
-      zlevel_number="1"
-  
-      cat > plot_comp_sfc.yaml <<EOF
-work_dir: '${DATA}'
-fix_dir: '${FIXufsda}'
-fn_sfc_base: '${fn_sfc_base}'
-fn_inc_base: '${fn_inc_base}'
-jedi_exe: '${JEDI_ALGORITHM}'
-jedi_type: '${jedi_type}'
-orog_path: '${orog_path}'
-orog_fn_base: '${orog_fn_base}'
-out_title_base: '${out_title_base}'
-out_fn_base: '${out_fn_base}'
-PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
-snowdepth_vn: '${snowdepth_vn}'
-zlevel_number: '${zlevel_number}'
-EOF
-
-      ${USHufsda}/plot_comp_sfc_data.py
-      if [ $? -ne 0 ]; then
-        err_exit "sfc_data comparison plot failed"
-      fi
-  
-      # Copy result file to COMINOUT
-      cp -p ${out_fn_base}* ${COMINOUTplot}
-    fi
-  
+    done  
   done
   
   ## Copy the final sfc_data files to COMINOUT
@@ -434,6 +420,51 @@ EOF
     cp -p diags/* ${COMINOUThofx}
     ln -nsf ${COMINOUThofx}/*.nc ${DATA_HOFX}
   fi
+
+  ## Set file names for plotting
+  fn_sfc_data="${filedate}.sfc_data.tile"
+  fn_sfc_incr="${inc_fn_prefix}.tile"
+fi
+
+###############################################################
+# Comparison plot of background and output by JEDI increment
+###############################################################
+DO_PLOT_COMP_JEDI_INCR="${DO_PLOT_COMP_JEDI_INCR:-YES}"
+if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
+  out_fn_base_prefix="ufsda_comp_"
+  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
+  zlevel_number="1"
+
+  cat > plot_analysis_comp_increment.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
+fn_ice_data: '${fn_ice_data}'
+fn_ice_incr: '${fn_ice_incr}'
+fn_ocn_data: '${fn_ocn_data}'
+fn_ocn_incr: '${fn_ocn_incr}'
+fn_sfc_data: '${fn_sfc_data}'
+fn_sfc_incr: '${fn_sfc_incr}'
+JEDI_ALGORITHM: '${JEDI_ALGORITHM}'
+JEDI_TYPE_SNOW: '${JEDI_TYPE_SNOW}'
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
+JEDI_TYPE_SOIL_MOISTURE: '${JEDI_TYPE_SOIL_MOISTURE}'
+orog_path: '${orog_path}'
+orog_fn_base: '${orog_fn_base}'
+out_fn_base_prefix: '${out_fn_base_prefix}'
+PDY: '${PDY}'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+snowdepth_vn: '${snowdepth_vn}'
+work_dir: '${DATA}'
+zlevel_number: '${zlevel_number}'
+EOF
+
+  ${USHufsda}/plot_analysis_comp_increment.py
+  if [ $? -ne 0 ]; then
+    err_exit "JEDI increment comparison plot failed"
+  fi
+
+  # Copy result file to COMINOUT
+  cp -p ${out_fn_base_prefix}* ${COMINOUTplot}
 fi
 
 

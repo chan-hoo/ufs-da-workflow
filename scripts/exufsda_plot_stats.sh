@@ -126,7 +126,6 @@ if [ "${DO_PLOT_OBS}" = "YES" ]; then
   ln -nsf ${COMINOUTobs}/* .
 
   cat > plot_obs_file.yaml << EOF
-work_dir: '${DATA}'
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
@@ -137,6 +136,7 @@ OBS_SMOPS: '${OBS_SMOPS}'
 obs_prefix: 'obs.${PDY}.${cycle}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+work_dir: '${DATA}'
 EOF
 
   ${USHufsda}/plot_obs_file.py
