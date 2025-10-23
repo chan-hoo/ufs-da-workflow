@@ -34,13 +34,20 @@ else
   run_cmd=`which mpiexec`
 fi
 
-# Initial file names of output/increment for plotting
+# Global parameters
+orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
+orog_fn_base="C${RES}_oro_data"
 fn_ice_data=""
 fn_ice_incr=""
 fn_ocn_data=""
 fn_ocn_incr=""
 fn_sfc_data=""
 fn_sfc_incr=""
+if [ "${FRAC_GRID}" = "YES" ]; then
+  snowdepth_vn="snodl"
+else
+  snowdepth_vn="snwdph"
+fi
 
 ###################################
 # C-test of JEDI model component
@@ -128,18 +135,32 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   cp -p data_output/* ${COMINOUT}
 
   # Set and symlink output/increment file names for plotting
-  fn_ice_data="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ice_incr="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ocn_data="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ocn_incr="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_sfc_data="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_sfc_incr="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  ln -nsf data_output/${fn_ice_data} .
-  ln -nsf data_output/${fn_ice_incr} .
-  ln -nsf data_output/${fn_ocn_data} .
-  ln -nsf data_output/${fn_ocn_incr} .
-  ln -nsf data_output/${fn_sfc_data} .
-  ln -nsf data_output/${fn_sfc_incr} .  
+  bkg_file_dir="data_static/72x35x25/restarts"
+  anl_file_dir="data_output"
+  fn_ice_data="cice.res.nc"
+  fn_ice_incr="cice.incr.res.nc"
+  fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ocn_data="MOM.res.nc"
+  fn_ocn_incr="MOM.incr.res.nc"
+  fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_sfc_data="sfc.res.nc"
+  fn_sfc_incr="sfc.incr.res.nc"
+  fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+
+  ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
+  ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
+  ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
+
+  ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
+  ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
+  ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
+
+  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ice_incr}
+  ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ocn_incr}
+  ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
 fi
 
 ##################
@@ -210,8 +231,6 @@ if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   cp -p ${FIXufsda}/DATA_jedi/fv3files/field_table_ufs ${DATA}/Data/fv3files/field_table
   cp -p ${FIXufsda}/DATA_jedi/fv3files/akbk${NPZ}.nc4 ${DATA}/Data/fv3files/akbk.nc4
   
-  orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
-  orog_fn_base="C${RES}_oro_data"
   ln -nsf ${orog_path}/${orog_fn_base}.tile* .
   
   # Link snow shadow level nicas data file
@@ -219,11 +238,6 @@ if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   ln -nsf ${FIXufsda}/DATA_fix/JEDI/snow_bump_nicas_250km_shadowlevels_nicas.nc ${DATA}/berror/.
   
   # Run JEDI Analyses
-  if [ "${FRAC_GRID}" = "YES" ]; then
-    snowdepth_vn="snodl"
-  else
-    snowdepth_vn="snwdph"
-  fi
   list_jedi_types=(${list_jedi_land})
   echo "List of JEDI analyses for land: ${list_jedi_types[@]}"
   for jedi_type in "${list_jedi_types[@]}"; do
