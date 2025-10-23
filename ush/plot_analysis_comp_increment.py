@@ -144,6 +144,54 @@ def main():
                     compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
                                  out_title_base,out_fn_base,work_dir,False)
 
+        # ocn file
+        if var_list_ocn:
+            # Set output file name and title base
+            out_title_base=f'''UFS-DA::COMP::OCN::{jtype}::{JEDI_ALGORITHM}::{PDY}'''
+            out_fn_base=f'''{out_fn_base_prefix}ocn_{jtype}_{JEDI_ALGORITHM}_{PDY}'''
+            if jtype == "soca_ctest":
+                # get lon, lat from grid file
+                grid_path = os.path.join(work_dir,"data_output")
+                get_geo_grd(grid_path,grid_soca_ctest_fn,jtype)
+                for var_nm in var_list_ocn:
+                    # get data before analysis
+                    var_data1 = get_data(work_dir,fn_ocn_data,var_nm,zlvlm1,jtype,
+                                         out_title_base,out_fn_base,'before',False)
+                    # get data after analysis
+                    var_data2 = get_data(work_dir,fn_ocn_data,var_nm,zlvlm1,jtype,
+                                        out_title_base,out_fn_base,'after',False)
+                    # get increment data of analysis
+                    var_data_inc = get_data(work_dir,fn_ocn_incr,var_nm,zlvlm1,jtype,
+                                            out_title_base,out_fn_base,'inc',False)
+                    # compare data1 and data2
+                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                                 out_title_base,out_fn_base,work_dir,False)
+
+        # ice file
+        if var_list_ice:
+            # Set output file name and title base
+            out_title_base=f'''UFS-DA::COMP::ICE::{jtype}::{JEDI_ALGORITHM}::{PDY}'''
+            out_fn_base=f'''{out_fn_base_prefix}ice_{jtype}_{JEDI_ALGORITHM}_{PDY}'''
+            if jtype == "soca_ctest":
+                # get lon, lat from grid file
+                grid_path = os.path.join(work_dir,"data_output")
+                get_geo_grd(grid_path,grid_soca_ctest_fn,jtype)
+                for var_nm in var_list_ice:
+                    # get data before analysis
+                    var_data1 = get_data(work_dir,fn_ice_data,var_nm,zlvlm1,jtype,
+                                         out_title_base,out_fn_base,'before',False)
+                    # get data after analysis
+                    var_data2 = get_data(work_dir,fn_ice_data,var_nm,zlvlm1,jtype,
+                                        out_title_base,out_fn_base,'after',False)
+                    # get increment data of analysis
+                    var_data_inc = get_data(work_dir,fn_ice_incr,var_nm,zlvlm1,jtype,
+                                            out_title_base,out_fn_base,'inc',False)
+                    # compare data1 and data2
+                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                                 out_title_base,out_fn_base,work_dir,False)
+
+
+
 
 # geo lon/lat from grid file ======================================== CHJ =====
 def get_geo_grd(grid_path,grid_fn,jtype):
@@ -206,9 +254,11 @@ def get_data(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
         fn_data_ext=""
     fn_data = f'''{fn_data_base}{fn_data_ext}'''
     fp_data = os.path.join(path_data,fn_data)
-    try: ds = xr.open_dataset(fp_data)
+    try: data_raw = nc.Dataset(fp_data)
     except: raise Exception('Could NOT find the file',fp_data)
-    var_data = np.ma.masked_invalid(ds[var_nm].data)
+    # Extract valid variable
+    var_orig = data_raw.variables[var_nm]
+    var_data = np.ma.masked_invalid(var_orig)
     var_data_dim = var_data.ndim
     logging.info(f''' {var_nm} :: dimensions = {var_data_dim}''')
     if var_data_dim == 4:

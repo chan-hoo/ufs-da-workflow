@@ -158,8 +158,8 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
   ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
 
-  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ice_incr}
-  ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ocn_incr}
+  ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
+  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
   ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
 fi
 
