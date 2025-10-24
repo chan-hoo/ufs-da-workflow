@@ -32,19 +32,21 @@ def main():
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    path_data = yaml_data['path_data']
-    work_dir = yaml_data['work_dir']
+    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
     fn_data_anal_prefix = yaml_data['fn_data_anal_prefix']
     fn_data_anal_suffix = yaml_data['fn_data_anal_suffix']
     hofx_data_path = yaml_data['hofx_data_path']
     jedi_exe = yaml_data['jedi_exe']
+    JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     out_fn_base = yaml_data['out_fn_base']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
     OBS_IMS_SNOW = yaml_data['OBS_IMS_SNOW']
     OBS_SFCSNO = yaml_data['OBS_SFCSNO']
     OBS_SMAP = yaml_data['OBS_SMAP']
     OBS_SMOPS = yaml_data['OBS_SMOPS']
+    path_data = yaml_data['path_data']
     PY_LOG_LEVEL=yaml_data['PY_LOG_LEVEL']
+    work_dir = yaml_data['work_dir']
 
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
@@ -60,6 +62,8 @@ def main():
     logging.info(f''' YAML Data: {yaml_data}''')
 
     svar_list = []
+    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
+        svar_list += ["ADT","CoolSkin","InsituSalinity","InsituTemperature","SeaIceFraction","SeaSurfaceSalinity","SeaSurfaceTemp"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":
@@ -79,6 +83,20 @@ def main():
             var_nm = "totalSnowDepth"
         elif svar == "smap_soil_moisture" or svar == "smops_soil_moisture":
             var_nm = "soilMoistureVolumetric" 
+        elif svar == "ADT":
+            var_nm = "absoluteDynamicTopography"
+        elif svar == "CoolSkin":
+            var_nm = "seaSurfaceTemperature"
+        elif svar == "InsituSalinity":
+            var_nm = "salinity"
+        elif svar == "InsituTemperature":
+            var_nm = "waterTemperature"
+        elif svar == "SeaIceFraction":
+            var_nm = "seaIceFraction"
+        elif svar == "SeaSurfaceSalinity":
+            var_nm = "seaSurfaceSalinity"
+        elif svar == "SeaSurfaceTemp":
+            var_nm = "seaSurfaceTemperature"
 
         var_dict_anal = get_data_analysis(path_data,fn_data_anal_prefix,fn_data_anal_suffix,jedi_exe,var_nm,svar)
         plot_his_omb(var_dict_anal,out_fn_base,work_dir,var_nm,hofx_data_path,svar)

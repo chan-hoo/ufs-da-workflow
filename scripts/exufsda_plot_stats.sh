@@ -192,19 +192,21 @@ if [ "${DO_PLOT_TIME_HISTORY}" = "YES" ]; then
   out_fn_base="ufsda_timehistory"
 
   cat > plot_timehistory.yaml <<EOF
-path_data: '${LOGDIR}'
-work_dir: '${DATA}'
+DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 fn_data_anal_prefix: '${fn_data_anal_prefix}'
 fn_data_anal_suffix: '${fn_data_anal_suffix}'
 hofx_data_path: '${DATA_HOFX}'
 jedi_exe: '${JEDI_ALGORITHM}'
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 out_fn_base: '${out_fn_base}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
 OBS_SFCSNO: '${OBS_SFCSNO}'
 OBS_SMAP: '${OBS_SMAP}'
 OBS_SMOPS: '${OBS_SMOPS}'
+path_data: '${LOGDIR}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+work_dir: '${DATA}'
 EOF
 
   ${USHufsda}/plot_analysis_timehistory.py
