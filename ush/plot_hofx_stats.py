@@ -15,11 +15,10 @@ import matplotlib.ticker
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 
-def get_obs_stats(fname, plottype, svar_long):
+def get_obs_stats(fname, svar_long):
 
     logging.info(f''' === File Name: {fname}''')
     f=netCDF4.Dataset(fname)
-    logging.info(f''' NETCDF: {f}''')
     obs=f.groups['ObsValue'].variables[svar_long][:]
     logging.debug("ObsValue:",obs)
     omb=f.groups['ombg'].variables[svar_long][:]
@@ -47,7 +46,7 @@ def get_obs_stats(fname, plottype, svar_long):
     return omb,lat,lon
 
 
-def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY):
+def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max):
     logging.info(f''' ========== PLOT: SCATTER ==========''')
     
     # Set the path to Natural Earth dataset
@@ -84,7 +83,7 @@ def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY):
     coastline=cfeature.NaturalEarthFeature('physical','coastline','50m',edgecolor='black',facecolor='none',
                       linewidth=0.5,alpha=0.7)
     ax.add_feature(coastline)
-    norm=plt.Normalize(yaml_data['field_range'][0],yaml_data['field_range'][1])
+    norm=plt.Normalize(fld_min,fld_max)
     num_cmap=25
     cmap_neg=mpl.colormaps['Blues_r'].resampled(num_cmap)
     cmap_pos=mpl.colormaps['Reds'].resampled(num_cmap)
@@ -127,16 +126,15 @@ def plot_histogram(omb,svar,hofx_data_path,cdate,title_fig,PDY):
         print(cdate,field_mean,field_std,field_max,field_min, file=f)
 
     nbins=yaml_data['nbins']
-    opt_xlimit='auto'
-    if opt_xlimit=='auto':
-        fld_min=int(field_min)
-        fld_max=int(field_max)
-        xlimit=[fld_min,fld_max]
-        logging.info(f''' xlimit min= {fld_min}''')
-        logging.info(f''' xlimit max= {fld_max}''')
-        logging.info(f''' xlimit= {xlimit}''')
-    else:
-        xlimit=yaml_data['field_range']
+
+    fld_abs = max(abs(field_min),abs(field_max))
+    fld_max = int(fld_abs)
+    fld_min = -fld_max
+
+    xlimit=[fld_min,fld_max]
+    logging.info(f''' xlimit min= {fld_min}''')
+    logging.info(f''' xlimit max= {fld_max}''')
+    logging.info(f''' xlimit= {xlimit}''')
         
     plt.hist(omb[:], bins=nbins, range=xlimit, density=True, color ="blue")
     stitle=title_fig+' \n '+'Mean(OMB) ='+str(field_mean)+', STDV(OMB) ='+str(field_std)
@@ -144,6 +142,9 @@ def plot_histogram(omb,svar,hofx_data_path,cdate,title_fig,PDY):
     output_fn=f'''hofx_omb_{svar}_{PDY}_histogram.png'''
     plt.savefig(output_fn,dpi=150,bbox_inches='tight')
     plt.close('all')
+
+    return fld_min,fld_max
+
 
 if __name__ == '__main__':
     global yaml_data
@@ -153,18 +154,19 @@ if __name__ == '__main__':
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    cdate=yaml_data['cdate']
-    hofx_data_path=yaml_data['hofx_data_path']
-    plottype=yaml_data['plottype']
-    work_dir=yaml_data['work_dir']
-    OBS_GHCN_SNOW=yaml_data['OBS_GHCN_SNOW']
-    OBS_IMS_SNOW=yaml_data['OBS_IMS_SNOW']
-    OBS_SFCSNO=yaml_data['OBS_SFCSNO']
-    OBS_SMAP=yaml_data['OBS_SMAP']
-    OBS_SMOPS=yaml_data['OBS_SMOPS']
-    PDY=yaml_data['PDY']
-    cyc=yaml_data['cyc']
-    PY_LOG_LEVEL=yaml_data['PY_LOG_LEVEL']
+    cdate = yaml_data['cdate']
+    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    hofx_data_path = yaml_data['hofx_data_path']
+    JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
+    work_dir = yaml_data['work_dir']
+    OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
+    OBS_IMS_SNOW = yaml_data['OBS_IMS_SNOW']
+    OBS_SFCSNO = yaml_data['OBS_SFCSNO']
+    OBS_SMAP = yaml_data['OBS_SMAP']
+    OBS_SMOPS = yaml_data['OBS_SMOPS']
+    PDY = yaml_data['PDY']
+    cyc = yaml_data['cyc']
+    PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
 
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
@@ -180,6 +182,8 @@ if __name__ == '__main__':
     logging.info(f''' YAML Data: {yaml_data}''')
 
     svar_list = []
+    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
+        svar_list += ["ADT","CoolSkin","InsituSalinity","InsituTemperature","SeaIceFraction","SeaSurfaceSalinity","SeaSurfaceTemp"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":
@@ -202,12 +206,26 @@ if __name__ == '__main__':
             svar_long = "totalSnowDepth"
         elif svar == "smap_soil_moisture" or svar == "smops_soil_moisture":
             svar_long = "soilMoistureVolumetric"
+        elif svar == "ADT":
+            svar_long = "absoluteDynamicTopography"
+        elif svar == "CoolSkin":
+            svar_long = "seaSurfaceTemperature"
+        elif svar == "InsituSalinity":
+            svar_long = "salinity"
+        elif svar == "InsituTemperature":
+            svar_long = "waterTemperature"
+        elif svar == "SeaIceFraction":
+            svar_long = "seaIceFraction"
+        elif svar == "SeaSurfaceSalinity":
+            svar_long = "seaSurfaceSalinity"
+        elif svar == "SeaSurfaceTemp":
+            svar_long = "seaSurfaceTemperature"
+        else:
+            svar_long = svar
 
-        omb,lat,lon=get_obs_stats(fp_input,plottype,svar_long)
+        omb,lat,lon=get_obs_stats(fp_input,svar_long)
 
-        svar_upper=svar.upper()
-        title_fig=f'''{svar_upper}::Obs-Bkg::{PDY}'''
-        if plottype=='scatter' or plottype=='both': 
-            plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY)
-        if plottype=='histogram' or plottype=='both':
-            plot_histogram(omb,svar,hofx_data_path,cdate,title_fig,PDY)
+        title_fig=f'''{svar}::Obs-Bkg::{PDY}'''
+        fld_min,fld_max = plot_histogram(omb,svar,hofx_data_path,cdate,title_fig,PDY)       
+        plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max)
+

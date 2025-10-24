@@ -107,11 +107,9 @@ nMM=${NTIME:4:2}
 nDD=${NTIME:6:2}
 nHH=${NTIME:8:2}
 
-# Path to orography files
+# Global parameters
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
 orog_fn_base="C${RES}_oro_data"
-
-# Set variable name for snow depth
 if [ "${FRAC_GRID}" = "YES" ]; then
   snowdepth_vn="snodl"
 else
@@ -151,38 +149,20 @@ fi
 # Stats Plot: H(x); OMB
 ##########################
 if [ "${DO_PLOT_STATS}" = "YES" ]; then
-  # Field Range for scatter plot: [Low,High]
-  field_range_low=-200
-  field_range_high=200
   # Number of bins in histogram plot
   nbins=100
-  # Plot type (scatter/histogram/both)
-  plottype="both"
 
-  if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-    cp -p "${COMINOUThofx}/diag.ghcn_snow_${PDY}${cyc}.nc" ${DATA}
-  fi
-  if [ "${OBS_IMS_SNOW}" = "YES" ]; then
-    cp -p "${COMINOUThofx}/diag.ims_snow_${PDY}${cyc}.nc" ${DATA}
-  fi
-  if [ "${OBS_SFCSNO}" = "YES" ]; then
-    cp -p "${COMINOUThofx}/diag.sfcsno_${PDY}${cyc}.nc" ${DATA}
-  fi
-  if [ "${OBS_SMAP}" = "YES" ]; then
-    cp -p "${COMINOUThofx}/diag.smap_soil_moisture_${PDY}${cyc}.nc" ${DATA}
-  fi
-  if [ "${OBS_SMOPS}" = "YES" ]; then
-    cp -p "${COMINOUThofx}/diag.smops_soil_moisture_${PDY}${cyc}.nc" ${DATA}
-  fi
+  # Symlink hofx (diag) files to work dir
+  ln -nsf ${COMINOUThofx}/* ${DATA}
 
   cat > plot_hofx.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
 cyc: '${cyc}'
-field_range: [${field_range_low},${field_range_high}]
+DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 hofx_data_path: '${DATA_HOFX}'
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 nbins: ${nbins}
-plottype: '${plottype}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
 OBS_SFCSNO: '${OBS_SFCSNO}'
