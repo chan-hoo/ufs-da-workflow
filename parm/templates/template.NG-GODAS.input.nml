@@ -10,6 +10,7 @@
          restart_input_dir = 'INPUT/',
          restart_output_dir = './RESTART/',
          parameter_filename = 'INPUT/MOM_input',
+                              'INPUT/MOM_saltrestore',
                               'INPUT/MOM_override' /
 
 

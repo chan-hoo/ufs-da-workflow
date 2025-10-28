@@ -154,8 +154,9 @@ if [ "${atm_model}" = "fv3" ]; then
   ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
 
   # FV3 tiled fix files
-  sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_color" \
-            "soil_type" "substrate_temperature" "vegetation_greenness" "vegetation_type" )
+  sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" \
+	    "soil_color" "soil_type" "substrate_temperature" \
+	    "vegetation_greenness" "vegetation_type" )
   for ifn in "${sfc_fns[@]}" ; do
     for itile in {1..6};
     do
@@ -337,6 +338,7 @@ elif [ "${atm_model}" = "datm" ]; then
   'year_first': !!str ${YYYY}
   'year_last': !!str ${nYYYY}
   'year_align': !!str ${YYYY}
+  'stream_dtlimit01': ${stream_dtlimit01}
   'stream_info': ${stream_info}
   'stream_mesh_file': ${stream_mesh_file}
   'stream_data_files': '${list_stream_data_files[@]}'
@@ -393,12 +395,16 @@ if [ "${ocn_model}" = "mom6" ]; then
   # INPUT directory
   cd ${DATA}/INPUT
   ## Fix files
-  ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
-            "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" "KH_background_2d.nc" "land_mask.nc" \
-            "land_mosaic_tile1Xocean_mosaic_tile1.nc" "layer_coord.nc" \
-            "MOM_channels_SPEAR" "ocean_hgrid.nc" "ocean_mask.nc" "ocean_mosaic.nc" \
-            "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
-            "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
+  ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" \
+	    "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
+            "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" \
+	    "KH_background_2d.nc" "land_mask.nc" \
+            "land_mosaic_tile1Xocean_mosaic_tile1.nc" \
+	    "layer_coord.nc" "MOM_channels_SPEAR" "ocean_hgrid.nc" \
+	    "ocean_mask.nc" "ocean_mosaic.nc" "oisst_temp_restore.nc" \
+	    "runoff.daitren.clim.1deg.nc" "salt_restore.nc" \
+	    "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
+	    "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
   for ifn in "${ocn_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -416,6 +422,8 @@ if [ "${ocn_model}" = "mom6" ]; then
     mom6_use_waves="False"
   fi
   settings="\
+  'DT_MOM6': ${DT_MOM6}
+  'MOM6_DT_THERM': ${MOM6_DT_THERM}
   'mom6_use_waves': ${mom6_use_waves}
 " # End of settings variable
   fp_template="${PARMufsda}/templates/template.MOM_input"
@@ -424,6 +432,11 @@ if [ "${ocn_model}" = "mom6" ]; then
 
   ### MOM_override
   cp -p "${PARMufsda}/templates/template.MOM_override" MOM_override
+
+  ### MOM_saltrestore
+  if [ "${APP}" = "NG-GODAS" ]; then
+    cp -p "${PARMufsda}/templates/template.MOM_saltrestore" MOM_saltrestore
+  fi
 
   ## IC (initial condition) files for cold start
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -474,7 +487,7 @@ if [ "${ice_model}" = "cice6" ]; then
   'ice_use_restart_time': ${ice_use_restart_time}
   'OUTPUT_FH_CICE': ${OUTPUT_FH_CICE}
 " # End of settings variable
-  fp_template="${PARMufsda}/templates/template.ice_in"
+  fp_template="${PARMufsda}/templates/template.${APP}.ice_in"
   fn_namelist="ice_in"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
@@ -709,6 +722,8 @@ settings="\
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh': !!str ${cyc}
+  'atm_model': ${atm_model}
+  'ocn_model': ${ocn_model}
   'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
 " # End of settings variable

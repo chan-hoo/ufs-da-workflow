@@ -244,6 +244,11 @@ def setup_wflow_env(machine):
         ptmp = os.path.join(exp_basedir, "ptmp")
 
     # Set undefined parameter values
+    ## MOM6
+    mom6_dt_therm = config_parm.get("MOM6_DT_THERM")
+    if mom6_dt_therm is None:
+        dt_mom6 = config_parm.get("DT_MOM6")
+        mom6_dt_therm = 2*dt_mom6
     ## OUTPUT_FH_CICE: output frequency of CICE
     output_fh = config_parm.get("OUTPUT_FH")
     output_fh_list = list(map(int, output_fh.split()))
@@ -303,6 +308,7 @@ def setup_wflow_env(machine):
         'JEDI_BIN_PATH': jedi_bin_path,
         'JEDI_IODACONV_PATH': jedi_iodaconv_path,
         'memory_flag': memory_flag,
+        'MOM6_DT_THERM': mom6_dt_therm,
         'native_default': native_default,
         'nnodes_forecast': nnodes_forecast,
         'nprocs_forecast': nprocs_forecast,
@@ -429,6 +435,7 @@ def set_default_parm():
         "DCOMINsmops": "",
         "DO_FREE_FORECAST": "none",
         "DT_ATMOS": 720,
+        "DT_MOM6": 1800,
         "DT_RUNSEQ": 3600,
         "EXP_CASE_NAME": None,
         "envir": "test",
@@ -447,6 +454,7 @@ def set_default_parm():
         "KEEPDATA": "YES",
         "MACHINE": "/machine/platform/name",
         "model_ver": "v1.0.0",
+        "MOM6_DT_THERM": None,
         "NET": "ufsda",
         "NPROCS_ANALYSIS": 6,
         "NPROCS_DATM": 12,
