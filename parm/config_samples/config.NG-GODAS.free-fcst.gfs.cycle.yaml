@@ -12,6 +12,7 @@ envir: ng_fcst_gfs
 EXP_CASE_NAME: ng_freefcst_gfs
 FCST_HRS: 12
 IC_FROM_FIX_DIR: 'YES'
+NPROCS_DATM: 12
 NPROCS_ICE: 12
 NPROCS_OCN: 16
 NPZ: 127

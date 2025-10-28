@@ -3,7 +3,7 @@ taxmode01:                 limit
 mapalgo01:                 bilinear
 tInterpAlgo01:             linear
 readMode01:                single
-dtlimit01:                 1.0
+dtlimit01:                 {{ stream_dtlimit01 }}
 stream_offset01:           0
 yearFirst01:               {{ year_first }}
 yearLast01:                {{ year_last }}

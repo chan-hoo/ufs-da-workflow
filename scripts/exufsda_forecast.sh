@@ -288,8 +288,23 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
     datm_export_all=".false."
+    stream_dtlimit01="1.0"
     stream_info="gfs.01"
     stream_mesh_file="INPUT/${datm_mesh_fn}"
+
+  # GEFS
+  elif [ "${DATM_DATA_TYPE}" = "gefs" ]; then
+    datm_datamode="GEFS"
+    datm_nx_global="1536"
+    datm_ny_global="768"
+    datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
+    datm_model_maskfile="INPUT/${datm_mesh_fn}"
+    datm_model_meshfile="INPUT/${datm_mesh_fn}"
+    datm_export_all=".false."
+    stream_dtlimit01="1461.0"
+    stream_info="gefs.01"
+    stream_mesh_file="INPUT/${datm_mesh_fn}"
+
   # CFSR
   elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
     datm_datamode="GEFS"
@@ -299,6 +314,7 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
     datm_export_all=".false."
+    stream_dtlimit01="1.0"
     stream_info="cfsr.01"
     stream_mesh_file="INPUT/${datm_mesh_fn}"
   fi

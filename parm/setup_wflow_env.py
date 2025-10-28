@@ -107,6 +107,7 @@ def setup_wflow_env(machine):
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
     atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
+    nprocs_datm = config_parm.get("NPROCS_DATM")
     nprocs_ice = config_parm.get("NPROCS_ICE")
     nprocs_ocn = config_parm.get("NPROCS_OCN")   
     nprocs_wav = config_parm.get("NPROCS_WAV")
@@ -116,8 +117,8 @@ def setup_wflow_env(machine):
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
         nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav
     elif app == "NG-GODAS":
-        nprocs_forecast_med = nprocs_ice
-        nprocs_forecast_atm = nprocs_forecast_med
+        nprocs_forecast_atm = nprocs_datm
+        nprocs_forecast_med = nprocs_forecast_atm
         nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice
 
     if nprocs_forecast <= max_cores_per_node:
@@ -448,6 +449,7 @@ def set_default_parm():
         "model_ver": "v1.0.0",
         "NET": "ufsda",
         "NPROCS_ANALYSIS": 6,
+        "NPROCS_DATM": 12,
         "NPROCS_FCST_IC": 36,
         "NPROCS_ICE": 10,
         "NPROCS_OCN": 20,
