@@ -179,7 +179,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
     cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
 
     # Copy JEDI input yaml file
-    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
     if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
       cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
     else

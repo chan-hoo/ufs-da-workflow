@@ -141,6 +141,7 @@ workflow:
         IC_DATA_MODEL: "&IC_DATA_MODEL;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
+        JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
         KEEPDATA: "&KEEPDATA;"
         list_jedi_land: "&list_jedi_land;"
         MACHINE: "&MACHINE;"

@@ -41,115 +41,139 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
   mm_hf=${date_hf:4:2}
   dd_hf=${date_hf:6:2}
   hh_hf=${date_hf:8:2}
-  
-  # JCB parameters
-  driver_do_posterior_observer="false"
-  driver_do_test_prints="false"
-  driver_save_posterior_ensemble="false"
-  driver_save_posterior_mean_increment="true"
-  driver_update_obs_config_with_geometry_info="false"
-  final_diagnostics_departures="anlmob"
-  inflation_mult="1.0"
-  inflation_rtpp="0.0"
-  inflation_rtps="0.0"
-  local_ensemble_da_solver="${JEDI_ALGORITHM^^}"
-  land_background_time_fv3="${YYYY}${MM}${DD}.${HH}0000"
-  land_background_time_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
-  land_fv3jedi_files_path="Data/fv3files"
-  land_window_begin="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
-  land_window_length="PT${DATE_CYCLE_FREQ_HR}H"
-  
-  # Algorithm-specific values
-  if [ "${JEDI_ALGORITHM}" = "letkf-oi" ]; then
-    jedi_algorithm_mod="local_ensemble_da"
-    local_ensemble_da_solver="Deterministic LETKF"
-  else
-    jedi_algorithm_mod="${JEDI_ALGORITHM}"
-  fi
-  
-  # Variable name of snow depth
-  if [ "${FRAC_GRID}" = "YES" ]; then
-    snowdepth_vn="snodl"
-  else
-    snowdepth_vn="snwdph"
-  fi
-   
-  # Run JCB to create JEDI input yaml files
-  list_jedi_types=(${list_jedi_land})
-  echo "List of JEDI analyses: ${list_jedi_types[@]}"
-  for jedi_type in "${list_jedi_types[@]}"; do
-    echo "JEDI analysis for ${jedi_type}"
-    if [ "${jedi_type}" = "snow" ]; then
-      driver_save_posterior_mean="false"
-      inc_fn_prefix="snowinc" 
-    elif [ "${jedi_type}" = "soil_moisture" ]; then
-      driver_save_posterior_mean="true"
-      inc_fn_prefix="smcinc"
-    fi
-  
-    # update jcb-base yaml file
-    settings="\
-    'FIXufsda': ${FIXufsda}
-    'JEDI_ALGORITHM': ${JEDI_ALGORITHM}
-    'jedi_algorithm_mod': ${jedi_algorithm_mod}
-    'PARMufsda': ${PARMufsda}
-    'RES': ${RES}
-    'driver_do_posterior_observer': ${driver_do_posterior_observer}
-    'driver_do_test_prints': ${driver_do_test_prints}
-    'driver_save_posterior_ensemble': ${driver_save_posterior_ensemble}
-    'driver_save_posterior_mean': ${driver_save_posterior_mean}
-    'driver_save_posterior_mean_increment': ${driver_save_posterior_mean_increment}
-    'driver_update_obs_config_with_geometry_info': ${driver_update_obs_config_with_geometry_info}
-    'final_diagnostics_departures': ${final_diagnostics_departures}
-    'inc_fn_prefix': ${inc_fn_prefix}
-    'inflation_mult': ${inflation_mult}
-    'inflation_rtpp': ${inflation_rtpp}
-    'inflation_rtps': ${inflation_rtps}
-    'jedi_type': ${jedi_type}
-    'local_ensemble_da_solver': ${local_ensemble_da_solver}
-    'land_window_begin': !!str ${land_window_begin}
-    'land_window_length': ${land_window_length}
-    'land_final_inc_file_path': ./
-    'land_fv3jedi_files_path': ${land_fv3jedi_files_path}
-    'land_layout_x': 1
-    'land_layout_y': 1
-    'land_npx_anl': ${res_p1}
-    'land_npy_anl': ${res_p1}
-    'land_npz_anl': ${NPZ}
-    'land_npx_ges': ${res_p1}
-    'land_npy_ges': ${res_p1}
-    'land_npz_ges': ${NPZ}
-    'land_background_path': bkg
-    'land_background_time_fv3': !!str ${land_background_time_fv3}
-    'land_background_time_iso': !!str ${land_background_time_iso}
-    'land_bump_data_dir': berror
-    'land_obsdatain_path': obs
-    'land_obsdatain_prefix': "obs.${PDY}.${cycle}."
-    'land_obsdataout_path': diags
-    'land_obsdataout_prefix': "diag."
-    'land_obsdataout_suffix': "_${PDY}${cyc}.nc"
-    'land_orog_files_path': "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
-    'snowdepth_vn': ${snowdepth_vn}
-    'OBS_GHCN_SNOW': '${OBS_GHCN_SNOW}'
-    'OBS_IMS_SNOW': '${OBS_IMS_SNOW}'
-    'OBS_SFCSNO': '${OBS_SFCSNO}'
-    'OBS_SMAP': '${OBS_SMAP}'
-    'OBS_SMOPS': '${OBS_SMOPS}'
-  " # End of settings variable
-  
-    template_fp="${PARMufsda}/jedi/jcb-base_land.yaml.j2"
-    jcb_base_fn="jcb-base_${jedi_type}.yaml"
+
+  ###########################
+  ## Marine: SOCA analysis
+  ###########################
+  if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+
+    template_fp="${PARMufsda}/jedi/jcb-base_soca.yaml.j2"
+    jcb_base_fn="jcb-base_soca.yaml"
     jcb_base_fp="${DATA}/${jcb_base_fn}"
-    jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+    jcb_out_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
-      
-    ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}"
-      
+    # Run JCB
+    ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "soca" -g "NO" -l "${PY_LOG_LEVEL}"
+
     if [ $? -ne 0 ]; then
-      err_exit "Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
+      err_exit "Generation of JEDI YAML file for SOCA by JCB failed !!!"
     fi
     cp -p ${jcb_out_fn} ${COMINOUT}
-  done
+  fi
+
+  #########################################
+  ## Land: Snow / Soil-moisture analysis
+  #########################################
+  if [ -n "${list_jedi_land}" ]; then
+    # JCB parameters
+    driver_do_posterior_observer="false"
+    driver_do_test_prints="false"
+    driver_save_posterior_ensemble="false"
+    driver_save_posterior_mean_increment="true"
+    driver_update_obs_config_with_geometry_info="false"
+    final_diagnostics_departures="anlmob"
+    inflation_mult="1.0"
+    inflation_rtpp="0.0"
+    inflation_rtps="0.0"
+    local_ensemble_da_solver="${JEDI_ALGORITHM^^}"
+    land_background_time_fv3="${YYYY}${MM}${DD}.${HH}0000"
+    land_background_time_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+    land_fv3jedi_files_path="Data/fv3files"
+    land_window_begin="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
+    land_window_length="PT${DATE_CYCLE_FREQ_HR}H"
+    
+    # Algorithm-specific values
+    if [ "${JEDI_ALGORITHM}" = "letkf-oi" ]; then
+      jedi_algorithm_mod="local_ensemble_da"
+      local_ensemble_da_solver="Deterministic LETKF"
+    else
+      jedi_algorithm_mod="${JEDI_ALGORITHM}"
+    fi
+    
+    # Variable name of snow depth
+    if [ "${FRAC_GRID}" = "YES" ]; then
+      snowdepth_vn="snodl"
+    else
+      snowdepth_vn="snwdph"
+    fi
+     
+    # Run JCB to create JEDI input yaml files
+    list_jedi_types=(${list_jedi_land})
+    echo "List of JEDI analyses: ${list_jedi_types[@]}"
+    for jedi_type in "${list_jedi_types[@]}"; do
+      echo "JEDI analysis for ${jedi_type}"
+      if [ "${jedi_type}" = "snow" ]; then
+        driver_save_posterior_mean="false"
+        inc_fn_prefix="snowinc" 
+      elif [ "${jedi_type}" = "soil_moisture" ]; then
+        driver_save_posterior_mean="true"
+        inc_fn_prefix="smcinc"
+      fi
+    
+      # update jcb-base yaml file
+      settings="\
+  'FIXufsda': ${FIXufsda}
+  'JEDI_ALGORITHM': ${JEDI_ALGORITHM}
+  'jedi_algorithm_mod': ${jedi_algorithm_mod}
+  'PARMufsda': ${PARMufsda}
+  'RES': ${RES}
+  'driver_do_posterior_observer': ${driver_do_posterior_observer}
+  'driver_do_test_prints': ${driver_do_test_prints}
+  'driver_save_posterior_ensemble': ${driver_save_posterior_ensemble}
+  'driver_save_posterior_mean': ${driver_save_posterior_mean}
+  'driver_save_posterior_mean_increment': ${driver_save_posterior_mean_increment}
+  'driver_update_obs_config_with_geometry_info': ${driver_update_obs_config_with_geometry_info}
+  'final_diagnostics_departures': ${final_diagnostics_departures}
+  'inc_fn_prefix': ${inc_fn_prefix}
+  'inflation_mult': ${inflation_mult}
+  'inflation_rtpp': ${inflation_rtpp}
+  'inflation_rtps': ${inflation_rtps}
+  'jedi_type': ${jedi_type}
+  'local_ensemble_da_solver': ${local_ensemble_da_solver}
+  'land_window_begin': !!str ${land_window_begin}
+  'land_window_length': ${land_window_length}
+  'land_final_inc_file_path': ./
+  'land_fv3jedi_files_path': ${land_fv3jedi_files_path}
+  'land_layout_x': 1
+  'land_layout_y': 1
+  'land_npx_anl': ${res_p1}
+  'land_npy_anl': ${res_p1}
+  'land_npz_anl': ${NPZ}
+  'land_npx_ges': ${res_p1}
+  'land_npy_ges': ${res_p1}
+  'land_npz_ges': ${NPZ}
+  'land_background_path': bkg
+  'land_background_time_fv3': !!str ${land_background_time_fv3}
+  'land_background_time_iso': !!str ${land_background_time_iso}
+  'land_bump_data_dir': berror
+  'land_obsdatain_path': obs
+  'land_obsdatain_prefix': "obs.${PDY}.${cycle}."
+  'land_obsdataout_path': diags
+  'land_obsdataout_prefix': "diag."
+  'land_obsdataout_suffix': "_${PDY}${cyc}.nc"
+  'land_orog_files_path': "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
+  'snowdepth_vn': ${snowdepth_vn}
+  'OBS_GHCN_SNOW': '${OBS_GHCN_SNOW}'
+  'OBS_IMS_SNOW': '${OBS_IMS_SNOW}'
+  'OBS_SFCSNO': '${OBS_SFCSNO}'
+  'OBS_SMAP': '${OBS_SMAP}'
+  'OBS_SMOPS': '${OBS_SMOPS}'
+" # End of settings variable
+    
+      template_fp="${PARMufsda}/jedi/jcb-base_land.yaml.j2"
+      jcb_base_fn="jcb-base_${jedi_type}.yaml"
+      jcb_base_fp="${DATA}/${jcb_base_fn}"
+      jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+      ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
+      # Run JCB
+      ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}"
+  
+      if [ $? -ne 0 ]; then
+        err_exit "Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
+      fi
+      cp -p ${jcb_out_fn} ${COMINOUT}
+    done
+  fi
 else
   list_jedi_types=(${list_jedi_land})
   echo "List of JEDI analyses for land: ${list_jedi_types[@]}"
