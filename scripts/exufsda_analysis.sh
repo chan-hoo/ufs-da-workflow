@@ -167,7 +167,35 @@ fi
 # SOCA analysis
 ##################
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
-  echo "test"
+
+    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+      # Set JEDI executable
+      jedi_exe_fn="soca_var.x"
+    fi
+
+    # JEDI field metadata file
+    fn_fmeta_template="fv3jedi_fieldmetadata_soca.yaml"
+    fn_fmeta="fv3jedi_fieldmetadata.yaml"
+    cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
+
+    # Copy JEDI input yaml file
+    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
+    if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
+      cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
+    else
+      cp -p "${COMINOUT}/${jedi_nml_fn}" .
+    fi
+
+    # Run JEDI executable
+    export pgm="${jedi_exe_fn}"
+    . prep_step
+    ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    export err=$?; err_chk
+    cp errfile errfile_fv3jedi_x
+    if [[ $err != 0 ]]; then
+      err_exit "JEDI DA failed"
+    fi
+
 fi
 
 ##################################
@@ -291,13 +319,15 @@ if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
     # JEDI field metadata file
     if [ "${jedi_type}" = "snow" ]; then
       if [ "${FRAC_GRID}" = "YES" ]; then
-        cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart.yaml ${DATA}/Data/fv3files/.
+        fn_fmeta_template="fv3jedi_fieldmetadata_restart_${jedi_type}.yaml"
       else
-        cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_nofrac.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
+        fn_fmeta_template="fv3jedi_fieldmetadata_restart_${jedi_type}_nofrac.yaml"
       fi
     elif [ "${jedi_type}" = "soil_moisture" ]; then
-      cp -p ${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_restart_soil_moisture.yaml ${DATA}/Data/fv3files/fv3jedi_fieldmetadata_restart.yaml
+      fn_fmeta_template="fv3jedi_fieldmetadata_restart_${jedi_type}.yaml"
     fi
+    fn_fmeta="fv3jedi_fieldmetadata_restart.yaml"
+    cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
   
     # Copy JEDI input yaml file
     jedi_nml_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
