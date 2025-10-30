@@ -119,8 +119,7 @@ def setup_wflow_env(machine):
     elif app == "NG-GODAS":
         nprocs_forecast_atm = nprocs_datm
         nprocs_forecast_med = nprocs_forecast_atm
-#        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice
-        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_forecast_med
+        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice
 
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
