@@ -34,7 +34,7 @@ ATM_attributes::
   ProfileMemory = false
   OverwriteSlice = true
 {%- elif APP == "NG-GODAS" %}
-  mesh_atm  = {{ atm_mesh_atm }}
+  mesh_atm  = INPUT/{{ atm_mesh_atm }}
   diro = "."
   logfile = atm.log
   stop_n = {{ atm_stop_n }}
@@ -213,6 +213,6 @@ ALLCOMP_attributes::
       flds_wiso = .false.
       flux_convergence = 0.0
       flux_max_iteration = 2
-      ocn_surface_flux_scheme = 0
+      ocn_surface_flux_scheme = -1
 {%- endif %}
 ::

@@ -154,9 +154,15 @@ if [ "${atm_model}" = "fv3" ]; then
   ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
 
   # FV3 tiled fix files
-  sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" \
-	    "soil_color" "soil_type" "substrate_temperature" \
-	    "vegetation_greenness" "vegetation_type" )
+  sfc_fns=( "facsf" \
+	    "maximum_snow_albedo" \
+	    "slope_type" \
+	    "snowfree_albedo" \
+	    "soil_color" \
+	    "soil_type" \
+	    "substrate_temperature" \
+	    "vegetation_greenness" \
+	    "vegetation_type" )
   for ifn in "${sfc_fns[@]}" ; do
     for itile in {1..6};
     do
@@ -302,7 +308,7 @@ elif [ "${atm_model}" = "datm" ]; then
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
     datm_export_all=".false."
-    stream_dtlimit01="1461.0"
+    stream_dtlimit01="1.0"
     stream_info="gefs.01"
     stream_mesh_file="INPUT/${datm_mesh_fn}"
 
@@ -397,14 +403,21 @@ if [ "${ocn_model}" = "mom6" ]; then
   ## Fix files
   ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" \
 	    "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
-            "hycom1_75_800m.nc" "interpolate_zgrid_40L.nc" \
-	    "KH_background_2d.nc" "land_mask.nc" \
+            "hycom1_75_800m.nc" \
+	    "interpolate_zgrid_40L.nc" \
+	    "KH_background_2d.nc" \
+	    "land_mask.nc" \
             "land_mosaic_tile1Xocean_mosaic_tile1.nc" \
-	    "layer_coord.nc" "MOM_channels_SPEAR" "ocean_hgrid.nc" \
-	    "ocean_mask.nc" "ocean_mosaic.nc" "oisst_temp_restore.nc" \
-	    "runoff.daitren.clim.1deg.nc" "salt_restore.nc" \
-	    "seawifs_1998-2006_smoothed_2X.nc" "tidal_amplitude.nc" \
-	    "topog.nc" "ufs.topo_edits_011818.nc" "vgrid_75_2m.nc" )
+	    "layer_coord.nc" \
+	    "MOM_channels_SPEAR" \
+	    "ocean_hgrid.nc" \
+	    "ocean_mask.nc" \
+	    "ocean_mosaic.nc" \
+	    "seawifs_1998-2006_smoothed_2X.nc" \
+	    "tidal_amplitude.nc" \
+	    "topog.nc" \
+	    "ufs.topo_edits_011818.nc" \
+	    "vgrid_75_2m.nc" )
   for ifn in "${ocn_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -432,11 +445,6 @@ if [ "${ocn_model}" = "mom6" ]; then
 
   ### MOM_override
   cp -p "${PARMufsda}/templates/template.MOM_override" MOM_override
-
-  ### MOM_saltrestore
-  if [ "${APP}" = "NG-GODAS" ]; then
-    cp -p "${PARMufsda}/templates/template.MOM_saltrestore" MOM_saltrestore
-  fi
 
   ## IC (initial condition) files for cold start
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -487,7 +495,7 @@ if [ "${ice_model}" = "cice6" ]; then
   'ice_use_restart_time': ${ice_use_restart_time}
   'OUTPUT_FH_CICE': ${OUTPUT_FH_CICE}
 " # End of settings variable
-  fp_template="${PARMufsda}/templates/template.${APP}.ice_in"
+  fp_template="${PARMufsda}/templates/template.ice_in"
   fn_namelist="ice_in"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
@@ -511,7 +519,7 @@ if [ "${ice_model}" = "cice6" ]; then
   # CICE histoy directory
   mkdir -p history
 
-  # IC (initial condition) files for cold start
+  # IC file for cold start (set by parameter 'ice_ic' in input namelist 'ice_in')
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
       data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
@@ -521,7 +529,7 @@ if [ "${ice_model}" = "cice6" ]; then
     ln -nsf "${data_dir}/cice_model.res.nc" .
   fi
 
-  # CMEPS restart and pointer files
+  # Restart and pointer files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
       data_dir="${WARMSTART_DIR}"
