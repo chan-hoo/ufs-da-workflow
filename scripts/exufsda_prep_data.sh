@@ -54,7 +54,6 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
     # Run JCB
     ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "soca" -g "NO" -l "${PY_LOG_LEVEL}"
-
     if [ $? -ne 0 ]; then
       err_exit "Generation of JEDI YAML file for SOCA by JCB failed !!!"
     fi
@@ -166,8 +165,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
       jcb_out_fn="jedi_${JEDI_ALGORITHM}_${jedi_type}_${PDY}${cyc}.yaml"
       ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
       # Run JCB
-      ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}"
-  
+      ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "${jedi_type}" -g "${FRAC_GRID}" -l "${PY_LOG_LEVEL}" 
       if [ $? -ne 0 ]; then
         err_exit "Generation of JEDI YAML file for ${jedi_type} by JCB failed !!!"
       fi

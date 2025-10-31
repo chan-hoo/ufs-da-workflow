@@ -79,6 +79,10 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
       list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
       jedi_exe_soca_fn="soca_var.x"
+    elif [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" \
+	               "forecast_mom6" "${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_var.x"
     else
       list_soca_tasks=("${JEDI_ALGORITHM}")
       jedi_exe_soca_fn="soca_${JEDI_ALGORITHM}.x"
@@ -89,22 +93,32 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       cp -p "${path_soca_data}/testinput/${jedi_nml_fn}" .
  
       ### Run JEDI executable
-      if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
-	jedi_exe_fn="${jedi_exe_soca_fn}"
-      elif [ "${isoca}" = "parameters_diffusion" ]; then
-        jedi_exe_fn="soca_error_covariance_toolbox.x"
+      if [ "${isoca}" = "forecast_mom6" ]; then
+	export BIN_DIR="${JEDI_BIN_PATH}"
+	export MPIEXE="${run_cmd}"
+        py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+        ${py_exe_path}/mom6solo.py ${jedi_nml_fn}
+        if [ $? -ne 0 ]; then
+          err_exit "SOCA c-test FORECAST_MOM6 failed"
+        fi
       else
-        jedi_exe_fn="soca_${isoca}.x"
+        if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
+          jedi_exe_fn="${jedi_exe_soca_fn}"
+        elif [ "${isoca}" = "parameters_diffusion" ]; then
+          jedi_exe_fn="soca_error_covariance_toolbox.x"
+        else
+          jedi_exe_fn="soca_${isoca}.x"
+        fi
+        export pgm="${jedi_exe_fn}"
+        . prep_step
+        ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+        export err=$?; err_chk
+        cp errfile errfile_ctest_${isoca}
+        if [[ $err != 0 ]]; then
+          err_exit "JEDI SOCA C-test for ${isoca} failed"
+        fi
       fi
-      export pgm="${jedi_exe_fn}"
-      . prep_step
-      ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-      export err=$?; err_chk
-      cp errfile errfile_ctest_${isoca}
-      if [[ $err != 0 ]]; then
-        err_exit "JEDI SOCA C-test for ${isoca} failed"
-      fi
-  
+
       ### Copy output files
       mkdir -p "data_generated/${isoca}"
       cp -p data_output/* "data_generated/${isoca}"
@@ -121,46 +135,48 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   cp -p data_static/obs/prof.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.prof.nc"
   cp -p data_static/obs/icec.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.icec.nc"
 
+  # Copy output to COMINOUT
+  cp -rp data_generated/* ${COMINOUT}
+  cp -p data_output/* ${COMINOUT}
+
   # Copy H(x) output to COMINOUT
-  cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
   cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
   cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
   cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
   cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
   cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
-  cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
-
-  # Copy output to COMINOUT
-  cp -rp data_generated/* ${COMINOUT}
-  cp -p data_output/* ${COMINOUT}
 
   # Set and symlink output/increment file names for plotting
   bkg_file_dir="data_static/72x35x25/restarts"
   anl_file_dir="data_output"
-  fn_ice_data="cice.res.nc"
-  fn_ice_incr="cice.incr.res.nc"
-  fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+
   fn_ocn_data="MOM.res.nc"
   fn_ocn_incr="MOM.incr.res.nc"
   fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
   fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_sfc_data="sfc.res.nc"
-  fn_sfc_incr="sfc.incr.res.nc"
-  fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-
-  ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
   ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
-  ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
-
-  ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
   ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
-  ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
-
-  ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
   ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
-  ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
+
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+    cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
+    cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
+
+    fn_sfc_data="sfc.res.nc"
+    fn_sfc_incr="sfc.incr.res.nc"
+    fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_data="cice.res.nc"
+    fn_ice_incr="cice.incr.res.nc"
+    fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
+    ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
+    ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
+    ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
+    ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
+    ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
+  fi
 fi
 
 ##################
