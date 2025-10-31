@@ -98,9 +98,10 @@ def main():
         elif jtype == "soil_moisture":
             var_list_sfc.append("smc")
         elif jtype == "soca_ctest":
-            var_list_sfc += ["sw_rad", "latent_heat", "fric_vel"]
             var_list_ocn += ["Salt", "Temp", "ave_ssh"]
-            var_list_ice += ["hi_h", "hs_h"]
+            if JEDI_ALGORITHM == "3dvar":
+                var_list_sfc += ["sw_rad", "latent_heat", "fric_vel"]
+                var_list_ice += ["hi_h", "hs_h"]
         logging.info(f''' list of vars for sfc: {var_list_sfc}''')
         logging.info(f''' list of vars for ocn: {var_list_ocn}''')
         logging.info(f''' list of vars for ice: {var_list_ice}''')

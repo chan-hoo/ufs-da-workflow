@@ -155,8 +155,13 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
 
   fn_ocn_data="MOM.res.nc"
   fn_ocn_incr="MOM.incr.res.nc"
-  fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  if [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
+    fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  else
+    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fi
   ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
   ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
   ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
