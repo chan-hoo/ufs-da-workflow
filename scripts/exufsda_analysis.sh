@@ -96,11 +96,14 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       if [ "${isoca}" = "forecast_mom6" ]; then
 	export BIN_DIR="${JEDI_BIN_PATH}"
 	export MPIEXE="${run_cmd}"
+	# To avoid file replacement
+	[[ -e "input.nml" ]] && rm input.nml
         py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
         ${py_exe_path}/mom6solo.py ${jedi_nml_fn}
         if [ $? -ne 0 ]; then
           err_exit "SOCA c-test FORECAST_MOM6 failed"
         fi
+        [[ -e "input.nml" ]] && rm input.nml
       else
         if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
           jedi_exe_fn="${jedi_exe_soca_fn}"
