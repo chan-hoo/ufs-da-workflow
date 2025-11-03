@@ -1,0 +1,10 @@
+geometry:
+  geom_grid_file: soca_gridspec.nc
+  save_local_domain: true
+  mom6_input_nml: input.nml
+  fields metadata: fields_metadata.yml
+  rossby file: rossrad.nc
+
+  # save the atlas mesh for viewing in gmsh
+  gmsh save: true
+  gmsh filename: gmsh.msh

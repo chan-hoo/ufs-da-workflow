@@ -47,6 +47,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
   ###########################
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
 
+  ### UNDER DEVELOPMENT ###
     template_fp="${PARMufsda}/jedi/jcb-base_soca.yaml.j2"
     jcb_base_fn="jcb-base_soca.yaml"
     jcb_base_fp="${DATA}/${jcb_base_fn}"
@@ -184,10 +185,13 @@ echo "================ JCB COMPLETED !!! ==========================="
 
 #
 #####################################################################
-# SOCA: gridgen
+# SOCA: gridgen / setcorscales
 #####################################################################
 #
+if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
 
+
+fi
 
 #
 #####################################################################
