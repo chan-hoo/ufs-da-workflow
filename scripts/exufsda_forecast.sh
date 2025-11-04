@@ -320,7 +320,7 @@ if [ "${ocn_model}" = "mom6" ]; then
   
   ## MOM6 input namelist files
   ### MOM_input
-  cp -p "${COMINOUT}/MOM_input" .
+  cp -p "${COMINOUT}/MOM_input_${PDY}${cyc}" MOM_input
 
   ### MOM_override
   cp -p "${PARMufsda}/templates/template.MOM_override" MOM_override
@@ -360,7 +360,7 @@ if [ "${ice_model}" = "cice6" ]; then
   # CICE files
   ###############
   # copy ice_in
-  cp -p "${COMINOUT}/ice_in" .
+  cp -p "${COMINOUT}/ice_in_${PDY}${cyc}" ice_in
 
   # Fix files
   ice_fns=( "grid_cice_NEMS_mx100.nc" "kmtu_cice_NEMS_mx100.nc" )
@@ -484,13 +484,13 @@ cp -p "${PARMufsda}/templates/template.data_table" data_table
 # Copy input namelist files created by PREP_DATA task
 ########################################################
 # inpt.nml
-cp -p "${COMINOUT}/input.nml" .
+cp -p "${COMINOUT}/input.nml_${PDY}${cyc}" input.nml
 # ufs.configure
-cp -p "${COMINOUT}/ufs.configure" .
+cp -p "${COMINOUT}/ufs.configure_${PDY}${cyc}" ufs.configure
 # model_configure
-cp -p "${COMINOUT}/model_configure" .
+cp -p "${COMINOUT}/model_configure_${PDY}${cyc}" model_configure
 # diag_table
-cp -p "${COMINOUT}/diag_table" .
+cp -p "${COMINOUT}/diag_table_${PDY}${cyc}" diag_table
 
 ##########################
 # Run ufs-weather-model

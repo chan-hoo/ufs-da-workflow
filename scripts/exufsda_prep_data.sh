@@ -40,6 +40,9 @@ COMINOUTcm1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}"
 
 #
 #####################################################################
+# PART I.
+echo "========== PART I: Input Files =========="
+#####################################################################
 # COMMON: Input namelist / yaml files used by multiple tasks
 #####################################################################
 #
@@ -127,7 +130,7 @@ settings="\
 fp_template="${PARMufsda}/templates/${fn_template}"
 fn_namelist="input.nml"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 ############################################
 ## UFS weather model input: ufs.configure
@@ -176,7 +179,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.ufs.configure"
 fn_namelist="ufs.configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 ##############################################
 ## UFS weather model input: model_configure
@@ -198,7 +201,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.model_configure"
 fn_namelist="model_configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 #########################################
 ## UFS weather model input: diag table
@@ -217,7 +220,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 ################################
 ## MOM6 input file: MOM_input
@@ -238,7 +241,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.MOM_input"
 fn_namelist="MOM_input"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 #############################
 ## CICE input file: ice_in
@@ -260,11 +263,12 @@ settings="\
 fp_template="${PARMufsda}/templates/template.ice_in"
 fn_namelist="ice_in"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 #
 #####################################################################
-#
+# PART II.
+echo "========== PART II: JCB =========="
 #####################################################################
 # JCB: JEDI configuration
 #####################################################################
@@ -420,6 +424,9 @@ echo "================ JCB COMPLETED !!! ==========================="
 
 #
 #####################################################################
+# PART III.
+echo "========== PART III: SOCA pre-processing =========="
+#####################################################################
 # SOCA: gridgen / setcorscales
 #####################################################################
 #
@@ -449,6 +456,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
 fi
 
 #
+#####################################################################
+# PART IV.
+echo "========== PART IV: Observation Files =========="
 #####################################################################
 # Observation Data Files
 #####################################################################
