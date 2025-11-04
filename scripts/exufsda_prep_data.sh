@@ -255,6 +255,8 @@ settings="\
 'dd': !!str ${DD}
 'hh_sec': !!str ${HHsec_5d}
 'DT_ATMOS': ${DT_ATMOS}
+'MOM6_NIGLOBAL': ${MOM6_NIGLOBAL}
+'MOM6_NJGLOBAL': ${MOM6_NJGLOBAL}
 'NPROCS_ICE': ${NPROCS_ICE}
 'ice_runtype': ${ice_runtype}
 'ice_use_restart_time': ${ice_use_restart_time}

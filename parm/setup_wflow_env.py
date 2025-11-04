@@ -111,12 +111,12 @@ def setup_wflow_env(machine):
         atm_model = "datm"
         ocn_model = "mom6"
         ice_model = "cice6"
-        wav_model = None
+        wav_model = ""
     else:
-        atm_model = None
-        ocn_model = None
-        ice_model = None
-        wav_model = None
+        atm_model = ""
+        ocn_model = ""
+        ice_model = ""
+        wav_model = ""
 
     # Set DATM domain size
     datm_data_type = config_parm.get("DATM_DATA_TYPE")

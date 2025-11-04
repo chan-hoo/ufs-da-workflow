@@ -181,8 +181,8 @@
 
 &domain_nml
     nprocs            = {{ NPROCS_ICE }}
-    nx_global         = 360
-    ny_global         = 320
+    nx_global         = {{ MOM6_NIGLOBAL }}
+    ny_global         = {{ MOM6_NJGLOBAL }}
     block_size_x      = 72
     block_size_y      = 160
     max_blocks        = -1
