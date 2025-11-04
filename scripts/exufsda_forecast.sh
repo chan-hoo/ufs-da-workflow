@@ -208,39 +208,15 @@ elif [ "${atm_model}" = "datm" ]; then
     list_stream_fn+=("${DATM_DATA_TYPE}.${cmonth}.nc")
     cmonth=$(date -d "${cmonth}01 +1 month" +%Y%m)
   done
-  # GFS
-  if [ "${DATM_DATA_TYPE}" = "gfs" ]; then
-    datm_datamode="GEFS"
-    datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
-    datm_model_maskfile="INPUT/${datm_mesh_fn}"
-    datm_model_meshfile="INPUT/${datm_mesh_fn}"
-    datm_export_all=".false."
-    stream_dtlimit01="1.0"
-    stream_info="gfs.01"
-    stream_mesh_file="INPUT/${datm_mesh_fn}"
 
-  # GEFS
-  elif [ "${DATM_DATA_TYPE}" = "gefs" ]; then
-    datm_datamode="GEFS"
-    datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
-    datm_model_maskfile="INPUT/${datm_mesh_fn}"
-    datm_model_meshfile="INPUT/${datm_mesh_fn}"
-    datm_export_all=".false."
-    stream_dtlimit01="1.0"
-    stream_info="gefs.01"
-    stream_mesh_file="INPUT/${datm_mesh_fn}"
-
-  # CFSR
-  elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
-    datm_datamode="GEFS"
-    datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
-    datm_model_maskfile="INPUT/${datm_mesh_fn}"
-    datm_model_meshfile="INPUT/${datm_mesh_fn}"
-    datm_export_all=".false."
-    stream_dtlimit01="1.0"
-    stream_info="cfsr.01"
-    stream_mesh_file="INPUT/${datm_mesh_fn}"
-  fi
+  datm_datamode="GEFS"
+  datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
+  datm_model_maskfile="INPUT/${datm_mesh_fn}"
+  datm_model_meshfile="INPUT/${datm_mesh_fn}"
+  datm_export_all=".false."
+  stream_dtlimit01="1.0"
+  stream_info="${DATM_DATA_TYPE}.01"
+  stream_mesh_file="INPUT/${datm_mesh_fn}"
 
   # datm_in
   settings="\
