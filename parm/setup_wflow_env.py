@@ -100,8 +100,37 @@ def setup_wflow_env(machine):
         next_date = datetime.strptime(str(date_first_cycle), "%Y%m%d%H") + timedelta(hours=date_cycle_freq_hr)
         date_second_cycle = next_date.strftime("%Y%m%d%H")
 
-    # Calculate HPC parameter values
     app = config_parm.get("APP")
+    # Set model components
+    if app == "S2SWA":
+        atm_model = "fv3"
+        ocn_model = "mom6"
+        ice_model = "cice6"
+        wav_model = "ww3"
+    elif app = "NG-GODAS":
+        atm_model = "datm"
+        ocn_model = "mom6"
+        ice_model = "cice6"
+        wav_model = ""
+    else:
+        atm_model = ""
+        ocn_model = ""
+        ice_model = ""
+        wav_model = ""
+
+    # Set DATM domain size
+    datm_data_type = config_parm.get("DATM_DATA_TYPE")
+    if datm_data_type == "gfs":
+        datm_nx_global = 3072
+        datm_ny_global = 1536
+    elif datm_data_type == "gefs":
+        datm_nx_global = 1536
+        datm_ny_global = 768
+    elif datm_data_type == "cfsr":
+        datm_nx_global = 1760
+        datm_ny_global = 880
+
+    # Calculate HPC parameter values
     atm_layout_x = config_parm.get("ATM_LAYOUT_X")
     atm_layout_y = config_parm.get("ATM_LAYOUT_Y")
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
@@ -300,13 +329,18 @@ def setup_wflow_env(machine):
     # Update config yaml file
     config_parm.update({
         'ALLCOMP_RESTART_N': allcomp_restart_n,
+        'atm_model': atm_model,
         'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
         'date_second_cycle': date_second_cycle,
         'DATM_DATA_TYPE': datm_data_type,
+        'datm_nx_global': datm_nx_global,
+        'datm_ny_global': datm_ny_global,
         'DO_FREE_FORECAST': do_free_forecast,
         'exp_case_path': exp_case_path,
+        'ice_model': ice_model,
         'JEDI_BIN_PATH': jedi_bin_path,
         'JEDI_IODACONV_PATH': jedi_iodaconv_path,
+        'list_jedi_land': list_jedi_land,
         'memory_flag': memory_flag,
         'MOM6_DT_THERM': mom6_dt_therm,
         'native_default': native_default,
@@ -315,14 +349,15 @@ def setup_wflow_env(machine):
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
         'nprocs_per_node': nprocs_per_node,
+        'ocn_model': ocn_model,
         'OUTPUT_FH_CICE': output_fh_cice,
         'OUTPUT_FH_MOM6': output_fh_mom6,
         'OUTPUT_FH_WW3': output_fh_ww3,
         'partition_default': partition_default,
         'PTMP': ptmp,
         'queue_default': queue_default,
-        'list_jedi_land': list_jedi_land,
         'WARMSTART_DIR': warmstart_dir,
+        'wave_model': wave_model,
         })
    
     config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
@@ -471,6 +506,7 @@ def set_default_parm():
         "OBS_SFCSNO": "NO",
         "OBS_SMAP": "NO",
         "OBS_SMOPS": "NO",
+        "OCN_MESH_FN": "mesh.mx100.nc"
         "OUTPUT_FH": "6 -1",
         "OUTPUT_FH_CICE": None,
         "OUTPUT_FH_MOM6": None,

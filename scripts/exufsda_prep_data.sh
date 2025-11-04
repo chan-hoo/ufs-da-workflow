@@ -123,7 +123,7 @@ settings="\
 fp_template="${PARMufsda}/templates/${fn_template}"
 fn_namelist="input.nml"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
 ############################################
 ## UFS weather model input: ufs.configure
@@ -135,6 +135,7 @@ nprocs_atm_ocn_m1=$(( nprocs_atm_ocn - 1 ))
 nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
 nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
+datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
 
 settings="\
   'APP': ${APP}
@@ -152,14 +153,14 @@ settings="\
   'atm_petlist_bounds_n2': ${nprocs_atm_m1}
   'cmeps_coupling_mode': ${cmeps_coupling_mode}
   'cmeps_mapuv_with_cart3d': ${cmeps_mapuv_with_cart3d}
-  'ice_mesh_ice': ${ice_mesh_fn}
+  'ice_mesh_ice': ${OCN_MESH_FN}
   'ice_model': ${ice_model}
   'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
   'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
   'ice_stop_n': ${FCST_HRS}
   'med_petlist_bounds_n1': 0
   'med_petlist_bounds_n2': ${nprocs_med_m1}
-  'ocn_mesh_ocn': ${ocn_mesh_fn}
+  'ocn_mesh_ocn': ${OCN_MESH_FN}
   'ocn_model': ${ocn_model}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
@@ -171,7 +172,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.ufs.configure"
 fn_namelist="ufs.configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
 ##############################################
 ## UFS weather model input: model_configure
@@ -193,7 +194,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.model_configure"
 fn_namelist="model_configure"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
 #########################################
 ## UFS weather model input: diag table
@@ -212,7 +213,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
 ################################
 ## MOM6 input file: MOM_input
@@ -233,7 +234,7 @@ settings="\
 fp_template="${PARMufsda}/templates/template.MOM_input"
 fn_namelist="MOM_input"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
 #############################
 ## CICE input file: ice_in
@@ -255,8 +256,10 @@ settings="\
 fp_template="${PARMufsda}/templates/template.ice_in"
 fn_namelist="ice_in"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-cp -p ${fn_namelist} ${COMINOUT}
+rsync -avh ${fn_namelist} ${COMINOUT}
 
+#
+#####################################################################
 #
 #####################################################################
 # JCB: JEDI configuration

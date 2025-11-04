@@ -24,6 +24,7 @@ workflow:
     ATM_IO_LAYOUT_Y: "{{ ATM_IO_LAYOUT_Y }}"
     ATM_LAYOUT_X: "{{ ATM_LAYOUT_X }}"
     ATM_LAYOUT_Y: "{{ ATM_LAYOUT_Y }}"
+    atm_model: "{{ atm_model }}"
     CCPP_SUITE: "{{ CCPP_SUITE }}"
     COLDSTART: "{{ COLDSTART }}"
     COMINgdas: "{{ COMINgdas }}"
@@ -35,6 +36,8 @@ workflow:
     DATE_FIRST_CYCLE: "{{ DATE_FIRST_CYCLE }}"
     DATE_LAST_CYCLE: "{{ DATE_LAST_CYCLE }}"
     DATM_DATA_TYPE: "{{ DATM_DATA_TYPE }}"
+    datm_nx_global: "{{ datm_nx_global }}"
+    datm_ny_global: "{{ datm_ny_global }}"
     DCOMINghcn: "{{ DCOMINghcn }}"
     DCOMINobs: "{{ DCOMINobs }}"
     DCOMINsmap: "{{ DCOMINsmap }}"
@@ -51,6 +54,7 @@ workflow:
     FRAC_GRID: "{{ FRAC_GRID }}"
     IC_DATA_MODEL: "{{ IC_DATA_MODEL }}"
     IC_FROM_FIX_DIR: "{{ IC_FROM_FIX_DIR }}"
+    ice_model: "{{ ice_model }}"
     JEDI_ALGORITHM: "{{ JEDI_ALGORITHM }}"
     JEDI_BIN_PATH: "{{ JEDI_BIN_PATH }}"
     JEDI_IODACONV_PATH: "{{ JEDI_IODACONV_PATH }}"
@@ -77,11 +81,14 @@ workflow:
     nprocs_forecast: "{{ nprocs_forecast }}"
     nprocs_forecast_atm: "{{ nprocs_forecast_atm }}"
     nprocs_forecast_med: "{{ nprocs_forecast_med }}"
+    nprocs_per_node: "{{ nprocs_per_node }}"
     OBS_GHCN_SNOW: "{{ OBS_GHCN_SNOW }}"
     OBS_IMS_SNOW: "{{ OBS_IMS_SNOW }}"
     OBS_SFCSNO: "{{ OBS_SFCSNO }}"
     OBS_SMAP: "{{ OBS_SMAP }}"
     OBS_SMOPS: "{{ OBS_SMOPS }}"
+    OCN_MESH_FN: "{{ OCN_MESH_FN }}"
+    ocn_model: "{{ ocn_model }}"
     OUTPUT_FH: "{{ OUTPUT_FH }}"
     OUTPUT_FH_CICE: "{{ OUTPUT_FH_CICE }}"
     OUTPUT_FH_MOM6: "{{ OUTPUT_FH_MOM6 }}"
@@ -97,6 +104,7 @@ workflow:
     SCHED: "slurm"
     SMAP_RAW_WINDOW_SPAN_HALF: "{{ SMAP_RAW_WINDOW_SPAN_HALF }}"
     WARMSTART_DIR: "{{ WARMSTART_DIR }}"
+    wave_model: "{{ wav_model }}"
     WRITE_GROUPS: "{{ WRITE_GROUPS }}"
     WRITE_TASKS_PER_GROUP: "{{ WRITE_TASKS_PER_GROUP }}"
     HOMEufsda: "&exp_basedir;/ufs-da-workflow"
@@ -127,6 +135,7 @@ workflow:
         ATM_IO_LAYOUT_Y: "&ATM_IO_LAYOUT_Y;"
         ATM_LAYOUT_X: "&ATM_LAYOUT_X;"
         ATM_LAYOUT_Y: "&ATM_LAYOUT_Y;"
+        atm_model: "&atm_model;"
         CCPP_SUITE: "&CCPP_SUITE;"
         COLDSTART: "&COLDSTART;"
         COMINgdas: "&COMINgdas;"
@@ -138,6 +147,8 @@ workflow:
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
         DATM_DATA_TYPE: "&DATM_DATA_TYPE;"
+        datm_nx_global: "&datm_nx_global;"
+        datm_ny_global: "&datm_ny_global;"
         DCOMINghcn: "&DCOMINghcn;"
         DCOMINsmap: "&DCOMINsmap;"
         DCOMINsmops: "&DCOMINsmops;"
@@ -151,6 +162,7 @@ workflow:
         HOMEufsda: "&HOMEufsda;"
         IC_DATA_MODEL: "&IC_DATA_MODEL;"
         IC_FROM_FIX_DIR: "&IC_FROM_FIX_DIR;"
+        ice_model: "&ice_model;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
         JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
         JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
@@ -176,6 +188,8 @@ workflow:
         OBS_SFCSNO: "&OBS_SFCSNO;"
         OBS_SMAP: "&OBS_SMAP;"
         OBS_SMOPS: "&OBS_SMOPS;"
+        OCN_MESH_FN: "&OCN_MESH_FN;"
+        ocn_model: "&ocn_model;"
         OUTPUT_FH: "&OUTPUT_FH;"
         OUTPUT_FH_CICE: "&OUTPUT_FH_CICE;"
         OUTPUT_FH_MOM6: "&OUTPUT_FH_MOM6;"
@@ -188,6 +202,7 @@ workflow:
         SCHED: "&SCHED;"
         SMAP_RAW_WINDOW_SPAN_HALF: "&SMAP_RAW_WINDOW_SPAN_HALF;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
+        wav_model: "&wav_model;"
         WRITE_GROUPS: "&WRITE_GROUPS;"
         WRITE_TASKS_PER_GROUP: "&WRITE_TASKS_PER_GROUP;"
       account: "&ACCOUNT;"
@@ -344,6 +359,7 @@ workflow:
       envars:
         ACCOUNT: "&ACCOUNT;"
         APP: "&APP;"
+        atm_model: "&atm_model;"
         COLDSTART: "&COLDSTART;"
         COMROOT: "&COMROOT;"
         cyc: "&cyc;"
@@ -352,10 +368,13 @@ workflow:
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
         DATM_DATA_TYPE: "&DATM_DATA_TYPE;"
+        datm_nx_global: "&datm_nx_global;"
+        datm_ny_global: "&datm_ny_global;"
         DO_FREE_FORECAST: "&DO_FREE_FORECAST;"
         FCST_HRS: "&FCST_HRS;"
         HOMEufsda: "&HOMEufsda;"
         IC_FROM_FIX_DIR: "&IC_FROM_FIX_DIR;"
+        ice_model: "&ice_model;"
         KEEPDATA: "&KEEPDATA;"
         LOGDIR: "&LOGDIR;"
         MACHINE: "&MACHINE;"
@@ -363,6 +382,8 @@ workflow:
         NET: "&NET;"
         NPZ: "&NPZ;"
         nprocs_forecast: "&nprocs_forecast;"
+        OCN_MESH_FN: "&OCN_MESH_FN;"
+        ocn_model: "&ocn_model;"
         OUTPUT_FH: "&OUTPUT_FH;"
         OUTPUT_FH_CICE: "&OUTPUT_FH_CICE;"
         OUTPUT_FH_MOM6: "&OUTPUT_FH_MOM6;"
@@ -373,6 +394,7 @@ workflow:
         res_p1: "&res_p1;"
         SCHED: "&SCHED;"
         WARMSTART_DIR: "&WARMSTART_DIR;"
+        wav_model: "&wav_model;"
       account: "&ACCOUNT;"
       command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "forecast" "&HOMEufsda;" "&MACHINE;"'
       jobname: forecast
@@ -385,40 +407,44 @@ workflow:
       queue: "&queue_default;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
       dependency:
-        or:
+        and:
+          taskdep_prep_data:
+            attrs:
+              task: prep_data
+          or:
 {%- if IC_FROM_FIX_DIR == "YES" %}
-          datadep_coldstart:
-            attrs:
-              age: 5
-            value: "&DATADEP_COLDSTART;"
+            datadep_coldstart:
+              attrs:
+                age: 5
+              value: "&DATADEP_COLDSTART;"
 {%- else %}
-          taskdep_fcst_ic:
-            attrs:
-              task: fcst_ic
+            taskdep_fcst_ic:
+              attrs:
+                task: fcst_ic
 {%- endif %}
 {%- if DO_FREE_FORECAST == "none" %}
-          taskdep_analysis:
-            attrs:
-              task: analysis
+            taskdep_analysis:
+              attrs:
+                task: analysis
 {%- else %}
 {%- if APP == "S2SWA" %}
-          datadep_sfc1:
-            attrs:
-              age: 5
-            value: "&DATADEP_SFC1;"
-          datadep_sfc2:
-            attrs:
-              age: 5
-            value: "&DATADEP_SFC2;"
+            datadep_sfc1:
+              attrs:
+                age: 5
+              value: "&DATADEP_SFC1;"
+            datadep_sfc2:
+              attrs:
+                age: 5
+              value: "&DATADEP_SFC2;"
 {%- elif APP == "NG-GODAS" %}
-          datadep_mom1:
-            attrs:
-              age: 5
-            value: "&DATADEP_MOM1;"
-          datadep_mom2:
-            attrs:
-              age: 5
-            value: "&DATADEP_MOM2;"
+            datadep_mom1:
+              attrs:
+                age: 5
+              value: "&DATADEP_MOM1;"
+            datadep_mom2:
+              attrs:
+                age: 5
+              value: "&DATADEP_MOM2;"
 {%- endif %}
 {%- endif %}
 {%- endif %}

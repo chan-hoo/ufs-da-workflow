@@ -61,26 +61,6 @@ filedate=${PDY}.${cyc}0000
 mkdir -p INPUT
 mkdir -p RESTART
 
-#####################
-# Model components
-#####################
-if [ "${APP}" = "S2SWA" ]; then
-  atm_model="fv3"
-  ocn_model="mom6"
-  ice_model="cice6"
-  wav_model="ww3"
-elif [ "${APP}" = "NG-GODAS" ]; then
-  atm_model="datm"
-  ocn_model="mom6"
-  ice_model="cice6"
-  wav_model=""
-else
-  atm_model=""
-  ocn_model=""
-  ice_model=""
-  wav_model=""
-fi
-
 ########################
 # ATM model component
 ########################
@@ -231,8 +211,6 @@ elif [ "${atm_model}" = "datm" ]; then
   # GFS
   if [ "${DATM_DATA_TYPE}" = "gfs" ]; then
     datm_datamode="GEFS"
-    datm_nx_global="3072"
-    datm_ny_global="1536"
     datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
@@ -244,8 +222,6 @@ elif [ "${atm_model}" = "datm" ]; then
   # GEFS
   elif [ "${DATM_DATA_TYPE}" = "gefs" ]; then
     datm_datamode="GEFS"
-    datm_nx_global="1536"
-    datm_ny_global="768"
     datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
@@ -257,8 +233,6 @@ elif [ "${atm_model}" = "datm" ]; then
   # CFSR
   elif [ "${DATM_DATA_TYPE}" = "cfsr" ]; then
     datm_datamode="GEFS"
-    datm_nx_global="1760"
-    datm_ny_global="880"
     datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
     datm_model_maskfile="INPUT/${datm_mesh_fn}"
     datm_model_meshfile="INPUT/${datm_mesh_fn}"
@@ -335,9 +309,8 @@ if [ "${ocn_model}" = "mom6" ]; then
   mkdir -p MOM6_OUTPUT
 
   ## Mesh file
-  ocn_mesh_fn="mesh.mx100.nc"
-  if [ ! -e "${ocn_mesh_fn}" ]; then
-    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ocn_mesh_fn}" .
+  if [ ! -e "${OCN_MESH_FN}" ]; then
+    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${OCN_MESH_FN}" .
   fi
 
   # INPUT directory
@@ -423,12 +396,6 @@ if [ "${ice_model}" = "cice6" ]; then
       err_exit "Symlink failed: ${ifp} does not exist."
     fi
   done
-
-  # Mesh file
-  ice_mesh_fn="mesh.mx100.nc"
-  if [ ! -e "${ice_mesh_fn}" ]; then
-    ln -nsf "${FIXufsda}/DATA_fix/CICE/${ice_mesh_fn}" .
-  fi
 
   # CICE histoy directory
   mkdir -p history
