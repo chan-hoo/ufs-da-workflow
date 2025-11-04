@@ -164,6 +164,7 @@ workflow:
         IC_FROM_FIX_DIR: "&IC_FROM_FIX_DIR;"
         ice_model: "&ice_model;"
         JEDI_ALGORITHM: "&JEDI_ALGORITHM;"
+        JEDI_BIN_PATH: "&JEDI_BIN_PATH;"
         JEDI_IODACONV_PATH: "&JEDI_IODACONV_PATH;"
         JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
         KEEPDATA: "&KEEPDATA;"
@@ -232,7 +233,7 @@ workflow:
             value: "&DATADEP_SFC2;"
 {%- endif %}
 {%- endif %}
-{%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or DO_FREE_FORECAST == "ctest" %}
+{%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or (date_second_cycle is none and DO_FREE_FORECAST == "none" ) or DO_FREE_FORECAST == "ctest" %}
     task_analysis:
       attrs:
 {%- if COLDSTART == "YES" %}

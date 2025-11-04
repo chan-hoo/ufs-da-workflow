@@ -229,7 +229,7 @@ def setup_wflow_env(machine):
             list_jedi_land = f"{list_jedi_land} soil_moisture"
 
     if do_free_forecast == "none":
-        if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca:
+        if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca == "NO":
             logging.error(f'''FATAL ERROR: All JEDI_TYPE flags are off. Please check the flags for JEDI_TYPE.''')
             sys.exit(1)
 

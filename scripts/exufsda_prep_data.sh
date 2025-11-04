@@ -432,24 +432,38 @@ echo "========== PART III: SOCA pre-processing =========="
 # SOCA: gridgen / setcorscales
 #####################################################################
 #
-if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
+if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
+   [ "${DO_FREE_FORECAST}" != "ctest" ] && \
+   [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
   #############
   ## gridgen
   #############
   path_mom6_fix_dir="${FIXufsda}/DATA_fix/MOM6"
-  soca_gridspec_fn="soca_gridspec.nc"
+  soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  jedi_nml_fn="gridgen.yaml"
   if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
     ln -nsf "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
   else
     ### SOCA input yaml file
-    cp -p "${PARMufsda}/jedi/soca/gridgen.yaml" .
+    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
 
     ### Fileds metadata files
     cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
 
     ### Rossby file
-    ln -nsf "${path_momt_fix_dir}/rossrad.nc" .
+    ln -nsf "${path_mom6_fix_dir}/rossrad.nc" .
   fi
+
+  export pgm="soca_gridgen.x"
+  . prep_step
+  time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  export err=$?; err_chk
+  cp errfile errfile_gridgen
+  if [[ $err != 0 ]]; then
+    err_exit "JEDI SOCA gridgen failed"
+  fi
+  cp -p soca_gridspec.nc "${COMINOUT}/${soca_gridspec_fn}"
+  ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
 
   ##################
   ## setcorscales

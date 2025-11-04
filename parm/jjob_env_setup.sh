@@ -96,8 +96,10 @@ export DCOMINsmops="${DCOMINsmops:-${FIXufsda}/DATA_smops}"
 ########################################
 # Create teomporary share directories
 ########################################
-export DATA_HOFX="${DATA_HOFX:-${DATAROOT}/DATA_SHARE/hofx}"
-export DATA_RESTART="${DATA_RESTART:-${DATAROOT}/DATA_SHARE/RESTART}"
+export DATA_SHARE="${DATA_SHARE:-${DATAROOT}/DATA_SHARE}"
+export DATA_HOFX="${DATA_HOFX:-${DATA_SHARE}/hofx}"
+export DATA_RESTART="${DATA_RESTART:-${DATA_SHARE}/RESTART}"
+mkdir -p ${DATA_SHARE}
 mkdir -p ${DATA_HOFX}
 mkdir -p ${DATA_RESTART}
 
