@@ -81,65 +81,6 @@ else
   wav_model=""
 fi
 
-########################################
-# cold/warm-start dependent variables
-########################################
-if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-  # input.nml
-  external_ic=".true."
-  ignore_rst_cksum=".true."
-  make_nh=".true."
-  mom_input_filename="n"
-  mountain=".false."
-  na_init="1"
-  nggps_ic=".true."
-  nstf_name="2,0,0,0,0"
-  warm_start=".false."
-
-  # ufs.configure
-  allcomp_read_restart=".false."
-  allcomp_start_type="startup"
-
-  # ice_in
-  ice_runtype="initial"
-  ice_use_restart_time=".false."
-else
-  # input.nml
-  external_ic=".false."
-  ignore_rst_cksum=".true."
-  make_nh=".false."
-  mom_input_filename="r"
-  mountain=".true."
-  na_init="0"
-  nggps_ic=".false."
-  nstf_name="2,0,0,0,0"
-  warm_start=".true."
-
-  # ufs.configure
-  allcomp_read_restart=".true."
-  allcomp_start_type="continue"
-
-  # ice_in
-  ice_runtype="continue"
-  ice_use_restart_time=".true."
-fi
-
-########################################
-# Application dependent variables
-########################################
-datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
-if [ "${APP}" = "S2SWA" ]; then
-  # ufs.configure
-  allcomp_case_name="ufs.cpld"
-  cmeps_coupling_mode="ufs.frac"
-  cmeps_mapuv_with_cart3d="true"
-elif [ "${APP}" = "NG-GODAS" ]; then
-  # ufs.configure
-  allcomp_case_name="DATM_${datm_data_type_upper}"
-  cmeps_coupling_mode="ufs.nfrac.aoflux"
-  cmeps_mapuv_with_cart3d="false"
-fi
-
 ########################
 # ATM model component
 ########################
@@ -277,6 +218,7 @@ elif [ "${atm_model}" = "datm" ]; then
   ######################
   # DATM forcing data
   ######################
+  datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
   # List of stream data files
   list_stream_data_files=()
   list_stream_fn=()
@@ -429,19 +371,7 @@ if [ "${ocn_model}" = "mom6" ]; then
   
   ## MOM6 input namelist files
   ### MOM_input
-  if [ "${wav_model}" ]; then
-    mom6_use_waves="True"
-  else
-    mom6_use_waves="False"
-  fi
-  settings="\
-  'DT_MOM6': ${DT_MOM6}
-  'MOM6_DT_THERM': ${MOM6_DT_THERM}
-  'mom6_use_waves': ${mom6_use_waves}
-" # End of settings variable
-  fp_template="${PARMufsda}/templates/template.MOM_input"
-  fn_namelist="MOM_input"
-  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  cp -p "${COMINOUT}/MOM_input" .
 
   ### MOM_override
   cp -p "${PARMufsda}/templates/template.MOM_override" MOM_override
@@ -480,24 +410,8 @@ if [ "${ice_model}" = "cice6" ]; then
   ###############
   # CICE files
   ###############
-  # set ice_in
-  settings="\
-  'yyyymmdd': !!str ${PDY}
-  'yyyy': !!str ${YYYY}
-  'yyyy_last': !!str ${nYYYY}
-  'yyyy_align': !!str ${YYYY}
-  'mm': !!str ${MM}
-  'dd': !!str ${DD}
-  'hh_sec': !!str ${HHsec_5d}
-  'DT_ATMOS': ${DT_ATMOS}
-  'NPROCS_ICE': ${NPROCS_ICE}
-  'ice_runtype': ${ice_runtype}
-  'ice_use_restart_time': ${ice_use_restart_time}
-  'OUTPUT_FH_CICE': ${OUTPUT_FH_CICE}
-" # End of settings variable
-  fp_template="${PARMufsda}/templates/template.ice_in"
-  fn_namelist="ice_in"
-  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  # copy ice_in
+  cp -p "${COMINOUT}/ice_in" .
 
   # Fix files
   ice_fns=( "grid_cice_NEMS_mx100.nc" "kmtu_cice_NEMS_mx100.nc" )
@@ -623,122 +537,17 @@ cp -p "${PARMufsda}/templates/template.fd_ufs.yaml" fd_ufs.yaml
 # data_table
 cp -p "${PARMufsda}/templates/template.data_table" data_table
 
-##################
-# Set input.nml
-##################
-if [ "${APP}" = "S2SWA" ]; then
-  fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
-elif [ "${APP}" = "NG-GODAS" ]; then
-  fn_template="template.${APP}.input.nml"
-fi
-settings="\
-  'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
-  'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
-  'ATM_LAYOUT_X': ${ATM_LAYOUT_X}
-  'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
-  'CCPP_SUITE': ${CCPP_SUITE}
-  'external_ic': '${external_ic}'
-  'ignore_rst_cksum': '${ignore_rst_cksum}'
-  'make_nh': '${make_nh}'
-  'mom_input_filename': ${mom_input_filename}
-  'mountain': '${mountain}'
-  'na_init': ${na_init}
-  'nggps_ic': '${nggps_ic}'
-  'nstf_name': '${nstf_name}'
-  'NPZ': ${NPZ}
-  'res_p1': ${res_p1}
-  'warm_start': '${warm_start}'
-" # End of settings variable
-fp_template="${PARMufsda}/templates/${fn_template}"
-fn_namelist="input.nml"
-${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-######################
-# Set ufs.configure
-######################
-nprocs_atm_m1=$(( nprocs_forecast_atm - 1 ))
-nprocs_med_m1=$(( nprocs_forecast_med - 1 ))
-nprocs_atm_ocn=$(( nprocs_forecast_atm + NPROCS_OCN ))
-nprocs_atm_ocn_m1=$(( nprocs_atm_ocn - 1 ))
-nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
-nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
-nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
-
-settings="\
-  'APP': ${APP}
-  'DT_ATMOS': ${DT_ATMOS}
-  'DT_RUNSEQ': ${DT_RUNSEQ}
-  'ALLCOMP_RESTART_N': ${ALLCOMP_RESTART_N}
-  'allcomp_case_name': ${allcomp_case_name}
-  'allcomp_read_restart': ${allcomp_read_restart}
-  'allcomp_start_type': ${allcomp_start_type}
-  'allcomp_stop_n': ${FCST_HRS}
-  'atm_mesh_atm': ${datm_mesh_fn}
-  'atm_model': ${atm_model}
-  'atm_stop_n': ${FCST_HRS}
-  'atm_petlist_bounds_n1': 0
-  'atm_petlist_bounds_n2': ${nprocs_atm_m1}
-  'cmeps_coupling_mode': ${cmeps_coupling_mode}
-  'cmeps_mapuv_with_cart3d': ${cmeps_mapuv_with_cart3d}
-  'ice_mesh_ice': ${ice_mesh_fn}
-  'ice_model': ${ice_model}
-  'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
-  'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
-  'ice_stop_n': ${FCST_HRS}
-  'med_petlist_bounds_n1': 0
-  'med_petlist_bounds_n2': ${nprocs_med_m1}
-  'ocn_mesh_ocn': ${ocn_mesh_fn}
-  'ocn_model': ${ocn_model}
-  'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
-  'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
-  'wav_mesh_wav': mesh.global_270k.nc
-  'wav_model': ${wav_model}
-  'wav_petlist_bounds_n1': ${nprocs_atm_ocn_ice}
-  'wav_petlist_bounds_n2': ${nprocs_forecast_m1}
-" # End of settings variable
-fp_template="${PARMufsda}/templates/template.ufs.configure"
-fn_namelist="ufs.configure"
-${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-########################
-# Set model_configure
-########################
-settings="\
-  'yyyy': !!str ${YYYY}
-  'mm': !!str ${MM}
-  'dd': !!str ${DD}
-  'hh': !!str ${HH}
-  'APP': ${APP}
-  'DT_ATMOS': ${DT_ATMOS}
-  'FCST_HRS': ${FCST_HRS}
-  'FHROT': ${FHROT}
-  'OUTPUT_FH': ${OUTPUT_FH}
-  'RESTART_INTERVAL': ${RESTART_INTERVAL}
-  'WRITE_GROUPS': ${WRITE_GROUPS}
-  'WRITE_TASKS_PER_GROUP': ${WRITE_TASKS_PER_GROUP}
-" # End of settings variable
-fp_template="${PARMufsda}/templates/template.model_configure"
-fn_namelist="model_configure"
-${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-###################
-# set diag table
-###################
-settings="\
-  'yyyymmdd': !!str ${PDY}
-  'yyyy': !!str ${YYYY}
-  'mm': !!str ${MM}
-  'dd': !!str ${DD}
-  'hh': !!str ${cyc}
-  'atm_model': ${atm_model}
-  'ocn_model': ${ocn_model}
-  'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
-  'RES': ${RES}
-" # End of settings variable
-fp_template="${PARMufsda}/templates/template.diag_table"
-fn_namelist="diag_table"
-${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
+########################################################
+# Copy input namelist files created by PREP_DATA task
+########################################################
+# inpt.nml
+cp -p "${COMINOUT}/input.nml" .
+# ufs.configure
+cp -p "${COMINOUT}/ufs.configure" .
+# model_configure
+cp -p "${COMINOUT}/model_configure" .
+# diag_table
+cp -p "${COMINOUT}/diag_table" .
 
 ##########################
 # Run ufs-weather-model

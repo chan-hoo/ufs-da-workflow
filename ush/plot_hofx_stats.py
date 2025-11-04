@@ -157,6 +157,7 @@ if __name__ == '__main__':
     cdate = yaml_data['cdate']
     DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
     hofx_data_path = yaml_data['hofx_data_path']
+    JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     work_dir = yaml_data['work_dir']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
@@ -183,7 +184,9 @@ if __name__ == '__main__':
 
     svar_list = []
     if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
-        svar_list += ["ADT","CoolSkin","InsituSalinity","InsituTemperature","SeaIceFraction","SeaSurfaceSalinity","SeaSurfaceTemp"]
+        svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
+        if JEDI_ALGORITHM == "3dvar":
+            svar_list += ["CoolSkin","SeaIceFraction"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":

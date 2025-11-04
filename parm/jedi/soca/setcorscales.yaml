@@ -1,7 +1,7 @@
 resolution:
   geom_grid_file: soca_gridspec.nc
   mom6_input_nml: input.nml
-  fields metadata: fields_metadata.yml
+  fields metadata: fields_metadata.yaml
 
 date: "0001-01-01T00:00:00Z"
 
