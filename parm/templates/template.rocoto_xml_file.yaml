@@ -104,7 +104,7 @@ workflow:
     SCHED: "slurm"
     SMAP_RAW_WINDOW_SPAN_HALF: "{{ SMAP_RAW_WINDOW_SPAN_HALF }}"
     WARMSTART_DIR: "{{ WARMSTART_DIR }}"
-    wave_model: "{{ wav_model }}"
+    wav_model: "{{ wav_model }}"
     WRITE_GROUPS: "{{ WRITE_GROUPS }}"
     WRITE_TASKS_PER_GROUP: "{{ WRITE_TASKS_PER_GROUP }}"
     HOMEufsda: "&exp_basedir;/ufs-da-workflow"

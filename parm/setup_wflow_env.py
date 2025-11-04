@@ -107,16 +107,16 @@ def setup_wflow_env(machine):
         ocn_model = "mom6"
         ice_model = "cice6"
         wav_model = "ww3"
-    elif app = "NG-GODAS":
+    elif app == "NG-GODAS":
         atm_model = "datm"
         ocn_model = "mom6"
         ice_model = "cice6"
-        wav_model = ""
+        wav_model = None
     else:
-        atm_model = ""
-        ocn_model = ""
-        ice_model = ""
-        wav_model = ""
+        atm_model = None
+        ocn_model = None
+        ice_model = None
+        wav_model = None
 
     # Set DATM domain size
     datm_data_type = config_parm.get("DATM_DATA_TYPE")
@@ -357,7 +357,7 @@ def setup_wflow_env(machine):
         'PTMP': ptmp,
         'queue_default': queue_default,
         'WARMSTART_DIR': warmstart_dir,
-        'wave_model': wave_model,
+        'wav_model': wav_model,
         })
    
     config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
@@ -506,7 +506,7 @@ def set_default_parm():
         "OBS_SFCSNO": "NO",
         "OBS_SMAP": "NO",
         "OBS_SMOPS": "NO",
-        "OCN_MESH_FN": "mesh.mx100.nc"
+        "OCN_MESH_FN": "mesh.mx100.nc",
         "OUTPUT_FH": "6 -1",
         "OUTPUT_FH_CICE": None,
         "OUTPUT_FH_MOM6": None,

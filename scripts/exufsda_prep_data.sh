@@ -19,12 +19,16 @@ YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
+HHsec=$(( HH * 3600 ))
+HHsec_5d=$(printf "%05d" "${HHsec}")
 
 NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 nYYYY=${NTIME:0:4}
 nMM=${NTIME:4:2}
 nDD=${NTIME:6:2}
 nHH=${NTIME:8:2}
+nHHsec=$(( nHH * 3600 ))
+nHHsec_5d=$(printf "%05d" "${nHHsec}")
 
 PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 YYYYp=${PTIME:0:4}
