@@ -435,6 +435,8 @@ echo "========== PART III: SOCA pre-processing =========="
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
    [ "${DO_FREE_FORECAST}" != "ctest" ] && \
    [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+  mkdir -p soca_prep
+  cd soca_prep
   #############
   ## gridgen
   #############
@@ -444,6 +446,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
     ln -nsf "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
   else
+    mkdir -p INPUT
+    mkdir -p MOM6_OUTPUT
+
     ### SOCA input yaml file
     cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
 
@@ -451,16 +456,91 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
 
     ### Rossby file
-    ln -nsf "${path_mom6_fix_dir}/rossrad.nc" .
-  fi
+    cp -p "${path_mom6_fix_dir}/rossrad.nc" .
 
-  export pgm="soca_gridgen.x"
-  . prep_step
-  time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-  export err=$?; err_chk
-  cp errfile errfile_gridgen
-  if [[ $err != 0 ]]; then
-    err_exit "JEDI SOCA gridgen failed"
+    ### diag_table
+    ln -nsf "${DATA}/diag_table" .
+
+    ### input.nml
+    settings="\
+  'yyyy': !!str ${YYYY}
+  'mm': !!str ${MM}
+  'dd': !!str ${DD}
+  'hh': !!str ${HH}
+  'mom_input_filename': ${mom_input_filename}
+" # End of settings variable
+    fn_template="template.SOCA.input.nml"
+    fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+    fn_namelist="input.nml"
+    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+    ### MOM6 input namelist file
+    settings="\
+  'DT_MOM6': ${DT_MOM6}
+  'MOM6_DT_THERM': ${MOM6_DT_THERM}
+  'MOM6_NIGLOBAL': ${MOM6_NIGLOBAL}
+  'MOM6_NJGLOBAL': ${MOM6_NJGLOBAL}
+  'MOM6_NK': ${MOM6_NK}
+" # End of settings variable
+    fn_template="template.SOCA.MOM_input"
+    fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+    fn_namelist="INPUT/MOM_input"
+    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${OCN_MESH_FN}" .
+
+    ### Fix files
+    ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" \
+              "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
+              "hycom1_75_800m.nc" \
+              "interpolate_zgrid_40L.nc" \
+              "KH_background_2d.nc" \
+              "land_mask.nc" \
+              "land_mosaic_tile1Xocean_mosaic_tile1.nc" \
+              "layer_coord.nc" \
+              "MOM_channels_SPEAR" \
+              "ocean_hgrid.nc" \
+              "ocean_mask.nc" \
+              "ocean_mosaic.nc" \
+              "seawifs_1998-2006_smoothed_2X.nc" \
+              "tidal_amplitude.nc" \
+              "topog.nc" \
+              "ufs.topo_edits_011818.nc" \
+              "vgrid_75_2m.nc" )
+    for ifn in "${ocn_fns[@]}" ; do
+      ifp="${FIXufsda}/DATA_fix/MOM6/${ifn}"
+      if [ -e "${ifp}" ]; then
+        ln -nsf ${ifp} INPUT/.
+      else
+        err_exit "Symlink failed: ${ifp} does not exist."
+      fi
+    done
+  
+    ### IC (initial condition) / restart file
+    if [ "${COLDSTART}" = "YES" ] ; then
+      if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
+        data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
+      else
+        data_dir="${COMINOUT}"
+      fi
+      ln -nsf "${data_dir}/MOM6_IC_TS_${PDY}${cyc}.nc" INPUT/MOM6_IC_TS.nc
+    else
+      r_fp="${WARMSTART_DIR}/${PDY}.${cyc}0000.MOM.res.nc"
+      if [ -e "${r_fp}" ]; then
+        ln -nsf "${r_fp}" INPUT/MOM.res.nc
+      else
+        err_exit "Symlink failed: ${r_fp} file does not exist."
+      fi
+    fi
+
+    export pgm="soca_gridgen.x"
+    . prep_step
+    time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    export err=$?; err_chk
+    cp errfile errfile_gridgen
+    if [[ $err != 0 ]]; then
+      err_exit "JEDI SOCA gridgen failed"
+    fi
   fi
   cp -p soca_gridspec.nc "${COMINOUT}/${soca_gridspec_fn}"
   ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
@@ -469,6 +549,8 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ## setcorscales
   ##################
 
+
+  cd ${DATA}
 fi
 
 #
