@@ -471,6 +471,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     ### diag_table
     ln -nsf "${DATA}/diag_table" .
 
+    ### MOM6 input namelist file
+    ln -nsf "${DATA}/MOM_input" INPUT/.
+
     ### input.nml
     settings="\
   'yyyy': !!str ${YYYY}
@@ -482,19 +485,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     fn_template="template.SOCA.input.nml"
     fp_template="${PARMufsda}/jedi/soca/${fn_template}"
     fn_namelist="input.nml"
-    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-
-    ### MOM6 input namelist file
-    settings="\
-  'DT_MOM6': ${DT_MOM6}
-  'MOM6_DT_THERM': ${MOM6_DT_THERM}
-  'MOM6_NIGLOBAL': ${MOM6_NIGLOBAL}
-  'MOM6_NJGLOBAL': ${MOM6_NJGLOBAL}
-  'MOM6_NK': ${MOM6_NK}
-" # End of settings variable
-    fn_template="template.SOCA.MOM_input"
-    fp_template="${PARMufsda}/jedi/soca/${fn_template}"
-    fn_namelist="INPUT/MOM_input"
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
     ### Fix files
