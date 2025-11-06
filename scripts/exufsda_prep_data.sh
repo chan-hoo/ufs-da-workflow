@@ -454,7 +454,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   jedi_nml_fn="gridgen.yaml"
   if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
-    ln -nsf "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
+    cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
   else
     mkdir -p INPUT
     mkdir -p MOM6_OUTPUT
@@ -537,8 +537,34 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ##################
   ## setcorscales
   ##################
+  soca_cor_rh_fn_prefix="soca_cor_rh"
+  soca_cor_rv_fn_prefix="soca_cor_rv"
+  soca_cor_rh_fn="${soca_cor_rh_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+
+  jedi_nml_fn="setcorscales.yaml"
+  if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
+     [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
+    cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
+    cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
+  else
 
 
+    export pgm="soca_setcorscales.x"
+    . prep_step
+    time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    export err=$?; err_chk
+    cp errfile errfile_gridgen
+    if [[ $err != 0 ]]; then
+      err_exit "JEDI SOCA setcorscales failed"
+    fi
+  fi
+  cp -p "${soca_cor_rh_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
+  cp -p "${soca_cor_rv_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
+  ln -nsf "${COMINOUT}/${soca_cor_rh_fn}" "${DATA_SHARE}/${soca_cor_rh_fn}"
+  ln -nsf "${COMINOUT}/${soca_cor_rv_fn}" "${DATA_SHARE}/${soca_cor_rv_fn}"
+
+  #############
   cd ${DATA}
 fi
 
