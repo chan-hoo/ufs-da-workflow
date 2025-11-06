@@ -432,9 +432,19 @@ echo "========== PART III: SOCA pre-processing =========="
 # SOCA: gridgen / setcorscales
 #####################################################################
 #
+# note: only work with restart file (not ic file)
+do_soca_prep="NO"
+if [ "${COLDSTART}" = "NO" ]; then
+  [[ "${PDY}${cyc}" == "${DATE_FIRST_CYCLE:0:10}" ]] && do_soca_prep="YES"
+else
+  if [ "${date_second_cycle}" != "None" ]; then
+    [[ "${PDY}${cyc}" == "${date_second_cycle:0:10}" ]] && do_soca_prep="YES"
+  fi
+fi
+
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
    [ "${DO_FREE_FORECAST}" != "ctest" ] && \
-   [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+   [ "${do_soca_prep}" = "YES" ]; then
   mkdir -p soca_prep
   cd soca_prep
   #############
@@ -456,7 +466,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
 
     ### Rossby file
-    cp -p "${path_mom6_fix_dir}/rossrad.nc" .
+    ln -nsf "${path_mom6_fix_dir}/rossrad.nc" .
 
     ### diag_table
     ln -nsf "${DATA}/diag_table" .
@@ -487,8 +497,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     fn_namelist="INPUT/MOM_input"
     ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
-    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${OCN_MESH_FN}" .
-
     ### Fix files
     ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" \
               "atmos_mosaic_tile1Xocean_mosaic_tile1.nc" \
@@ -516,21 +524,12 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
       fi
     done
   
-    ### IC (initial condition) / restart file
-    if [ "${COLDSTART}" = "YES" ] ; then
-      if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
-        data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
-      else
-        data_dir="${COMINOUT}"
-      fi
-      ln -nsf "${data_dir}/MOM6_IC_TS_${PDY}${cyc}.nc" INPUT/MOM6_IC_TS.nc
+    ### Restart file
+    r_fp="${WARMSTART_DIR}/${PDY}.${cyc}0000.MOM.res.nc"
+    if [ -e "${r_fp}" ]; then
+      ln -nsf "${r_fp}" INPUT/MOM.res.nc
     else
-      r_fp="${WARMSTART_DIR}/${PDY}.${cyc}0000.MOM.res.nc"
-      if [ -e "${r_fp}" ]; then
-        ln -nsf "${r_fp}" INPUT/MOM.res.nc
-      else
-        err_exit "Symlink failed: ${r_fp} file does not exist."
-      fi
+      err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
 
     export pgm="soca_gridgen.x"
