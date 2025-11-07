@@ -569,7 +569,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     ### Run soca_setcorscales.x
     export pgm="soca_setcorscales.x"
     . prep_step
-    time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${run_cmd} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_gridgen
     if [[ $err != 0 ]]; then
