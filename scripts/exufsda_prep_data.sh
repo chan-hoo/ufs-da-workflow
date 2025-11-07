@@ -273,6 +273,7 @@ fn_namelist="ice_in"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
+echo "========== Input Namelist Files COMPLETED !!! ================="
 #
 #####################################################################
 # PART II.
@@ -587,6 +588,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   #############
   cd ${DATA}
 fi
+echo "========== SOCA Pre-processing COMPLETED !!! =================="
 
 #
 #####################################################################
