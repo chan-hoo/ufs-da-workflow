@@ -547,15 +547,19 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ##################
   ## setcorscales
   ##################
-  soca_cor_rh_fn_prefix="soca_cor_rh"
-  soca_cor_rv_fn_prefix="soca_cor_rv"
+  tmp_time_iso="0000-00-00T00:00:00Z"
+  soca_cor_rh_fn_prefix="ocn.cor_rh.incr"
+  soca_cor_rv_fn_prefix="ocn.cor_rv.incr"
   soca_cor_rh_fn="${soca_cor_rh_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
-
   if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
      [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
     cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
     cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
+  elif [ -e "${DATA_SHARE}/${soca_cor_rh_fn}" ] && \
+       [ -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
+    cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
+    cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
   else
     ### SOCA input yaml file
     jedi_nml_fn="setcorscales.yaml"
@@ -571,8 +575,14 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
       err_exit "JEDI SOCA setcorscales failed"
     fi
   fi
-  cp -p "${soca_cor_rh_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
-  cp -p "${soca_cor_rv_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
+  cp -p "${soca_cor_rh_fn_prefix}.${tmp_time_iso}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
+  cp -p "${soca_cor_rv_fn_prefix}.${tmp_time_iso}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
+  if [ ! -e "${DATA_SHARE}/${soca_cor_rh_fn}" ]; then
+    ln -nsf "${COMINOUT}/${soca_cor_rh_fn}" "${DATA_SHARE}/${soca_cor_rh_fn}"
+  fi
+  if [ ! -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
+    ln -nsf "${COMINOUT}/${soca_cor_rv_fn}" "${DATA_SHARE}/${soca_cor_rv_fn}"
+  fi
 
   #############
   cd ${DATA}

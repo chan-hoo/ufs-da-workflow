@@ -3,7 +3,7 @@ resolution:
   mom6_input_nml: ./input.nml
   fields metadata: ./fields_metadata.yaml
 
-date: "2021-03-23T06:00:00Z"
+date: "0000-00-00T00:00:00Z"
 
 corr variables:
 - sea_surface_height_above_geoid
