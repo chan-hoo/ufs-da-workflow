@@ -38,6 +38,12 @@ HHp=${PTIME:8:2}
 PDYcm1=${PTIME:0:8}
 COMINOUTcm1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}"
 
+machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
+if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
+  run_cmd="srun"
+else
+  run_cmd=`which mpiexec`
+fi
 #
 #####################################################################
 # PART I.
@@ -447,45 +453,47 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
    [ "${do_soca_prep}" = "YES" ]; then
   mkdir -p soca_prep
   cd soca_prep
-  #############
-  ## gridgen
-  #############
-  path_mom6_fix_dir="${FIXufsda}/DATA_fix/MOM6"
-  soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
-  jedi_nml_fn="gridgen.yaml"
-  if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
-    cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
-  else
-    mkdir -p INPUT
-    mkdir -p MOM6_OUTPUT
+  mkdir -p INPUT
+  mkdir -p MOM6_OUTPUT
 
-    ### SOCA input yaml file
-    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
+  ## Fileds metadata files
+  cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
 
-    ### Fileds metadata files
-    cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
-
-    ### Rossby file
-    ln -nsf "${path_mom6_fix_dir}/rossrad.nc" .
-
-    ### diag_table
-    ln -nsf "${DATA}/diag_table" .
-
-    ### MOM6 input namelist file
-    ln -nsf "${DATA}/MOM_input" INPUT/.
-
-    ### input.nml
-    settings="\
+  ## input.nml
+  settings="\
   'yyyy': !!str ${YYYY}
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh': !!str ${HH}
   'mom_input_filename': ${mom_input_filename}
 " # End of settings variable
-    fn_template="template.SOCA.input.nml"
-    fp_template="${PARMufsda}/jedi/soca/${fn_template}"
-    fn_namelist="input.nml"
-    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  fn_template="template.SOCA.input.nml"
+  fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+  fn_namelist="input.nml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+  ## MOM6 input namelist file
+  ln -nsf "${DATA}/MOM_input" INPUT/.
+
+  #############
+  ## gridgen 
+  #############
+  ## Make sure that this executable should run in parallel, otherwise it will cause unexpected error
+
+  path_mom6_fix_dir="${FIXufsda}/DATA_fix/MOM6"
+  soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
+    cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
+  else
+    ### SOCA input yaml file
+    jedi_nml_fn="gridgen.yaml"
+    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
+
+    ### Rossby file
+    ln -nsf "${path_mom6_fix_dir}/rossrad.nc" .
+
+    ### diag_table
+    ln -nsf "${DATA}/diag_table" .
 
     ### Fix files
     ocn_fns=( "atmos_mosaic_tile1Xland_mosaic_tile1.nc" \
@@ -522,9 +530,10 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
       err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
 
+    ### Run soca_gridgen.x
     export pgm="soca_gridgen.x"
     . prep_step
-    time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${run_cmd} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_gridgen
     if [[ $err != 0 ]]; then
@@ -542,14 +551,16 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   soca_cor_rh_fn="${soca_cor_rh_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
 
-  jedi_nml_fn="setcorscales.yaml"
   if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
      [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
     cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
     cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
   else
+    ### SOCA input yaml file
+    jedi_nml_fn="setcorscales.yaml"
+    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
 
-
+    ### Run soca_setcorscales.x
     export pgm="soca_setcorscales.x"
     . prep_step
     time ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile

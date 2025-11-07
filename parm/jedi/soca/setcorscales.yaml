@@ -1,56 +1,31 @@
 resolution:
-  geom_grid_file: soca_gridspec.nc
-  mom6_input_nml: input.nml
-  fields metadata: fields_metadata.yaml
+  geom_grid_file: ./soca_gridspec.nc
+  mom6_input_nml: ./input.nml
+  fields metadata: ./fields_metadata.yaml
 
-date: "0001-01-01T00:00:00Z"
+date: "2021-03-23T06:00:00Z"
 
 corr variables:
-- sea_water_salinity
-- sea_water_potential_temperature
-- eastward_sea_water_velocity
-- northward_sea_water_velocity
 - sea_surface_height_above_geoid
-- sea_ice_area_fraction
-- sea_ice_thickness
 
-#islands:
-#  scale: 1000.0  # in kilometers
-#  lat: [35.24, 35.639, 32.288]
-#  lon: [-75.55, -75.477, -64.74]
+islands:
+  # Barrier Islands between the Pamlico Sound and the Atlantic
+  scale: 100.0  # in kilometers
+  lat: [ 34.636, 35.065, 35.49,  35.87,  36.28]
+  lon: [-76.52, -76.03, -75.46, -75.56, -75.78]
 
 scales:
-  vert layers: 100 # in units of layer
-  sea_water_salinity:
-    rossby mult: 40.0
-    min grid mult: 5.0
-  sea_water_potential_temperature:
-    rossby mult: 30.0
-    min grid mult: 6.0
-  eastward_sea_water_velocity:
-    rossby mult: 30.0
-    min grid mult: 6.0
-  northward_sea_water_velocity:
-    rossby mult: 30.0
-    min grid mult: 6.0
+  vert layers: 5 # in units of layer
   sea_surface_height_above_geoid:
-    rossby mult: 20.0
-    min grid mult: 7.0
-  sea_ice_area_fraction:
-    rossby mult: 0.0
-    min grid mult: 8.0
-    min value: 1000000
-  sea_ice_thickness:
-    rossby mult: 0.0
-    min grid mult: 9.0
-    min value: 5000000
+    rossby mult: 1.0
+    min grid mult: 1.0
 
 rh output:
-  datadir: ./staticb
+  datadir: ./
   exp: cor_rh
   type: incr
 
 rv output:
-  datadir: ./staticb
+  datadir: ./
   exp: cor_rv
   type: incr
