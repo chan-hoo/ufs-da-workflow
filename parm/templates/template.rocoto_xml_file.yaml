@@ -116,6 +116,7 @@ workflow:
     PDY:  "<cyclestr>@Y@m@d</cyclestr>"
     cyc: "<cyclestr>@H</cyclestr>"
     DATADEP_COLDSTART: "<cyclestr>&exp_case_path;/task_skip_coldstart_@Y@m@d@H.txt</cyclestr>"
+    DATADEP_FIRSTCYC: "<cyclestr>&exp_case_path;/task_run_firstcyc_@Y@m@d@H.txt</cyclestr>"
     DATADEP_SFC1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>" 
     DATADEP_SFC2: "<cyclestr>&WARMSTART_DIR;/@Y@m@d.@H0000.sfc_data.tile6.nc</cyclestr>"
     DATADEP_MOM1: "<cyclestr>&DATAROOT;/DATA_SHARE/RESTART/@Y@m@d.@H0000.MOM.res.nc</cyclestr>"
@@ -147,7 +148,6 @@ workflow:
         DATE_CYCLE_FREQ_HR: "&DATE_CYCLE_FREQ_HR;"
         DATE_FIRST_CYCLE: "&DATE_FIRST_CYCLE;"
         DATE_LAST_CYCLE: "&DATE_LAST_CYCLE;"
-        date_second_cycle: "&date_second_cycle;"
         DATM_DATA_TYPE: "&DATM_DATA_TYPE;"
         datm_nx_global: "&datm_nx_global;"
         datm_ny_global: "&datm_ny_global;"
@@ -222,18 +222,14 @@ workflow:
 {%- if memory_flag %}
       memory: 128G
 {%- endif %}
-{%- if OBS_IMS_SNOW == "YES" %}
       dependency:
         or:
-          datadep_sfc1:
+          taskdep_forecast:
             attrs:
-              age: 5
-            value: "&DATADEP_SFC1;"
-          datadep_sfc2:
-            attrs:
-              age: 5
-            value: "&DATADEP_SFC2;"
-{%- endif %}
+              task: forecast
+              cycle_offset: '-{{ DATE_CYCLE_FREQ_HR }}:00:00'
+          datadep_first:
+            value: "&DATADEP_FIRSTCYC;"
 {%- endif %}
 {%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or (date_second_cycle is none and DO_FREE_FORECAST == "none" ) or DO_FREE_FORECAST == "ctest" %}
     task_analysis:

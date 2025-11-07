@@ -439,13 +439,10 @@ echo "========== PART III: SOCA pre-processing =========="
 #####################################################################
 #
 # note: only work with restart file (not ic file)
-do_soca_prep="NO"
-if [ "${COLDSTART}" = "NO" ]; then
-  [[ "${PDY}${cyc}" == "${DATE_FIRST_CYCLE:0:10}" ]] && do_soca_prep="YES"
+if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" == "${DATE_FIRST_CYCLE:0:10}" ]; then
+  do_soca_prep="NO"
 else
-  if [ "${date_second_cycle}" != "None" ]; then
-    [[ "${PDY}${cyc}" == "${date_second_cycle:0:10}" ]] && do_soca_prep="YES"
-  fi
+  do_soca_prep="YES"
 fi
 
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
@@ -478,12 +475,14 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   #############
   ## gridgen 
   #############
-  ## Make sure that this executable should run in parallel, otherwise it will cause unexpected error
+  ## Make sure this should run in parallel, otherwise it will cause unexpected errors.
 
   path_mom6_fix_dir="${FIXufsda}/DATA_fix/MOM6"
   soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
     cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
+  elif [ -e "${DATA_SHARE}/${soca_gridspec_fn}" ]; then
+    cp -p "${DATA_SHARE}/${soca_gridspec_fn}" "soca_gridspec.nc"
   else
     ### SOCA input yaml file
     jedi_nml_fn="gridgen.yaml"
@@ -541,7 +540,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     fi
   fi
   cp -p soca_gridspec.nc "${COMINOUT}/${soca_gridspec_fn}"
-  ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
+  if [ ! -e "${DATA_SHARE}/${soca_gridspec_fn}" ]; then
+    ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
+  fi
 
   ##################
   ## setcorscales
@@ -572,8 +573,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   fi
   cp -p "${soca_cor_rh_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
   cp -p "${soca_cor_rv_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
-  ln -nsf "${COMINOUT}/${soca_cor_rh_fn}" "${DATA_SHARE}/${soca_cor_rh_fn}"
-  ln -nsf "${COMINOUT}/${soca_cor_rv_fn}" "${DATA_SHARE}/${soca_cor_rv_fn}"
 
   #############
   cd ${DATA}
