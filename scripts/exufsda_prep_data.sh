@@ -569,15 +569,17 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     ### Run soca_setcorscales.x
     export pgm="soca_setcorscales.x"
     . prep_step
-    ${run_cmd} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_gridgen
     if [[ $err != 0 ]]; then
       err_exit "JEDI SOCA setcorscales failed"
     fi
+    cp -p "${soca_cor_rh_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rh_fn_prefix}.nc"
+    cp -p "${soca_cor_rv_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rv_fn_prefix}.nc"
   fi
-  cp -p "${soca_cor_rh_fn_prefix}.${tmp_time_iso}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
-  cp -p "${soca_cor_rv_fn_prefix}.${tmp_time_iso}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
+  cp -p "${soca_cor_rh_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
+  cp -p "${soca_cor_rv_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
   if [ ! -e "${DATA_SHARE}/${soca_cor_rh_fn}" ]; then
     ln -nsf "${COMINOUT}/${soca_cor_rh_fn}" "${DATA_SHARE}/${soca_cor_rh_fn}"
   fi

@@ -6,19 +6,34 @@ resolution:
 date: "0000-00-00T00:00:00Z"
 
 corr variables:
+- sea_water_salinity
+- sea_water_potential_temperature
+- eastward_sea_water_velocity
+- northward_sea_water_velocity
 - sea_surface_height_above_geoid
 
-islands:
-  # Barrier Islands between the Pamlico Sound and the Atlantic
-  scale: 100.0  # in kilometers
-  lat: [ 34.636, 35.065, 35.49,  35.87,  36.28]
-  lon: [-76.52, -76.03, -75.46, -75.56, -75.78]
-
 scales:
-  vert layers: 5 # in units of layer
+  vert layers: 55 # in units of layer
+  sea_water_salinity:
+    rossby mult: 2.0
+    min grid mult: 2.0
+    base value: 0.0
+  sea_water_potential_temperature:
+    rossby mult: 2.0
+    min grid mult: 2.0
+    base value: 0.0
+  eastward_sea_water_velocity:
+    rossby mult: 2.0
+    min grid mult: 2.0
+    base value: 0.0
+  northward_sea_water_velocity:
+    rossby mult: 2.0
+    min grid mult: 2.0
+    base value: 0.0
   sea_surface_height_above_geoid:
-    rossby mult: 1.0
-    min grid mult: 1.0
+    rossby mult: 2.0
+    min grid mult: 2.0
+    base value: 0.0
 
 rh output:
   datadir: ./
