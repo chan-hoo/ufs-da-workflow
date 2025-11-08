@@ -1,7 +1,7 @@
 geometry: &geom
-  geom_grid_file: soca_gridspec.nc
-  mom6_input_nml: input.nml
-  fields metadata: fields_metadata.yaml
+  geom_grid_file: ./soca_gridspec.nc
+  mom6_input_nml: ./input.nml
+  fields metadata: ./fields_metadata.yaml
 
 background:
   read_from_file: 1
@@ -27,20 +27,15 @@ background error:
           model file:
             date: *date
             basename: ./
-            ocn_filename: ocn.cor_rh.incr.{{ PDY }}.{{ cyc }}.nc
+            ocn_filename: ocn.cor_rh.incr.nc
           model variable: sea_surface_height_above_geoid
         write:
-          filepath: ./staticb/hz_ocean_large
-      - horizontal:
-          fixed value: 840336.134453782
-          mask: "interp_mask"
-          as gaussian: true
-        write:
-          filepath: ./staticb/hz_ocean_smaller
+          filepath: ./diffusion_cor1_hz
       - vertical:
-          fixed value: 5.0
-          levels: 25
-          mask: "interp_mask"
-          as gaussian: true
+          model file:
+            date: *date
+            basename: ./
+            ocn_filename: ocn.cor_rv.incr.nc
+          model variable: sea_water_potential_temperature
         write:
-          filepath: ./staticb/vt_ocean
+          filepath: data_output/diffusion_cor1_vt

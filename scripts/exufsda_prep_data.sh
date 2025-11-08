@@ -571,7 +571,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     . prep_step
     ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
-    cp errfile errfile_gridgen
+    cp errfile errfile_setcorscales
     if [[ $err != 0 ]]; then
       err_exit "JEDI SOCA setcorscales failed"
     fi
@@ -586,6 +586,31 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   if [ ! -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
     ln -nsf "${COMINOUT}/${soca_cor_rv_fn}" "${DATA_SHARE}/${soca_cor_rv_fn}"
   fi
+
+  ##########################
+  ## parameters_diffusion
+  ##########################
+
+  ### SOCA input yaml file
+  settings="\ 
+  'soca_background_basename': ${soca_background_basename}
+  'soca_background_date_iso': '${soca_background_date_iso}'
+" # End of settings variable
+  fn_template="template.parameters_diffusion.yaml"
+  fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+  jedi_nml_fn="parameters_diffusion.yaml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
+
+  ### Run soca_error_covariance_toolbox.x
+  export pgm="soca_error_covariance_toolbox.x"
+  . prep_step
+  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  export err=$?; err_chk
+  cp errfile errfile_parameters_diffusion
+  if [[ $err != 0 ]]; then
+    err_exit "JEDI SOCA parameters_diffusion failed"
+  fi
+
 
   #############
   cd ${DATA}
