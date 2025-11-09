@@ -38,4 +38,4 @@ background error:
             ocn_filename: ocn.cor_rv.incr.nc
           model variable: sea_water_potential_temperature
         write:
-          filepath: data_output/diffusion_cor1_vt
+          filepath: ./diffusion_cor1_vt

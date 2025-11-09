@@ -273,7 +273,7 @@ fn_namelist="ice_in"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
-echo "========== Input Namelist Files COMPLETED !!! ================="
+echo "=========== Input Namelist Files COMPLETE !!! ================="
 #
 #####################################################################
 # PART II.
@@ -429,7 +429,7 @@ else
     cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" "${COMINOUT}/${jcb_out_fn}"
   done
 fi
-echo "================ JCB COMPLETED !!! ==========================="
+echo "================== JCB COMPLETE !!! ==========================="
 
 #
 #####################################################################
@@ -593,8 +593,8 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
 
   ### SOCA input yaml file
   settings="\ 
-  'soca_background_basename': ${soca_background_basename}
-  'soca_background_date_iso': '${soca_background_date_iso}'
+  'soca_background_basename': ${DATA}/INPUT
+  'soca_background_date_iso': !!str "${YYYY}-${MM}-${DD}T${HH}:00:00Z"
 " # End of settings variable
   fn_template="template.parameters_diffusion.yaml"
   fp_template="${PARMufsda}/jedi/soca/${fn_template}"
@@ -610,12 +610,16 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   if [[ $err != 0 ]]; then
     err_exit "JEDI SOCA parameters_diffusion failed"
   fi
+  soca_diff_cor_hz_fn="diffusion_cor1_hz"
+  soca_diff_cor_vt_fn="diffusion_cor1_vt"
+  cp -p "${soca_diff_cor_hz_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz_fn}_${PDY}${cyc}.nc"
+  cp -p "${soca_diff_cor_vt_fn}.nc" "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc"
 
 
   #############
   cd ${DATA}
 fi
-echo "========== SOCA Pre-processing COMPLETED !!! =================="
+echo "========== SOCA Pre-processing COMPLETE !!! =================="
 
 #
 #####################################################################
@@ -892,8 +896,10 @@ EOF
     fi
   fi
 fi
+echo "============ Observation Files COMPLETE !!! ================"
 
 
+##########################################################################
 #
 #-----------------------------------------------------------------------
 # J-job script ending part
