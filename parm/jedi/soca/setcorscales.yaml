@@ -13,27 +13,27 @@ corr variables:
 - sea_surface_height_above_geoid
 
 scales:
-  vert layers: 55 # in units of layer
+  vert layers: 6 # in units of layer
   sea_water_salinity:
-    rossby mult: 2.0
-    min grid mult: 2.0
-    base value: 0.0
+    rossby mult: 1.0
+    min grid mult: 1.0
+    base value: 20000.0
   sea_water_potential_temperature:
-    rossby mult: 2.0
-    min grid mult: 2.0
-    base value: 0.0
+    rossby mult: 1.0
+    min grid mult: 1.0
+    base value: 20000.0
   eastward_sea_water_velocity:
-    rossby mult: 2.0
-    min grid mult: 2.0
-    base value: 0.0
+    rossby mult: 1.0
+    min grid mult: 1.0
+    base value: 15000.0
   northward_sea_water_velocity:
-    rossby mult: 2.0
-    min grid mult: 2.0
-    base value: 0.0
+    rossby mult: 1.0
+    min grid mult: 1.0
+    base value: 15000.0
   sea_surface_height_above_geoid:
-    rossby mult: 2.0
-    min grid mult: 2.0
-    base value: 0.0
+    rossby mult: 1.0
+    min grid mult: 1.0
+    base value: 15000.0
 
 rh output:
   datadir: ./
