@@ -138,7 +138,8 @@ def setup_wflow_env(machine):
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
     nprocs_datm = config_parm.get("NPROCS_DATM")
     nprocs_ice = config_parm.get("NPROCS_ICE")
-    nprocs_ocn = config_parm.get("NPROCS_OCN")   
+    nprocs_ocn = config_parm.get("NPROCS_OCN")
+    nprocs_prep_data = config_parm.get("NPROCS_PREP_DATA")
     nprocs_wav = config_parm.get("NPROCS_WAV")
 
     if app == "S2SWA":
@@ -152,10 +153,21 @@ def setup_wflow_env(machine):
 
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
-        nprocs_per_node = nprocs_forecast
+        nprocs_per_node_forecast = nprocs_forecast
     else:
         nnodes_forecast = math.ceil(nprocs_forecast/max_cores_per_node)
-        nprocs_per_node = math.ceil(nprocs_forecast/nnodes_forecast)
+        nprocs_per_node_forecast = math.ceil(nprocs_forecast/nnodes_forecast)
+
+    if nprocs_prep_data < 12:
+        logging.warning(f''' NPROCS_PREP_DATA < 12 => changed to 12 because setcorscales uses 12 !!!''')
+        nprocs_prep_data = 12
+
+    if nprocs_prep_data <= max_cores_per_node:
+        nnodes_prep_data = 1
+        nprocs_per_node_prep_data = nprocs_prep_data
+    else:
+        nnodes_prep_data = math.ceil(nprocs_prep_data/max_cores_per_node)
+        nprocs_per_node_prep_data = math.ceil(nprocs_prep_data/nnodes_forecast)
 
     # Machine-specific parameters
     if machine == "gaeac6":
@@ -345,10 +357,13 @@ def setup_wflow_env(machine):
         'MOM6_DT_THERM': mom6_dt_therm,
         'native_default': native_default,
         'nnodes_forecast': nnodes_forecast,
+        'nnodes_prep_data': nnodes_prep_data,
         'nprocs_forecast': nprocs_forecast,
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
-        'nprocs_per_node': nprocs_per_node,
+        'nprocs_per_node_forecast': nprocs_per_node_forecast,
+        'nprocs_per_node_prep_data': nprocs_per_node_prep_data,
+        'NPROCS_PREP_DATA': nprocs_prep_data,
         'ocn_model': ocn_model,
         'OUTPUT_FH_CICE': output_fh_cice,
         'OUTPUT_FH_MOM6': output_fh_mom6,
@@ -503,7 +518,7 @@ def set_default_parm():
         "NPROCS_FCST_IC": 36,
         "NPROCS_ICE": 10,
         "NPROCS_OCN": 20,
-        "NPROCS_PREP_DATA": 24,
+        "NPROCS_PREP_DATA": 96,
         "NPROCS_WAV": 60,
         "NPZ": 127,
         "OBS_GHCN_SNOW": "NO",
