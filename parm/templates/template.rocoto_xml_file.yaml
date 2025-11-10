@@ -76,6 +76,7 @@ workflow:
     NPROCS_FCST_IC: "{{ NPROCS_FCST_IC }}"
     NPROCS_ICE: "{{ NPROCS_ICE }}"
     NPROCS_OCN: "{{ NPROCS_OCN }}"
+    NPROCS_PREP_DATA: "{{ NPROCS_PREP_DATA }}"
     NPROCS_WAV: "{{ NPROCS_WAV }}"
     NPZ: "{{ NPZ }}"
     nnodes_forecast: "{{ nnodes_forecast }}"
@@ -179,7 +180,7 @@ workflow:
         MOM6_NJGLOBAL: "&MOM6_NJGLOBAL;"
         MOM6_NK: "&MOM6_NK;"
         NET: "&NET;"
-        NPROCS_ANALYSIS: "&NPROCS_ANALYSIS;"
+        NPROCS_PREP_DATA: "&NPROCS_PREP_DATA;"
         NPROCS_ICE: "&NPROCS_ICE;"
         NPROCS_OCN: "&NPROCS_OCN;"
         NPROCS_WAV: "&NPROCS_WAV;"
@@ -212,7 +213,7 @@ workflow:
       account: "&ACCOUNT;"
       command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "prep_data" "&HOMEufsda;" "&MACHINE;"'
       jobname: prep_data
-      nodes: "1:ppn=&NPROCS_ANALYSIS;"
+      nodes: "1:ppn=&NPROCS_PREP_DATA;"
       walltime: 00:30:00
 {%- if native_default is not none %}
       native: "&native_default;"

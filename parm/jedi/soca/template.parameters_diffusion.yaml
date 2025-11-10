@@ -5,7 +5,7 @@ geometry: &geom
 
 background:
   read_from_file: 1
-  basename: {{ soca_background_basename }}
+  basename: {{ soca_background_basename }}/
   date: &date {{ soca_background_date_iso }}
   ocn_filename: MOM.res.nc
   state variables:
@@ -30,12 +30,17 @@ background error:
             ocn_filename: ocn.cor_rh.incr.nc
           model variable: sea_surface_height_above_geoid
         write:
-          filepath: ./diffusion_cor1_hz
-      - vertical:
-          model file:
-            date: *date
-            basename: ./
-            ocn_filename: ocn.cor_rv.incr.nc
-          model variable: sea_water_potential_temperature
+          filepath: ./{{ soca_diff_cor_hz1_fn }}
+      - horizontal:
+          fixed value: 600000.0
+          mask: "interp_mask"
+          as gaussian: true
         write:
-          filepath: ./diffusion_cor1_vt
+          filepath: ./{{ soca_diff_cor_hz2_fn }}
+      - vertical:
+          fixed value: 6.0
+          levels: 75
+          mask: "interp_mask"
+          as gaussian: true
+        write:
+          filepath: ./{{ soca_diff_cor_vt_fn }}

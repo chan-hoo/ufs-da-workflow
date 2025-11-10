@@ -473,6 +473,19 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ## MOM6 input namelist file
   ln -nsf "${DATA}/MOM_input" INPUT/.
 
+  ## Restart file
+  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_dir="${WARMSTART_DIR}"
+  else
+    data_dir="${COMINOUTcm1}/RESTART"
+  fi
+  r_fp="${data_dir}/${PDY}.${cyc}0000.MOM.res.nc"
+  if [ -e "${r_fp}" ]; then
+    ln -nsf "${r_fp}" INPUT/MOM.res.nc
+  else
+    err_exit "Symlink failed: ${r_fp} file does not exist."
+  fi
+
   #############
   ## gridgen 
   #############
@@ -522,14 +535,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
       fi
     done
   
-    ### Restart file
-    r_fp="${WARMSTART_DIR}/${PDY}.${cyc}0000.MOM.res.nc"
-    if [ -e "${r_fp}" ]; then
-      ln -nsf "${r_fp}" INPUT/MOM.res.nc
-    else
-      err_exit "Symlink failed: ${r_fp} file does not exist."
-    fi
-
     ### Run soca_gridgen.x
     export pgm="soca_gridgen.x"
     . prep_step
@@ -569,7 +574,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     ### Run soca_setcorscales.x
     export pgm="soca_setcorscales.x"
     . prep_step
-    ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${run_cmd} -n ${NPROCS_PREP_DATA} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_setcorscales
     if [[ $err != 0 ]]; then
@@ -592,9 +597,17 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ##########################
 
   ### SOCA input yaml file
-  settings="\ 
-  'soca_background_basename': ${DATA}/INPUT
-  'soca_background_date_iso': !!str "${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+  soca_background_basename="${DATA}/soca_prep/INPUT"
+  soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+  soca_diff_cor_hz1_fn="diffusion_cor1_hz_rossby"
+  soca_diff_cor_hz2_fn="diffusion_cor1_hz_600km"
+  soca_diff_cor_vt_fn="diffusion_cor1_vt_6lvls"
+  settings="\
+  'soca_background_basename': ${soca_background_basename}
+  'soca_background_date_iso': !!str ${soca_background_date_iso}
+  'soca_diff_cor_hz1_fn': ${soca_diff_cor_hz1_fn}
+  'soca_diff_cor_hz2_fn': ${soca_diff_cor_hz2_fn}
+  'soca_diff_cor_vt_fn': ${soca_diff_cor_vt_fn}
 " # End of settings variable
   fn_template="template.parameters_diffusion.yaml"
   fp_template="${PARMufsda}/jedi/soca/${fn_template}"
@@ -604,15 +617,14 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ### Run soca_error_covariance_toolbox.x
   export pgm="soca_error_covariance_toolbox.x"
   . prep_step
-  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  ${run_cmd} -n ${NPROCS_PREP_DATA} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
   export err=$?; err_chk
   cp errfile errfile_parameters_diffusion
   if [[ $err != 0 ]]; then
     err_exit "JEDI SOCA parameters_diffusion failed"
   fi
-  soca_diff_cor_hz_fn="diffusion_cor1_hz"
-  soca_diff_cor_vt_fn="diffusion_cor1_vt"
-  cp -p "${soca_diff_cor_hz_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz_fn}_${PDY}${cyc}.nc"
+  cp -p "${soca_diff_cor_hz1_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz1_fn}_${PDY}${cyc}.nc"
+  cp -p "${soca_diff_cor_hz2_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz2_fn}_${PDY}${cyc}.nc"
   cp -p "${soca_diff_cor_vt_fn}.nc" "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc"
 
 
