@@ -167,7 +167,7 @@ def setup_wflow_env(machine):
         nprocs_per_node_prep_data = nprocs_prep_data
     else:
         nnodes_prep_data = math.ceil(nprocs_prep_data/max_cores_per_node)
-        nprocs_per_node_prep_data = math.ceil(nprocs_prep_data/nnodes_forecast)
+        nprocs_per_node_prep_data = math.ceil(nprocs_prep_data/nnodes_prep_data)
 
     # Machine-specific parameters
     if machine == "gaeac6":
