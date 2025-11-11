@@ -304,7 +304,7 @@ workflow:
 {%- if native_default is not none %}
       native: "&native_default;"
 {%- endif %}
-      walltime: 00:15:00
+      walltime: 00:30:00
       partition: "&partition_default;"
       queue: "&queue_default;"
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"

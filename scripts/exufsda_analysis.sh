@@ -58,7 +58,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   mkdir -p INPUT
   mkdir -p MOM6_OUTPUT
   mkdir -p obs
-  mkdir -p output
+  mkdir -p diag
 
   # Restart file
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -141,6 +141,25 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   if [[ $err != 0 ]]; then
     err_exit "JEDI DA failed"
   fi
+
+  # Copy observation files to COMINOUTobs
+  obs_fns=( "adt_ssh" "prof_insitu" "sss_salinity" "sst_satellite" )
+  for ifn in "${obs_fns[@]}" ; do
+    ifp="${DATA}/obs/${ifn}.nc"
+    if [ -e "${ifp}" ]; then
+      cp -p ${ifp} "${COMINOUTobs}/obs.${PDY}.${cycle}.${ifn}.nc"
+    fi
+  done
+
+  # Copy H(x) output to COMINOUThofx
+  cp -p diag/* ${COMINOUThofx}
+
+  # Copy output to COMINOUT
+  fn_ocn_data="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  cp -p ${fn_ocn_data} ${COMINOUT}
+
+  # Symlink output file for plotting
+  ln -nsf "${fn_ocn_data}" "MOM.res.nc_after_inc"
 
 fi
 
@@ -500,12 +519,14 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
 
   fi
 
-  # Copy observation files to COMINOUT
-  cp -p data_static/obs/sst.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sst.nc"
-  cp -p data_static/obs/sss.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sss.nc"
-  cp -p data_static/obs/adt.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.adt.nc"
-  cp -p data_static/obs/prof.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.prof.nc"
-  cp -p data_static/obs/icec.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.icec.nc"
+  # Copy observation files to COMINOUTobs
+  obs_fns=( "sst" "sss" "adt" "prof" "icec" )
+  for ifn in "${obs_fns[@]}" ; do
+    ifp="${DATA}/data_static/obs/${ifn}.nc"
+    if [ -e "${ifp}" ]; then
+      cp -p ${ifp} "${COMINOUTobs}/obs.${PDY}.${cycle}.${ifn}.nc"
+    fi
+  done
 
   # Copy output to COMINOUT
   cp -rp data_generated/* ${COMINOUT}

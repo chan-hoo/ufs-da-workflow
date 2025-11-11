@@ -136,6 +136,7 @@ def setup_wflow_env(machine):
     atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
     atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
     max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
+    nprocs_analysis = config_parm.get("NPROCS_ANALYSIS")
     nprocs_datm = config_parm.get("NPROCS_DATM")
     nprocs_ice = config_parm.get("NPROCS_ICE")
     nprocs_ocn = config_parm.get("NPROCS_OCN")
@@ -151,6 +152,15 @@ def setup_wflow_env(machine):
         nprocs_forecast_med = nprocs_forecast_atm
         nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice
 
+    # for analysis task
+    if nprocs_analysis <= max_cores_per_node:
+        nnodes_analysis = 1
+        nprocs_per_node_analysis = nprocs_analysis
+    else:
+        nnodes_analysis = math.ceil(nprocs_analysis/max_cores_per_node)
+        nprocs_per_node_analysis = math.ceil(nprocs_analysis/nnodes_analysis)
+
+    # for forecast task
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
         nprocs_per_node_forecast = nprocs_forecast
@@ -158,6 +168,7 @@ def setup_wflow_env(machine):
         nnodes_forecast = math.ceil(nprocs_forecast/max_cores_per_node)
         nprocs_per_node_forecast = math.ceil(nprocs_forecast/nnodes_forecast)
 
+    # for prep_data task
     if nprocs_prep_data < 12:
         logging.warning(f''' NPROCS_PREP_DATA < 12 => changed to 12 because setcorscales uses 12 !!!''')
         nprocs_prep_data = 12
@@ -356,11 +367,13 @@ def setup_wflow_env(machine):
         'memory_flag': memory_flag,
         'MOM6_DT_THERM': mom6_dt_therm,
         'native_default': native_default,
+        'nnodes_analysis': nnodes_analysis,
         'nnodes_forecast': nnodes_forecast,
         'nnodes_prep_data': nnodes_prep_data,
         'nprocs_forecast': nprocs_forecast,
         'nprocs_forecast_atm': nprocs_forecast_atm,
         'nprocs_forecast_med': nprocs_forecast_med,
+        'nprocs_per_node_analysis': nprocs_per_node_analysis,
         'nprocs_per_node_forecast': nprocs_per_node_forecast,
         'nprocs_per_node_prep_data': nprocs_per_node_prep_data,
         'NPROCS_PREP_DATA': nprocs_prep_data,
