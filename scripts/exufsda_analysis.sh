@@ -157,6 +157,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Copy output to COMINOUT
   fn_ocn_data="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
   cp -p ${fn_ocn_data} ${COMINOUT}
+  cp -p ${fn_ocn_data} "${COMINOUT}/${PDY}.${cyc}0000.MOM.res.nc"
 
   # Symlink output file for plotting
   ln -nsf "${fn_ocn_data}" "MOM.res.nc_after_inc"

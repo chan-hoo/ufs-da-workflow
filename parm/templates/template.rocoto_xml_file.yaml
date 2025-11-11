@@ -79,11 +79,13 @@ workflow:
     NPROCS_PREP_DATA: "{{ NPROCS_PREP_DATA }}"
     NPROCS_WAV: "{{ NPROCS_WAV }}"
     NPZ: "{{ NPZ }}"
+    nnodes_analysis: "{{ nnodes_analysis }}"
     nnodes_forecast: "{{ nnodes_forecast }}"
     nnodes_prep_data: "{{ nnodes_prep_data }}"
     nprocs_forecast: "{{ nprocs_forecast }}"
     nprocs_forecast_atm: "{{ nprocs_forecast_atm }}"
     nprocs_forecast_med: "{{ nprocs_forecast_med }}"
+    nprocs_per_node_analysis: "{{ nprocs_per_node_analysis }}"
     nprocs_per_node_forecast: "{{ nprocs_per_node_forecast }}"
     nprocs_per_node_prep_data: "{{ nprocs_per_node_prep_data }}"
     OBS_GHCN_SNOW: "{{ OBS_GHCN_SNOW }}"
@@ -300,7 +302,7 @@ workflow:
       account: "&ACCOUNT;"
       command: '&HOMEufsda;/parm/rocoto_load_modules_run_task.sh "analysis" "&HOMEufsda;" "&MACHINE;"'
       jobname: analysis
-      nodes: "1:ppn=&NPROCS_ANALYSIS;"
+      nodes: "&nnodes_analysis;:ppn=&nprocs_per_node_analysis;"
 {%- if native_default is not none %}
       native: "&native_default;"
 {%- endif %}
