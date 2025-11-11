@@ -257,6 +257,7 @@ workflow:
         maxtries: 2
       envars:
         ACCOUNT: "&ACCOUNT;"
+        COLDSTART: "&COLDSTART;"
         COMINgfs: "&COMINgfs;"
         COMROOT: "&COMROOT;"
         CUSTOM_JEDI_CONFIG_FLAG: "&CUSTOM_JEDI_CONFIG_FLAG;"
@@ -280,6 +281,9 @@ workflow:
         LOGDIR: "&LOGDIR;"
         MACHINE: "&MACHINE;"
         model_ver: "&model_ver;"
+        MOM6_NIGLOBAL: "&MOM6_NIGLOBAL;"
+        MOM6_NJGLOBAL: "&MOM6_NJGLOBAL;"
+        MOM6_NK: "&MOM6_NK;"
         NPROCS_ANALYSIS: "&NPROCS_ANALYSIS;"
         NPZ: "&NPZ;"
         OBS_GHCN_SNOW: "&OBS_GHCN_SNOW;"

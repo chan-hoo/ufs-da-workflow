@@ -518,7 +518,7 @@ def set_default_parm():
         "NPROCS_FCST_IC": 36,
         "NPROCS_ICE": 10,
         "NPROCS_OCN": 20,
-        "NPROCS_PREP_DATA": 96,
+        "NPROCS_PREP_DATA": 1,
         "NPROCS_WAV": 60,
         "NPZ": 127,
         "OBS_GHCN_SNOW": "NO",

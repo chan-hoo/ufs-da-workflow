@@ -55,8 +55,10 @@ fi
 ###########################################################################
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
 
-  mkdir -p output
+  mkdir -p INPUT
+  mkdir -p MOM6_OUTPUT
   mkdir -p obs
+  mkdir -p output
 
   # Restart file
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -82,12 +84,15 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   'mm': !!str ${MM}
   'dd': !!str ${DD}
   'hh': !!str ${HH}
-  'mom_input_filename': ${mom_input_filename}
+  'mom_input_filename': "r"
 " # End of settings variable
   fn_template="template.SOCA.input.nml"
   fp_template="${PARMufsda}/jedi/soca/${fn_template}"
   fn_namelist="input.nml"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+  # MOM_input
+  cp -p "${COMINOUT}/MOM_input_${PDY}${cyc}" INPUT/MOM_input
 
   # Fileds metadata files
   cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
@@ -107,18 +112,17 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   cp -p "${PARMufsda}/jedi/soca/obsop_name_map.yaml" .
 
   # Observation files
+  ln -nsf "${FIXufsda}/DATA_obs/soca/adt_ssh_${PDY}${cyc}.nc" obs/adt_ssh.nc
+  ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/prof_insitu.nc
+  ln -nsf "${FIXufsda}/DATA_obs/soca/sss_salinity_${PDY}${cyc}.nc" obs/sss_salinity.nc
+  ln -nsf "${FIXufsda}/DATA_obs/soca/sst_satellite_${PDY}${cyc}.nc" obs/sst_satellite.nc
 
-
-
+  # Set JEDI executable
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-    # Set JEDI executable
     jedi_exe_fn="soca_var.x"
+  else
+    jedi_exe_fn="soca_${JEDI_ALGORITHM}.x"
   fi
-
-  # JEDI field metadata file
-  fn_fmeta_template="fv3jedi_fieldmetadata_soca.yaml"
-  fn_fmeta="fv3jedi_fieldmetadata.yaml"
-  cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
 
   # Copy JEDI input yaml file
   jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
