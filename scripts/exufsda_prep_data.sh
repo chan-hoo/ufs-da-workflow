@@ -35,8 +35,6 @@ YYYYp=${PTIME:0:4}
 MMp=${PTIME:4:2}
 DDp=${PTIME:6:2}
 HHp=${PTIME:8:2}
-PDYcm1=${PTIME:0:8}
-COMINOUTcm1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}"
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
@@ -274,6 +272,8 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 
 echo "=========== Input Namelist Files COMPLETE !!! ================="
+
+
 #
 #####################################################################
 # PART II.
@@ -431,6 +431,7 @@ else
 fi
 echo "================== JCB COMPLETE !!! ==========================="
 
+
 #
 #####################################################################
 # PART III.
@@ -477,7 +478,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINOUTcm1}/RESTART"
+    data_dir="${DATA_RESTART}"
   fi
   r_fp="${data_dir}/${PDY}.${cyc}0000.MOM.res.nc"
   if [ -e "${r_fp}" ]; then
@@ -632,6 +633,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   cd ${DATA}
 fi
 echo "========== SOCA Pre-processing COMPLETE !!! =================="
+
 
 #
 #####################################################################

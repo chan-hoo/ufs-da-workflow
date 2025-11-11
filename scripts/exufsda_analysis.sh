@@ -49,182 +49,101 @@ else
   snowdepth_vn="snwdph"
 fi
 
-###################################
-# C-test of JEDI model component
-###################################
-if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
-  #########
-  # SOCA
-  #########
-  if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
-    ## Path to data set
-    path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
-    mkdir -p data_output
-    mkdir -p testoutput
-    mkdir -p data_generated
 
-    ## Symlink data/input directories
-    ln -nsf "${path_soca_data}/Data" "data_static"
-    ln -nsf "${path_soca_data}/testinput" .
-    ln -nsf "${path_soca_data}/testref" .
-
-    ## Symlink data files for gridgen
-    ln -nsf "data_static/workdir/diag_table" .
-    ln -nsf "data_static/workdir/field_table" .
-
-    ##################################################################
-    ## Run "JEDI_ALGORITHM" and its pre-requisite tasks in sequence
-    ##################################################################
-    ## Set list of tasks and executable name for jedi algorithm
-    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
-      jedi_exe_soca_fn="soca_var.x"
-    elif [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
-      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" \
-	               "forecast_mom6" "${JEDI_ALGORITHM}")
-      jedi_exe_soca_fn="soca_var.x"
-    else
-      list_soca_tasks=("${JEDI_ALGORITHM}")
-      jedi_exe_soca_fn="soca_${JEDI_ALGORITHM}.x"
-    fi
-    for isoca in "${list_soca_tasks[@]}"; do
-      ### JEDI input yaml file
-      jedi_nml_fn="${isoca}.yml"
-      cp -p "${path_soca_data}/testinput/${jedi_nml_fn}" .
- 
-      ### Run JEDI executable
-      if [ "${isoca}" = "forecast_mom6" ]; then
-        export BIN_DIR="${JEDI_BIN_PATH}"
-        export MPIEXE="${run_cmd}"
-        # To avoid file replacement
-        [[ -e "input.nml" ]] && rm input.nml
-        py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
-        ${py_exe_path}/mom6solo.py ${jedi_nml_fn}
-        if [ $? -ne 0 ]; then
-          err_exit "SOCA c-test FORECAST_MOM6 failed"
-        fi
-        [[ -e "input.nml" ]] && rm input.nml
-      else
-        if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
-          jedi_exe_fn="${jedi_exe_soca_fn}"
-        elif [ "${isoca}" = "parameters_diffusion" ]; then
-          jedi_exe_fn="soca_error_covariance_toolbox.x"
-        else
-          jedi_exe_fn="soca_${isoca}.x"
-        fi
-        export pgm="${jedi_exe_fn}"
-        . prep_step
-        ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-        export err=$?; err_chk
-        cp errfile errfile_ctest_${isoca}
-        if [[ $err != 0 ]]; then
-          err_exit "JEDI SOCA C-test for ${isoca} failed"
-        fi
-      fi
-
-      ### Copy output files
-      mkdir -p "data_generated/${isoca}"
-      cp -p data_output/* "data_generated/${isoca}"
-      
-      echo "========== SOCA task ${isoca} completed !!! =========="
-    done
-
-  fi
-
-  # Copy observation files to COMINOUT
-  cp -p data_static/obs/sst.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sst.nc"
-  cp -p data_static/obs/sss.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sss.nc"
-  cp -p data_static/obs/adt.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.adt.nc"
-  cp -p data_static/obs/prof.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.prof.nc"
-  cp -p data_static/obs/icec.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.icec.nc"
-
-  # Copy output to COMINOUT
-  cp -rp data_generated/* ${COMINOUT}
-  cp -p data_output/* ${COMINOUT}
-
-  # Copy H(x) output to COMINOUT
-  cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
-  cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
-  cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
-  cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
-  cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
-
-  # Set and symlink output/increment file names for plotting
-  bkg_file_dir="data_static/72x35x25/restarts"
-  anl_file_dir="data_output"
-
-  fn_ocn_data="MOM.res.nc"
-  fn_ocn_incr="MOM.incr.res.nc"
-  if [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
-    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
-    fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  else
-    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fi
-  ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
-  ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
-  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
-
-  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-    cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
-    cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
-
-    fn_sfc_data="sfc.res.nc"
-    fn_sfc_incr="sfc.incr.res.nc"
-    fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ice_data="cice.res.nc"
-    fn_ice_incr="cice.incr.res.nc"
-    fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
-    ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
-    ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
-    ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
-    ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
-    ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
-  fi
-fi
-
-##################
+###########################################################################
 # SOCA analysis
-##################
+###########################################################################
 if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
 
-    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-      # Set JEDI executable
-      jedi_exe_fn="soca_var.x"
-    fi
+  mkdir -p output
+  mkdir -p obs
 
-    # JEDI field metadata file
-    fn_fmeta_template="fv3jedi_fieldmetadata_soca.yaml"
-    fn_fmeta="fv3jedi_fieldmetadata.yaml"
-    cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
+  # Restart file
+  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_dir="${WARMSTART_DIR}"
+  else
+    data_dir="${DATA_RESTART}"
+  fi
+  r_fp="${data_dir}/${PDY}.${cyc}0000.MOM.res.nc"
+  if [ -e "${r_fp}" ]; then
+    cp -p "${r_fp}" MOM.res.nc
+    cp -p MOM.res.nc MOM.res.nc_before_inc
+  else
+    err_exit "Copy failed: ${r_fp} file does not exist."
+  fi
 
-    # Copy JEDI input yaml file
-    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
-    if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
-      cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
-    else
-      cp -p "${COMINOUT}/${jedi_nml_fn}" .
-    fi
+  # SOCA gridspec file
+  soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  ln -nsf "${COMINOUT}/${soca_gridspec_fn}" soca_gridspec.nc
 
-    # Run JEDI executable
-    export pgm="${jedi_exe_fn}"
-    . prep_step
-    ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-    export err=$?; err_chk
-    cp errfile errfile_fv3jedi_x
-    if [[ $err != 0 ]]; then
-      err_exit "JEDI DA failed"
-    fi
+  # MOM6-solo input.nml
+  settings="\
+  'yyyy': !!str ${YYYY}
+  'mm': !!str ${MM}
+  'dd': !!str ${DD}
+  'hh': !!str ${HH}
+  'mom_input_filename': ${mom_input_filename}
+" # End of settings variable
+  fn_template="template.SOCA.input.nml"
+  fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+  fn_namelist="input.nml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+
+  # Fileds metadata files
+  cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
+
+  # Diffusion parameter files
+  soca_diff_cor_hz1_fn="diffusion_cor1_hz_rossby"
+  soca_diff_cor_hz2_fn="diffusion_cor1_hz_600km"
+  soca_diff_cor_vt_fn="diffusion_cor1_vt_6lvls"
+  ln -nsf "${COMINOUT}/${soca_diff_cor_hz1_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_hz1_fn}.nc
+  ln -nsf "${COMINOUT}/${soca_diff_cor_hz2_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_hz2_fn}.nc
+  ln -nsf "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_vt_fn}.nc
+
+  # godas sst file
+  cp -p "${FIXufsda}/DATA_fix/MOM6/godas_sst_bgerr.nc" .
+
+  # Observation alias file
+  cp -p "${PARMufsda}/jedi/soca/obsop_name_map.yaml" .
+
+  # Observation files
+
+
+
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+    # Set JEDI executable
+    jedi_exe_fn="soca_var.x"
+  fi
+
+  # JEDI field metadata file
+  fn_fmeta_template="fv3jedi_fieldmetadata_soca.yaml"
+  fn_fmeta="fv3jedi_fieldmetadata.yaml"
+  cp -p "${PARMufsda}/jedi/fieldmetadata/${fn_fmeta_template}" ${fn_fmeta}
+
+  # Copy JEDI input yaml file
+  jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
+  if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
+    cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
+  else
+    cp -p "${COMINOUT}/${jedi_nml_fn}" .
+  fi
+
+  # Run JEDI executable
+  export pgm="${jedi_exe_fn}"
+  . prep_step
+  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  export err=$?; err_chk
+  cp errfile errfile_fv3jedi_x
+  if [[ $err != 0 ]]; then
+    err_exit "JEDI DA failed"
+  fi
 
 fi
 
-##################################
+
+###########################################################################
 # Snow / Soil-moisture analysis
-##################################
+###########################################################################
 if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Copy sfc_data files from RESTART/WARMSTART into work directory
   for itile in {1..6}
@@ -494,9 +413,149 @@ EOF
   fn_sfc_incr="${inc_fn_prefix}.tile"
 fi
 
-###############################################################
+
+###########################################################################
+# C-test of JEDI model component
+###########################################################################
+if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+  #########
+  # SOCA
+  #########
+  if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+    ## Path to data set
+    path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+    mkdir -p data_output
+    mkdir -p testoutput
+    mkdir -p data_generated
+
+    ## Symlink data/input directories
+    ln -nsf "${path_soca_data}/Data" "data_static"
+    ln -nsf "${path_soca_data}/testinput" .
+    ln -nsf "${path_soca_data}/testref" .
+
+    ## Symlink data files for gridgen
+    ln -nsf "data_static/workdir/diag_table" .
+    ln -nsf "data_static/workdir/field_table" .
+
+    ##################################################################
+    ## Run "JEDI_ALGORITHM" and its pre-requisite tasks in sequence
+    ##################################################################
+    ## Set list of tasks and executable name for jedi algorithm
+    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_var.x"
+    elif [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" \
+	               "forecast_mom6" "${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_var.x"
+    else
+      list_soca_tasks=("${JEDI_ALGORITHM}")
+      jedi_exe_soca_fn="soca_${JEDI_ALGORITHM}.x"
+    fi
+    for isoca in "${list_soca_tasks[@]}"; do
+      ### JEDI input yaml file
+      jedi_nml_fn="${isoca}.yml"
+      cp -p "${path_soca_data}/testinput/${jedi_nml_fn}" .
+ 
+      ### Run JEDI executable
+      if [ "${isoca}" = "forecast_mom6" ]; then
+        export BIN_DIR="${JEDI_BIN_PATH}"
+        export MPIEXE="${run_cmd}"
+        # To avoid file replacement
+        [[ -e "input.nml" ]] && rm input.nml
+        py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+        ${py_exe_path}/mom6solo.py ${jedi_nml_fn}
+        if [ $? -ne 0 ]; then
+          err_exit "SOCA c-test FORECAST_MOM6 failed"
+        fi
+        [[ -e "input.nml" ]] && rm input.nml
+      else
+        if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
+          jedi_exe_fn="${jedi_exe_soca_fn}"
+        elif [ "${isoca}" = "parameters_diffusion" ]; then
+          jedi_exe_fn="soca_error_covariance_toolbox.x"
+        else
+          jedi_exe_fn="soca_${isoca}.x"
+        fi
+        export pgm="${jedi_exe_fn}"
+        . prep_step
+        ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+        export err=$?; err_chk
+        cp errfile errfile_ctest_${isoca}
+        if [[ $err != 0 ]]; then
+          err_exit "JEDI SOCA C-test for ${isoca} failed"
+        fi
+      fi
+
+      ### Copy output files
+      mkdir -p "data_generated/${isoca}"
+      cp -p data_output/* "data_generated/${isoca}"
+      
+      echo "========== SOCA task ${isoca} completed !!! =========="
+    done
+
+  fi
+
+  # Copy observation files to COMINOUT
+  cp -p data_static/obs/sst.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sst.nc"
+  cp -p data_static/obs/sss.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.sss.nc"
+  cp -p data_static/obs/adt.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.adt.nc"
+  cp -p data_static/obs/prof.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.prof.nc"
+  cp -p data_static/obs/icec.nc "${COMINOUTobs}/obs.${PDY}.${cycle}.icec.nc"
+
+  # Copy output to COMINOUT
+  cp -rp data_generated/* ${COMINOUT}
+  cp -p data_output/* ${COMINOUT}
+
+  # Copy H(x) output to COMINOUT
+  cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
+  cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
+  cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
+  cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
+  cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
+
+  # Set and symlink output/increment file names for plotting
+  bkg_file_dir="data_static/72x35x25/restarts"
+  anl_file_dir="data_output"
+
+  fn_ocn_data="MOM.res.nc"
+  fn_ocn_incr="MOM.incr.res.nc"
+  if [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
+    fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  else
+    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fi
+  ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
+  ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
+  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
+
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+    cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
+    cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
+
+    fn_sfc_data="sfc.res.nc"
+    fn_sfc_incr="sfc.incr.res.nc"
+    fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_data="cice.res.nc"
+    fn_ice_incr="cice.incr.res.nc"
+    fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
+    ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
+    ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
+    ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
+    ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
+    ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
+  fi
+fi
+
+
+###########################################################################
 # Comparison plot of background and output by JEDI increment
-###############################################################
+###########################################################################
 DO_PLOT_COMP_JEDI_INCR="${DO_PLOT_COMP_JEDI_INCR:-YES}"
 if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
   out_fn_base_prefix="ufsda_comp_"
