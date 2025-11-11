@@ -62,6 +62,7 @@ def main():
     zlvl = yaml_data['zlevel_number']
 
     zlvlm1 = int(zlvl)-1
+    grid_soca_fn = "soca_gridspec.nc"
     grid_soca_ctest_fn = "soca_gridspec.72x35x25.nc"
 
     # Set logging config
@@ -85,8 +86,11 @@ def main():
         list_jedi_type.append("snow")
     if JEDI_TYPE_SOIL_MOISTURE == "YES":
         list_jedi_type.append("soil_moisture")
-    if JEDI_TYPE_SOCA == "YES" and DO_FREE_FORECAST == "ctest":
-        list_jedi_type.append("soca_ctest")
+    if JEDI_TYPE_SOCA == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            list_jedi_type.append("soca_ctest")
+        else:
+            list_jedi_type.append("soca")
     logging.info(f''' list of JEDI types: {list_jedi_type}''')
 
     var_list_sfc = []
@@ -97,6 +101,8 @@ def main():
             var_list_sfc.append(snowdepth_vn)
         elif jtype == "soil_moisture":
             var_list_sfc.append("smc")
+        elif jtype == "soca":
+            var_list_ocn += ["Salt", "Temp", "ave_ssh"]
         elif jtype == "soca_ctest":
             var_list_ocn += ["Salt", "Temp", "ave_ssh"]
             if JEDI_ALGORITHM == "3dvar":
@@ -125,7 +131,7 @@ def main():
                     var_data_inc = get_data_tile(work_dir,fn_sfc_incr,var_nm,zlvlm1,jtype,
                                                  out_title_base,out_fn_base,'inc',True)
                     # compare data1 and data2
-                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                    compare_data(var_data1,var_data2,var_nm,zlvlm1,jtype,
                                  out_title_base,out_fn_base,work_dir,True)
             elif jtype == "soca_ctest":
                 # get lon, lat from grid file
@@ -142,7 +148,7 @@ def main():
                     var_data_inc = get_data(work_dir,fn_sfc_incr,var_nm,zlvlm1,jtype,
                                             out_title_base,out_fn_base,'inc',False)
                     # compare data1 and data2
-                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                    compare_data(var_data1,var_data2,var_nm,zlvlm1,jtype,
                                  out_title_base,out_fn_base,work_dir,False)
 
         # ocn file
@@ -150,7 +156,20 @@ def main():
             # Set output file name and title base
             out_title_base=f'''UFS-DA::COMP::OCN::{jtype}::{JEDI_ALGORITHM}::{PDY}'''
             out_fn_base=f'''{out_fn_base_prefix}ocn_{jtype}_{JEDI_ALGORITHM}_{PDY}'''
-            if jtype == "soca_ctest":
+            if jtype == "soca":
+                # get lon, lat from grid file
+                get_geo_grd(work_dir,grid_soca_fn,jtype)
+                for var_nm in var_list_ocn:
+                    # get data before analysis
+                    var_data1 = get_data(work_dir,fn_ocn_data,var_nm,zlvlm1,jtype,
+                                         out_title_base,out_fn_base,'before',False)
+                    # get data after analysis
+                    var_data2 = get_data(work_dir,fn_ocn_data,var_nm,zlvlm1,jtype,
+                                        out_title_base,out_fn_base,'after',False)
+                    # compare data1 and data2
+                    compare_data(var_data1,var_data2,var_nm,zlvlm1,jtype,
+                                 out_title_base,out_fn_base,work_dir,False)
+            elif jtype == "soca_ctest":
                 # get lon, lat from grid file
                 grid_path = os.path.join(work_dir,"data_output")
                 get_geo_grd(grid_path,grid_soca_ctest_fn,jtype)
@@ -165,7 +184,7 @@ def main():
                     var_data_inc = get_data(work_dir,fn_ocn_incr,var_nm,zlvlm1,jtype,
                                             out_title_base,out_fn_base,'inc',False)
                     # compare data1 and data2
-                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                    compare_data(var_data1,var_data2,var_nm,zlvlm1,jtype,
                                  out_title_base,out_fn_base,work_dir,False)
 
         # ice file
@@ -188,10 +207,8 @@ def main():
                     var_data_inc = get_data(work_dir,fn_ice_incr,var_nm,zlvlm1,jtype,
                                             out_title_base,out_fn_base,'inc',False)
                     # compare data1 and data2
-                    compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvlm1,jtype,
+                    compare_data(var_data1,var_data2,var_nm,zlvlm1,jtype,
                                  out_title_base,out_fn_base,work_dir,False)
-
-
 
 
 # geo lon/lat from grid file ======================================== CHJ =====
@@ -204,7 +221,7 @@ def get_geo_grd(grid_path,grid_fn,jtype):
     except: raise Exception('Could NOT find the file',fp_data)
     logging.info(f''' Variables: {list(data_raw.variables)}''')   
     # Extract geo data
-    if jtype == "soca_ctest":
+    if jtype == "soca" or jtype == "soca_ctest":
         glon_o = np.ma.masked_invalid(data_raw.variables['lon'])
         glat_o = np.ma.masked_invalid(data_raw.variables['lat'])
         glon = np.squeeze(glon_o,axis=0)
@@ -319,7 +336,7 @@ def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
 
 
 # Compare two data set and plot ===================================== CHJ =====
-def compare_data(var_data1,var_data2,var_data_inc,var_nm,zlvl,jtype,out_title_base,
+def compare_data(var_data1,var_data2,var_nm,zlvl,jtype,out_title_base,
                  out_fn_base,work_dir,opt_tile):
 
     logging.info(f''' ===== compare files ===============================================''')

@@ -69,7 +69,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   r_fp="${data_dir}/${PDY}.${cyc}0000.MOM.res.nc"
   if [ -e "${r_fp}" ]; then
     cp -p "${r_fp}" MOM.res.nc
-    cp -p MOM.res.nc MOM.res.nc_before_inc
+    cp -p MOM.res.nc MOM.res.nc_soca_before_inc
   else
     err_exit "Copy failed: ${r_fp} file does not exist."
   fi
@@ -155,12 +155,13 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   cp -p diag/* ${COMINOUThofx}
 
   # Copy output to COMINOUT
-  fn_ocn_data="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  cp -p ${fn_ocn_data} ${COMINOUT}
-  cp -p ${fn_ocn_data} "${COMINOUT}/${PDY}.${cyc}0000.MOM.res.nc"
+  fn_ocn_out="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  fn_ocn_data="MOM.res.nc"
+  cp -p ${fn_ocn_out} ${COMINOUT}
+  cp -p ${fn_ocn_out} "${COMINOUT}/${PDY}.${cyc}0000.${fn_ocn_data}"
 
   # Symlink output file for plotting
-  ln -nsf "${fn_ocn_data}" "MOM.res.nc_after_inc"
+  ln -nsf "${fn_ocn_out}" "${fn_ocn_data}_soca_after_inc"
 
 fi
 
