@@ -337,10 +337,15 @@ if [ "${ocn_model}" = "mom6" ]; then
 
   ## Restart files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-      data_dir="${WARMSTART_DIR}"
+    ### Files updated by ANALYSIS (JEDI)
+    if [ "${DO_FREE_FORECAST}" = "none" ]; then
+      data_dir="${COMINOUT}"
     else
-      data_dir="${COMINOUTcm1}/RESTART"
+      if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+        data_dir="${WARMSTART_DIR}"
+      else
+        data_dir="${COMINOUTcm1}/RESTART"
+      fi
     fi
     r_fp="${data_dir}/${filedate}.MOM.res.nc"
     if [ -e "${r_fp}" ]; then
