@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 ###################################################################### CHJ #####
-## Name		  : sfc_data_replace_var.py
-## Usage	  : Replace variables of sfc_data files with those of JEDI output
+## Name		  : bkg_var_replace.py
+## Usage	  : Replace variables of background files with those of JEDI output
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2025/07/09: Chan-Hoo Jeon : Preliminary version
+## V001: 2025/11/13: Chan-Hoo Jeon : Expanded to general options
 ###################################################################### CHJ #####
 
 import os
@@ -20,18 +21,19 @@ import matplotlib.pyplot as plt
 # Main part (will be called at the end) ============================= CHJ =====
 def main():
 
-    yaml_file = "sfc_replace_var.yaml"
+    yaml_file = "bkg_var_replace.yaml"
     with open(yaml_file, 'r') as f:
         yaml_data = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    work_dir = yaml_data['work_dir']
+    bkg_data_fn_suffix = yaml_data['bkg_data_fn_suffix']
     fn_data_base = yaml_data['fn_data_base']
-    sfc_data_fn_suffix = yaml_data['sfc_data_fn_suffix']
     jedi_out_fn_prefix = yaml_data['jedi_out_fn_prefix']
     jedi_out_fn_suffix = yaml_data['jedi_out_fn_suffix']
-    new_sfc_data_fn_suffix = yaml_data['new_sfc_data_fn_suffix']
+    new_bkg_data_fn_suffix = yaml_data['new_bkg_data_fn_suffix']
+    num_tiles = yaml_data['num_tiles']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
+    work_dir = yaml_data['work_dir']
 
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
@@ -47,21 +49,20 @@ def main():
    
     var_list = ["smc"]
 
-    num_tiles = 6
     for it in range(num_tiles):
         itp = it+1
         # Input and output file name
-        sfc_data_fn = fn_data_base+str(itp)+sfc_data_fn_suffix
+        bkg_data_fn = fn_data_base+str(itp)+bkg_data_fn_suffix
         jedi_out_fn = jedi_out_fn_prefix+fn_data_base+str(itp)+jedi_out_fn_suffix
-        new_sfc_data_fn = fn_data_base+str(itp)+new_sfc_data_fn_suffix
+        new_bkg_data_fn = fn_data_base+str(itp)+new_bkg_data_fn_suffix
         # Path to input files
-        sfc_data_fp = os.path.join(work_dir, sfc_data_fn)
+        bkg_data_fp = os.path.join(work_dir, bkg_data_fn)
         jedi_out_fp = os.path.join(work_dir, jedi_out_fn)
-        logging.info(f''' File 1: {sfc_data_fp}''')
+        logging.info(f''' File 1: {bkg_data_fp}''')
         logging.info(f''' File 2: {jedi_out_fp}''')
         # Open the NetCDF datasets
         try:
-            ds1 = xr.open_dataset(sfc_data_fp)
+            ds1 = xr.open_dataset(bkg_data_fp)
           #  print(ds1)
             ds2 = xr.open_dataset(jedi_out_fp)
           #  print(ds2)
@@ -114,9 +115,9 @@ def main():
                 plot_comp_var_tile(var, var2_3d[iz,:,:], ds1[var].values[0,iz,:,:], itp, izp, work_dir, 'chk')
 
         # Save the modified dataset to a new NetCDF file
-        ds1.to_netcdf(new_sfc_data_fn)
+        ds1.to_netcdf(new_bkg_data_fn)
 
-        logging.info(f''' Variable "{var}" replaced and saved to "{new_sfc_data_fn}" successfully.''')
+        logging.info(f''' Variable "{var}" replaced and saved to "{new_bkg_data_fn}" successfully.''')
         ds1.close()
         ds2.close()
     
@@ -125,16 +126,16 @@ def main():
 def plot_comp_var_tile(var_nm, var1, var2, tile_num, lyr_num, work_dir, opt):
 
     if opt == 'msk':
-        out_fn = f'''plot_comp_sfc_{var_nm}_tile{tile_num}'''
-        fig1_title = f'''SFC_DATA :: {var_nm} :: Tile {tile_num}'''
+        out_fn = f'''plot_comp_bkg_{var_nm}_tile{tile_num}'''
+        fig1_title = f'''BKG_DATA :: {var_nm} :: Tile {tile_num}'''
         fig2_title = f'''JEDI_Output :: {var_nm} :: Tile {tile_num}'''
     elif opt == 'chk':
         out_fn = f'''plot_comp_chk_{var_nm}_layer{lyr_num}_tile{tile_num}'''        
         fig1_title = f'''JEDI_Output :: {var_nm} :: Layer {lyr_num} :: Tile {tile_num}'''
         fig2_title = f'''Replaced SFC :: {var_nm} :: Layer {lyr_num} :: Tile {tile_num}'''
     else:
-        out_fn = f'''plot_comp_sfc_{var_nm}_layer{lyr_num}_tile{tile_num}'''        
-        fig1_title = f'''SFC_DATA :: {var_nm} :: Layer {lyr_num} :: Tile {tile_num}'''
+        out_fn = f'''plot_comp_bkg_{var_nm}_layer{lyr_num}_tile{tile_num}'''        
+        fig1_title = f'''BKG_DATA :: {var_nm} :: Layer {lyr_num} :: Tile {tile_num}'''
         fig2_title = f'''JEDI_Output :: {var_nm} :: Layer {lyr_num} :: Tile {tile_num}'''
 
     var_all = np.concatenate((var1, var2))

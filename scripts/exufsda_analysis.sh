@@ -401,23 +401,25 @@ EOF
         cp -p "${inc_fp_prefix}.tile${itile}.nc" "${DATA}/${inc_fn_prefix}.tile${itile}.nc"
       done
   
-      ## Replace smc of sfc_data with that of JEDI output files (temporary solution)
+      ## Replace smc of sfc_data with that of JEDI output files
+      bkg_data_fn_suffix=".nc_${jedi_type}_before_inc"
       fn_data_base="${filedate}.sfc_data.tile"
-      sfc_data_fn_suffix=".nc_${jedi_type}_before_inc"
       jedi_out_fn_prefix="jedi_smc."
       jedi_out_fn_suffix=".nc"
-      new_sfc_data_fn_suffix=".nc_${jedi_type}_replaced"
-      cat > sfc_replace_var.yaml << EOF
-work_dir: '${DATA}'
+      new_bkg_data_fn_suffix=".nc_${jedi_type}_replaced"
+      num_tiles="6"
+      cat > bkg_var_replace.yaml << EOF
+bkg_data_fn_suffix: '${bkg_data_fn_suffix}'
 fn_data_base: '${fn_data_base}'
-sfc_data_fn_suffix: '${sfc_data_fn_suffix}'
 jedi_out_fn_prefix: '${jedi_out_fn_prefix}'
 jedi_out_fn_suffix: '${jedi_out_fn_suffix}'
-new_sfc_data_fn_suffix: '${new_sfc_data_fn_suffix}'
+new_bkg_data_fn_suffix: '${new_bkg_data_fn_suffix}'
+num_tiles=${num_tiles}
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+work_dir: '${DATA}'
 EOF
 
-      ${USHufsda}/sfc_data_replace_var.py
+      ${USHufsda}/bkg_var_replace.py
       if [ $? -ne 0 ]; then
         err_exit "sfc_data var replacement failed"
       fi
