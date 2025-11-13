@@ -25,7 +25,7 @@ MMp=${PTIME:4:2}
 DDp=${PTIME:6:2}
 HHp=${PTIME:8:2}
 
-filedate=${YYYY}${MM}${DD}.${HH}0000
+filedate=${PDY}.${cyc}0000
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
@@ -59,6 +59,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   mkdir -p MOM6_OUTPUT
   mkdir -p obs
   mkdir -p diag
+  fn_ocn_data="MOM.res.nc"
+  bkg_data_fn_suffix="_soca_before_inc"
+  new_bkg_data_fn_suffix="_soca_after_inc"
 
   # Restart file
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -66,10 +69,10 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   else
     data_dir="${DATA_RESTART}"
   fi
-  r_fp="${data_dir}/${PDY}.${cyc}0000.MOM.res.nc"
+  r_fp="${data_dir}/${filedate}.MOM.res.nc"
   if [ -e "${r_fp}" ]; then
     cp -p "${r_fp}" MOM.res.nc
-    cp -p MOM.res.nc MOM.res.nc_soca_before_inc
+    cp -p MOM.res.nc ${fn_ocn_data}${bkg_data_fn_suffix}
   else
     err_exit "Copy failed: ${r_fp} file does not exist."
   fi
@@ -159,6 +162,27 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
     err_exit "JEDI DA failed"
   fi
 
+  # Copy JEDI output file to COMINOUT
+  fn_ocn_out="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+  cp -p ${fn_ocn_out} ${COMINOUT}
+
+  ## Replace variables of background files with those of JEDI output files
+  cat > bkg_var_replace.yaml << EOF
+bkg_data_fn_suffix: '${bkg_data_fn_suffix}'
+fn_data_base: '${fn_ocn_data}'
+jedi_out_fn_prefix: '${fn_ocn_out}'
+jedi_out_fn_suffix: ''
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
+new_bkg_data_fn_suffix: '${new_bkg_data_fn_suffix}'
+num_tiles: 0
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+work_dir: '${DATA}'
+EOF
+  ${USHufsda}/bkg_var_replace.py
+  if [ $? -ne 0 ]; then
+    err_exit "Background varriable replacement failed"
+  fi
+
   # Copy observation files to COMINOUTobs
   obs_fns=( "adt_ssh" "prof_insitu" "sss_salinity" "sst_satellite" )
   for ifn in "${obs_fns[@]}" ; do
@@ -172,13 +196,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   cp -p diag/* ${COMINOUThofx}
 
   # Copy output to COMINOUT
-  fn_ocn_out="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fn_ocn_data="MOM.res.nc"
-  cp -p ${fn_ocn_out} ${COMINOUT}
-  cp -p ${fn_ocn_out} "${COMINOUT}/${PDY}.${cyc}0000.${fn_ocn_data}"
-
-  # Symlink output file for plotting
-  ln -nsf "${fn_ocn_out}" "${fn_ocn_data}_soca_after_inc"
+  cp -p "${fn_ocn_data}${new_bkg_data_fn_suffix}" "${COMINOUT}/${filedate}.${fn_ocn_data}"
 
 fi
 
@@ -407,18 +425,17 @@ EOF
       jedi_out_fn_prefix="jedi_smc."
       jedi_out_fn_suffix=".nc"
       new_bkg_data_fn_suffix=".nc_${jedi_type}_replaced"
-      num_tiles="6"
       cat > bkg_var_replace.yaml << EOF
 bkg_data_fn_suffix: '${bkg_data_fn_suffix}'
 fn_data_base: '${fn_data_base}'
 jedi_out_fn_prefix: '${jedi_out_fn_prefix}'
 jedi_out_fn_suffix: '${jedi_out_fn_suffix}'
+JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 new_bkg_data_fn_suffix: '${new_bkg_data_fn_suffix}'
-num_tiles=${num_tiles}
+num_tiles: 6
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 work_dir: '${DATA}'
 EOF
-
       ${USHufsda}/bkg_var_replace.py
       if [ $? -ne 0 ]; then
         err_exit "sfc_data var replacement failed"

@@ -6,7 +6,7 @@
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2025/07/09: Chan-Hoo Jeon : Preliminary version
-## V001: 2025/11/13: Chan-Hoo Jeon : Expanded to general options
+## V001: 2025/11/13: Chan-Hoo Jeon : Add single file option
 ###################################################################### CHJ #####
 
 import os
@@ -15,11 +15,15 @@ import logging
 import yaml
 import xarray as xr
 import numpy as np
+from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
 
 # Main part (will be called at the end) ============================= CHJ =====
 def main():
+
+    global bkg_data_fn_suffix,fn_data_base,jedi_out_fn_prefix,jedi_out_fn_suffix
+    global new_bkg_data_fn_suffix,work_dir
 
     yaml_file = "bkg_var_replace.yaml"
     with open(yaml_file, 'r') as f:
@@ -30,6 +34,7 @@ def main():
     fn_data_base = yaml_data['fn_data_base']
     jedi_out_fn_prefix = yaml_data['jedi_out_fn_prefix']
     jedi_out_fn_suffix = yaml_data['jedi_out_fn_suffix']
+    JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     new_bkg_data_fn_suffix = yaml_data['new_bkg_data_fn_suffix']
     num_tiles = yaml_data['num_tiles']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
@@ -47,14 +52,97 @@ def main():
     logging.basicConfig(format='%(levelname)s::%(pathname)s::L%(lineno)d::%(message)s', level=log_level)
     logging.info(f''' YAML Data: {yaml_data}''')
    
-    var_list = ["smc"]
+    if JEDI_TYPE_SOCA == "YES":
+        var_list = ["Salt", "Temp", "ave_ssh", "h"] 
+    else:
+        var_list = ["smc"]
+
+    if num_tiles == 0:
+        replace_var_file(var_list)
+    else:
+        replace_var_tile(var_list, num_tiles)
+
+
+# Replace variables for single file ============================= CHJ =====
+def replace_var_file(var_list):
+    # Input/output files
+    bkg_data_fn = f'''{fn_data_base}{bkg_data_fn_suffix}'''
+    jedi_out_fn = f'''{jedi_out_fn_prefix}{jedi_out_fn_suffix}'''
+    new_bkg_data_fn = f'''{fn_data_base}{new_bkg_data_fn_suffix}'''
+    # Path to input files
+    bkg_data_fp = os.path.join(work_dir, bkg_data_fn)
+    jedi_out_fp = os.path.join(work_dir, jedi_out_fn)
+    logging.info(f''' File 1: {bkg_data_fp}''')
+    logging.info(f''' File 2: {jedi_out_fp}''')
+
+    # Open the NetCDF datasets
+    dsA = Dataset(bkg_data_fp, 'r')
+    dsB = Dataset(jedi_out_fp, 'r')
+    # Create a new file
+    ds_out = Dataset(new_bkg_data_fn, 'w', format='NETCDF4')
+
+    # Copy dimensions
+    for name, dim in dsA.dimensions.items():
+        ds_out.createDimension(name, (len(dim) if not dim.isunlimited() else None))
+    
+    # Copy variables
+    for name, varin in dsA.variables.items():
+        outVar = ds_out.createVariable(name, varin.datatype, varin.dimensions)
+        outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
+    
+        if name in var_list:
+            logging.info(f''' ===== Variable: {name} ===== ''')
+            # Check variable existence
+            if name not in dsA.variables:
+                raise ValueError(f'''Variable '{name}' not found in {bkg_data_fn}''')
+            if name not in dsB.variables:
+                raise ValueError(f'''Variable '{name}' not found in {jedi_out_fn}''')
+
+            varA = dsA.variables[name]
+            varB = dsB.variables[name]
+
+            logging.info(f''' File A: {varA.shape}''')
+            logging.info(f''' File B: {varB.shape}''')
+
+            if varA.shape != varB.shape:
+                raise ValueError(f'''Dimension mismatch (excluding Time): {varA.shape} vs {varB.shape}''')
+
+            # Replace data (excluding 'Time' dimension)
+            if 'Time' in varA.dimensions and 'Time' in varB.dimensions:
+                # Use time-mean from B
+                dataB = np.mean(varB[:], axis=0)
+                dataA = varA[:]
+                for t in range(dataA.shape[0]):
+                    dataA[t, ...] = dataB
+                outVar[:] = dataA
+            else:
+                outVar[:] = varB[:]
+    
+            logging.info(f'''Replaced variable '{name}' in {bkg_data_fn} using {jedi_out_fn} (excluding 'Time').''')
+    
+        else:
+            # Keep original variable
+            outVar[:] = varin[:]
+    
+    # Copy global attributes
+    ds_out.setncatts({k: dsA.getncattr(k) for k in dsA.ncattrs()})
+    
+    # Close all files
+    dsA.close()
+    dsB.close()
+    ds_out.close()
+    logging.info(f''' Variables saved to "{new_bkg_data_fn}" successfully.''')
+
+
+# Replace variables for tiled files ============================= CHJ =====
+def replace_var_tile(var_list, num_tiles):
 
     for it in range(num_tiles):
         itp = it+1
         # Input and output file name
-        bkg_data_fn = fn_data_base+str(itp)+bkg_data_fn_suffix
-        jedi_out_fn = jedi_out_fn_prefix+fn_data_base+str(itp)+jedi_out_fn_suffix
-        new_bkg_data_fn = fn_data_base+str(itp)+new_bkg_data_fn_suffix
+        bkg_data_fn = f'''{fn_data_base}{itp}{bkg_data_fn_suffix}'''
+        jedi_out_fn = f'''{jedi_out_fn_prefix}{fn_data_base}{itp}{jedi_out_fn_suffix}'''
+        new_bkg_data_fn = f'''{fn_data_base}{itp}{new_bkg_data_fn_suffix}'''
         # Path to input files
         bkg_data_fp = os.path.join(work_dir, bkg_data_fn)
         jedi_out_fp = os.path.join(work_dir, jedi_out_fn)
@@ -63,9 +151,7 @@ def main():
         # Open the NetCDF datasets
         try:
             ds1 = xr.open_dataset(bkg_data_fp)
-          #  print(ds1)
             ds2 = xr.open_dataset(jedi_out_fp)
-          #  print(ds2)
         except FileNotFoundError:
             logging.error(f'''Error: One of both files not found at {work_dir}''')
         except Exception as e:
@@ -123,7 +209,7 @@ def main():
     
 
 # Plot var values in two files for comparison ======================== CHJ =====
-def plot_comp_var_tile(var_nm, var1, var2, tile_num, lyr_num, work_dir, opt):
+def plot_comp_var_tile(var_nm, var1, var2, tile_num, lyr_num, opt):
 
     if opt == 'msk':
         out_fn = f'''plot_comp_bkg_{var_nm}_tile{tile_num}'''
