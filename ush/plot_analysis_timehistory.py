@@ -8,8 +8,7 @@
 ## History ===============================
 ## V000: 2024/10/14: Chan-Hoo Jeon : Preliminary version
 ## V001: 2024/10/15: Chan-Hoo Jeon : Add wall-clock time plot
-## V002: 2024/10/31: Chan-Hoo Jeon : Fix input log file name issue
-## V003: 2025/02/26: Chan-Hoo Jeon : Add h(x) Obs-ana plot
+## V002: 2025/02/26: Chan-Hoo Jeon : Add h(x) Obs-ana plot
 ###################################################################### CHJ #####
 
 import os, sys
@@ -63,10 +62,13 @@ def main():
     logging.info(f''' YAML Data: {yaml_data}''')
 
     svar_list = []
-    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
-        svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
-        if JEDI_ALGORITHM == "3dvar":
-            svar_list += ["CoolSkin","SeaIceFraction"]
+    if JEDI_TYPE_SOCA == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
+            if JEDI_ALGORITHM == "3dvar":
+                svar_list += ["CoolSkin","SeaIceFraction"]
+        else:
+            svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":

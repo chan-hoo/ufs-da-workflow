@@ -93,7 +93,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diag/diag.InsituTemperature.nc
+            obsfile: ./diag/diag.InsituTemperature_{{ cdate }}.nc
         obsdatain:
           engine:
             type: H5File
@@ -113,7 +113,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diag/diag.InsituSalinity.nc
+            obsfile: ./diag/diag.InsituSalinity_{{ cdate }}.nc
         obsdatain:
           engine:
             type: H5File
@@ -135,7 +135,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diag/diag.SeaSurfaceTemp.nc
+            obsfile: ./diag/diag.SeaSurfaceTemp_{{ cdate }}.nc
         obsdatain:
           engine:
             type: H5File
@@ -163,7 +163,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diag/diag.SeaSurfaceSalinity.nc
+            obsfile: ./diag/diag.SeaSurfaceSalinity_{{ cdate }}.nc
         obsdatain:
           engine:
             type: H5File
@@ -191,7 +191,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diag/diag.ADT.nc
+            obsfile: ./diag/diag.ADT_{{ cdate }}.nc
         obsdatain:
           engine:
             type: H5File

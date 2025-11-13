@@ -183,10 +183,13 @@ if __name__ == '__main__':
     logging.info(f''' YAML Data: {yaml_data}''')
 
     svar_list = []
-    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
-        svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
-        if JEDI_ALGORITHM == "3dvar":
-            svar_list += ["CoolSkin","SeaIceFraction"]
+    if JEDI_TYPE_SOCA == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
+            if JEDI_ALGORITHM == "3dvar":
+                svar_list += ["CoolSkin","SeaIceFraction"]
+        else:
+            svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":

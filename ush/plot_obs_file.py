@@ -7,7 +7,7 @@
 ## History ===============================
 ## V000: 2024/12/03: Chan-Hoo Jeon : Preliminary version
 ## V001: 2025/04/17: Chan-Hoo Jeon : Add IMS option
-## V002: 2025/10/22: Chan-Hoo Jeon : Add SOCA C-test option
+## V002: 2025/11/13: Chan-Hoo Jeon : Add SOCA option
 ###################################################################### CHJ #####
 
 import os, sys
@@ -71,13 +71,20 @@ def main():
     if OBS_SMOPS == "YES":
         obs_plot("smops",PDY,work_dir,obs_prefix,"smops")
     # Plot C-test of SOCA
-    if DO_FREE_FORECAST == "ctest" and JEDI_TYPE_SOCA == "YES":
-        obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
-        obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss")
-        obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt")
-        obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof")
-        obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof")
-        obs_plot("soca_icec",PDY,work_dir,obs_prefix,"icec")
+    if JEDI_TYPE_SOCA == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
+            obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss")
+            obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt")
+            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof")
+            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof")
+            obs_plot("soca_icec",PDY,work_dir,obs_prefix,"icec")
+        else:
+            obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt_ssh")
+            obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst_satellite")
+            obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss_salinity")
+            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof_insitu")
+            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof_insitu")
 
 
 # obs plot =============================================== CHJ =====

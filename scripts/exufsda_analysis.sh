@@ -141,6 +141,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
     soca_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
     soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
     settings="\
+  'cdate': !!str ${PDY}${cyc}
   'soca_timewindow_begin_iso': !!str ${soca_timewindow_begin_iso}
   'soca_background_date_iso': !!str ${soca_background_date_iso}
 " # End of settings variable
