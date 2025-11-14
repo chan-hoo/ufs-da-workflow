@@ -311,7 +311,7 @@ workflow:
       queue: "&queue_default;"
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
 {%- if MACHINE == "ursa" %}
-      memory: 32G
+      memory: 64G
 {%- endif %}
 {%- if DO_FREE_FORECAST != "ctest" %}
       dependency:
