@@ -446,7 +446,7 @@ EOF
       for itile in {1..6}
       do
         sfc_fn="${fn_data_base}${itile}.nc"
-        cp -p "${fn_data_base}${itile}${new_sfc_data_fn_suffix}" ${sfc_fn}
+        cp -p "${fn_data_base}${itile}${new_bkg_data_fn_suffix}" ${sfc_fn}
         cp -p ${sfc_fn} "${fn_data_base}${itile}.nc_${jedi_type}_after_inc"
       done
   

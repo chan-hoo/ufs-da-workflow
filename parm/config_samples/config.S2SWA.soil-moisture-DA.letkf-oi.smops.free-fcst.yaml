@@ -10,7 +10,7 @@ DT_ATMOS: 720
 DT_RUNSEQ: 3600
 envir: soilmDA_letkfoi
 EXP_CASE_NAME: s2swa_soilmDA_letkfoi
-FCST_HRS: 72
+FCST_HRS: 48
 IC_FROM_FIX_DIR: 'YES'
 JEDI_ALGORITHM: letkf-oi
 JEDI_TYPE_SNOW: 'NO'

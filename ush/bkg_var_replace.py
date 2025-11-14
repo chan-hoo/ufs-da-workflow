@@ -58,28 +58,31 @@ def main():
         var_list = ["smc"]
 
     if num_tiles == 0:
-        replace_var_file(var_list)
+        # Input/output files
+        bkg_data_fn = f'''{fn_data_base}{bkg_data_fn_suffix}'''
+        jedi_out_fn = f'''{jedi_out_fn_prefix}{jedi_out_fn_suffix}'''
+        new_bkg_data_fn = f'''{fn_data_base}{new_bkg_data_fn_suffix}'''
+        # Path to input files
+        bkg_data_fp = os.path.join(work_dir, bkg_data_fn)
+        jedi_out_fp = os.path.join(work_dir, jedi_out_fn)
+        new_bkg_data_fp = os.path.join(work_dir, new_bkg_data_fn)
+        logging.info(f''' File 1: {bkg_data_fp}''')
+        logging.info(f''' File 2: {jedi_out_fp}''')
+
+        replace_var_file(var_list,bkg_data_fp,jedi_out_fp,new_bkg_data_fp)
+        compare_vars_two_files(jedi_out_fp,new_bkg_data_fp, var_list)
     else:
         replace_var_tile(var_list, num_tiles)
 
 
 # Replace variables for single file ============================= CHJ =====
-def replace_var_file(var_list):
-    # Input/output files
-    bkg_data_fn = f'''{fn_data_base}{bkg_data_fn_suffix}'''
-    jedi_out_fn = f'''{jedi_out_fn_prefix}{jedi_out_fn_suffix}'''
-    new_bkg_data_fn = f'''{fn_data_base}{new_bkg_data_fn_suffix}'''
-    # Path to input files
-    bkg_data_fp = os.path.join(work_dir, bkg_data_fn)
-    jedi_out_fp = os.path.join(work_dir, jedi_out_fn)
-    logging.info(f''' File 1: {bkg_data_fp}''')
-    logging.info(f''' File 2: {jedi_out_fp}''')
+def replace_var_file(var_list,bkg_data_fp,jedi_out_fp,new_bkg_data_fp):
 
     # Open the NetCDF datasets
     dsA = Dataset(bkg_data_fp, 'r')
     dsB = Dataset(jedi_out_fp, 'r')
     # Create a new file
-    ds_out = Dataset(new_bkg_data_fn, 'w', format='NETCDF4')
+    ds_out = Dataset(new_bkg_data_fp, 'w', format='NETCDF4')
 
     # Copy dimensions
     for name, dim in dsA.dimensions.items():
@@ -94,9 +97,9 @@ def replace_var_file(var_list):
             logging.info(f''' ===== Variable: {name} ===== ''')
             # Check variable existence
             if name not in dsA.variables:
-                raise ValueError(f'''Variable '{name}' not found in {bkg_data_fn}''')
+                raise ValueError(f'''Variable '{name}' not found in {bkg_data_fp}''')
             if name not in dsB.variables:
-                raise ValueError(f'''Variable '{name}' not found in {jedi_out_fn}''')
+                raise ValueError(f'''Variable '{name}' not found in {jedi_out_fp}''')
 
             varA = dsA.variables[name]
             varB = dsB.variables[name]
@@ -118,7 +121,7 @@ def replace_var_file(var_list):
             else:
                 outVar[:] = varB[:]
     
-            logging.info(f'''Replaced variable '{name}' in {bkg_data_fn} using {jedi_out_fn} (excluding 'Time').''')
+            logging.info(f'''Replaced variable '{name}' in {bkg_data_fp} using {jedi_out_fp} (excluding 'Time').''')
     
         else:
             # Keep original variable
@@ -131,7 +134,60 @@ def replace_var_file(var_list):
     dsA.close()
     dsB.close()
     ds_out.close()
-    logging.info(f''' Variables saved to "{new_bkg_data_fn}" successfully.''')
+    logging.info(f''' Variables saved to "{new_bkg_data_fp}" successfully.''')
+
+
+# Check replaced variables in two files ========================= CHJ =====
+def compare_vars_two_files(fileA, fileB, vars_to_check):
+
+    ncA = Dataset(fileA, "r")
+    ncB = Dataset(fileB, "r")
+    logging.info(f'''Comparing variables: {vars_to_check}''')
+
+    for var in vars_to_check:
+        if var not in ncA.variables or var not in ncB.variables:
+            logging.error(f'''FATAL ERROR: {var}: NOT found in both files''')
+            sys.exit(1)
+
+        varA = ncA.variables[var]
+        varB = ncB.variables[var]
+        # Check dimension count
+        if len(varA.dimensions) != len(varB.dimensions):
+            logging.error(f'''FATAL ERROR: {var}: dimension mismatch ({len(varA.dimensions)} vs {len(varB.dimensions)})''')
+            sys.exit(1)
+
+        # Determine first dimension name and its length
+        first_dim = varA.dimensions[0]
+        lenA0 = ncA.dimensions[first_dim].size
+        lenB0 = ncB.dimensions[first_dim].size
+        if lenA0 != lenB0:
+            logging.error(f'''FATAL ERROR: {var}: first dimension length mismatch ({lenA0} vs {lenB0})''')
+            sys.exit(1)
+
+        # Slice excluding the first dimension
+        try:
+            # Build slice: first dimension 1:end, others full range
+            slices = [slice(1, None)] + [slice(None)]*(len(varA.dimensions)-1)
+
+            dataA = varA[tuple(slices)]
+            dataB = varB[tuple(slices)]
+        except Exception as e:
+            logging.warning(f'''{var}: error slicing first dimension → {e}''')
+            continue
+        # Compare shapes
+        if dataA.shape != dataB.shape:
+            logging.error(f'''FATAL ERROR: {var}: shape mismatch after excluding first dimension''')
+            sys.exit(1)
+
+        # Compare values
+        identical = np.allclose(dataA, dataB, equal_nan=True)
+        if identical:
+            logging.info(f'''Good Job: {var}: values identical excluding the first dimension''')
+        else:
+            logging.error(f'''FATAL ERROR: {var}: values differ excluding the first dimension''')
+
+    ncA.close()
+    ncB.close()
 
 
 # Replace variables for tiled files ============================= CHJ =====
@@ -173,7 +229,7 @@ def replace_var_tile(var_list, num_tiles):
             slmsk_diff = slmsk1_val - slmsk2_val
             non_zero_count = np.count_nonzero(slmsk_diff)
             logging.info(f''' Number of non-identical elements: {non_zero_count}''')
-            plot_comp_var_tile('slmsk', slmsk1_val, slmsk2_val, itp, 0, work_dir, 'msk')
+            plot_comp_var_tile('slmsk', slmsk1_val, slmsk2_val, itp, 0, 'msk')
 
         # Check the target variables and replace them with JEDI output
         for var in var_list:
@@ -187,7 +243,7 @@ def replace_var_tile(var_list, num_tiles):
                 num_zaxis = var1_3d.shape[0]
                 for iz in range(num_zaxis):
                     izp = iz+1
-                    plot_comp_var_tile(var, var1_3d[iz,:,:], var2_3d[iz,:,:], itp, izp, work_dir, 'var')
+                    plot_comp_var_tile(var, var1_3d[iz,:,:], var2_3d[iz,:,:], itp, izp, 'var')
 
             else:
                 logging.error(f''' Variable "{var}" not found in one or both datasets.''')
@@ -198,7 +254,7 @@ def replace_var_tile(var_list, num_tiles):
             # Plot the replaced variable
             for iz in range(num_zaxis):
                 izp = iz+1
-                plot_comp_var_tile(var, var2_3d[iz,:,:], ds1[var].values[0,iz,:,:], itp, izp, work_dir, 'chk')
+                plot_comp_var_tile(var, var2_3d[iz,:,:], ds1[var].values[0,iz,:,:], itp, izp, 'chk')
 
         # Save the modified dataset to a new NetCDF file
         ds1.to_netcdf(new_bkg_data_fn)
