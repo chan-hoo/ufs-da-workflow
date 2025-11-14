@@ -386,6 +386,7 @@ workflow:
         HOMEufsda: "&HOMEufsda;"
         IC_FROM_FIX_DIR: "&IC_FROM_FIX_DIR;"
         ice_model: "&ice_model;"
+        JEDI_TYPE_SOCA: "&JEDI_TYPE_SOCA;"
         KEEPDATA: "&KEEPDATA;"
         LOGDIR: "&LOGDIR;"
         MACHINE: "&MACHINE;"

@@ -343,7 +343,7 @@ if [ "${ocn_model}" = "mom6" ]; then
   ## Restart files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     ### Files updated by ANALYSIS (JEDI)
-    if [ "${DO_FREE_FORECAST}" = "none" ]; then
+    if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" = "none" ]; then
       data_dir="${COMINOUT}"
     else
       if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
