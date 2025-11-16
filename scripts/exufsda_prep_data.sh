@@ -430,7 +430,7 @@ echo "================== JCB COMPLETE !!! ==========================="
 # PART III.
 echo "========== PART III: SOCA pre-processing =========="
 #####################################################################
-# SOCA: gridgen / setcorscales
+# SOCA: gridgen / setcorscales / parameters_diffusion
 #####################################################################
 #
 # note: only work with restart file (not ic file)
