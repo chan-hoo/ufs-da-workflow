@@ -1,0 +1,16 @@
+flag:
+  COLDSTART: 'NO'
+  KEEPDATA: 'YES'
+path:
+  COMINgdas: ""
+  COMINgfs: ""
+  DCOMINghcn: ""
+  DCOMINobs: ""
+  DCOMINsmap: ""
+  DCOMINsmops: ""
+parm:
+  envir: test
+  model_ver: v1.0.0
+  NET: ufsda
+  RUN: ufsda
+

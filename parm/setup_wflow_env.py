@@ -24,10 +24,8 @@ from fill_jinja_template import fill_jinja_template
 from uwtools.api.rocoto import realize
 
 
-# Main part (will be called at the end) ============================= CHJ =====
+# Main part (will be called at the end) ============================= CHJ ======
 def setup_wflow_env(machine):
-# =================================================================== CHJ =====
-
     machine = machine.lower()
     logging.debug(f''' Machine (platform) name: {machine} ''')
     # Set directory paths
@@ -35,113 +33,137 @@ def setup_wflow_env(machine):
     logging.info(f''' Current directory (PARMdir): {parm_dir} ''')
     home_dir = os.path.dirname(parm_dir)
     logging.info(f''' Home directory (HOMEdir): {home_dir} ''')
-    exp_basedir = os.path.dirname(home_dir)
-    logging.info(f''' Experimental base directory (exp_basedir): {exp_basedir} ''')
 
-    # Check whether exec dir is empty
-    exec_dir = os.path.join(home_dir, 'exec')
-    exec_path = Path(exec_dir)
-    fix_dir = os.path.join(home_dir, 'fix')
-    fix_path = Path(fix_dir)
-    if not exec_path.exists():
-        logging.error(f''' exec directory "{exec_path}" does NOT exist. You might skip the build step !!!''')
-        sys.exit(1)        
-    else:
-        visible_files = [p for p in fix_path.iterdir() if not p.name.startswith(".")]
-        if not visible_files:
-            logging.error(f''' fix directory "{fix_path}" is EMPTY. Please check the link in the build script !!!''')
-            sys.exit(1)
+    # Read default yaml files and config.yaml and generate configuration dictionary
+    config_parm = read_default_and_user_configs(machine,parm_dir)
 
-    # Set default values of input parameters
-    config_parm = set_default_parm()
+    # Add new parameters based on given parameters
+    config_parm = add_new_parm_base(home_dir,config_parm)
+
+    # Add new parameters for HPC
+    config_parm = add_new_parm_hpc(machine,config_parm)
+
+    # Add new parameters for JEDI
+    config_parm = add_new_parm_jedi(home_dir,config_parm)
+
+    # Add new parameters for ufs-model
+    config_parm = add_new_parm_ufs_model(config_parm)
+
+    # Check if parameters are valid
+    config_parm = check_valid_parm(home_dir,config_parm)
+
+    # Create Rocoto XML and extra files
+    create_xml_extra(parm_dir,config_parm)
+
+
+# ==================================================================== CHJ =====
+def read_default_and_user_configs(machine, parm_dir):
+    # Set default values from yaml files in config_default
+    config_default_path = os.path.join(parm_dir, 'config_default')
+    yaml_files = [ "base.yaml", "hpc.yaml", "jedi.yaml", "nco_var.yaml", "ufs_model.yaml" ]
+    config_parm = {}
+    for fp in yaml_files:
+        with open(os.path.join(config_default_path,fp), "r") as f:
+            data = yaml.safe_load(f) or {}
+        # Replace None sections with empty dict
+        for k, v in data.items():
+            if v is None:
+                data[k] = {}
+        merge_dicts(config_parm, data)
 
     # Set machine-specific parameters
     machine_config = set_machine_parm(machine)
-
     # Merge default and machine-specific parameters
-    config_parm.update(machine_config)
-
-    # Add extra parameters
-    config_parm["exp_basedir"] = exp_basedir
-    config_parm["MACHINE"] = machine
-    config_parm["res_p1"] = int(config_parm.get("RES")) + 1
-
-    # Read input YAML file
+    merge_dicts(config_parm,machine_config)
+  
+    # Read config.yaml and update configuration
     yaml_file = "config.yaml"
     try:
         with open(yaml_file, 'r') as f:
-            yaml_data = yaml.safe_load(f)
+            yaml_data = yaml.safe_load(f) or {}
+        # Replace None sections with empty dict
+        for k, v in yaml_data.items():
+            if v is None:
+                yaml_data[k] = {}        
         f.close()
         logging.debug(f''' Input YAML file:, {yaml_data} ''')
     except FileNotFoundError:
         logging.error(f''' FATAL ERROR: Input YAML file {yaml_file} does not exist! ''')
 
-    for key,value in yaml_data.items():
-        if key in config_parm:
-            config_parm[key] = value
+    merge_dicts(config_parm,yaml_data)
+    
+    # Update some parameters
+    config_parm["parm"]["MACHINE"] = machine
 
+    return config_parm
+
+
+# ==================================================================== CHJ =====
+def add_new_parm_base(home_dir,config_parm):
+    exp_basedir = os.path.dirname(home_dir)
+    logging.info(f''' Experimental base directory (exp_basedir): {exp_basedir} ''')
+
+    app = config_parm["parm"]["APP"]
+    run = config_parm["parm"]["RUN"]
+    exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     # Create an experimental case directory
-    if config_parm.get("EXP_CASE_NAME") is None:
-        exp_case_name = f'''{config_parm.get("APP")}_{config_parm.get("RUN")}'''
-        config_parm.update({'EXP_CASE_NAME': exp_case_name})
-    else:
-        exp_case_name = config_parm.get("EXP_CASE_NAME")
+    if exp_case_name is None or exp_case_name == "None":
+        exp_case_name = f'''{app}_{run}'''
+        config_parm["parm"]["EXP_CASE_NAME"] = exp_case_name
 
     # Path to experimenal case
     exp_case_path = os.path.join(exp_basedir, "exp_case", exp_case_name) 
+    os.makedirs(exp_case_path)
+    logging.info(f''' Experimental case directory {exp_case_path} has been created.''')
 
     # Calculate date for the second cycle
-    date_first_cycle = config_parm.get("DATE_FIRST_CYCLE")
-    date_last_cycle = config_parm.get("DATE_LAST_CYCLE")
-    date_cycle_freq_hr = config_parm.get("DATE_CYCLE_FREQ_HR")
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
+    date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
+    date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
     if date_first_cycle == date_last_cycle:
         date_second_cycle = None
     else:
         next_date = datetime.strptime(str(date_first_cycle), "%Y%m%d%H") + timedelta(hours=date_cycle_freq_hr)
         date_second_cycle = next_date.strftime("%Y%m%d%H")
 
-    app = config_parm.get("APP")
-    # Set model components
-    if app == "S2SWA":
-        atm_model = "fv3"
-        ocn_model = "mom6"
-        ice_model = "cice6"
-        wav_model = "ww3"
-    elif app == "NG-GODAS":
-        atm_model = "datm"
-        ocn_model = "mom6"
-        ice_model = "cice6"
-        wav_model = ""
-    else:
-        atm_model = ""
-        ocn_model = ""
-        ice_model = ""
-        wav_model = ""
+    # Directory containing file for warm-start
+    fix_dir = os.path.join(home_dir, 'fix')
+    warmstart_dir = config_parm["path"]["WARMSTART_DIR"]
+    if warmstart_dir is None or warmstart_dir == "None":
+        warmstart_dir = os.path.join(fix_dir, "DATA_restart")
 
-    # Set DATM domain size
-    datm_data_type = config_parm.get("DATM_DATA_TYPE")
-    if datm_data_type == "gfs":
-        datm_nx_global = 3072
-        datm_ny_global = 1536
-    elif datm_data_type == "gefs":
-        datm_nx_global = 1536
-        datm_ny_global = 768
-    elif datm_data_type == "cfsr":
-        datm_nx_global = 1760
-        datm_ny_global = 880
+    print(fix_dir,warmstart_dir)
+    # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
+    ptmp = config_parm["path"]["PTMP"]
+    if ptmp is None or ptmp == "None":
+        ptmp = os.path.join(exp_basedir, "ptmp")
 
+    # Add parameters
+    config_parm["parm"]["date_second_cycle"] = date_second_cycle
+    config_parm["parm"]["res_p1"] = config_parm["parm"]["RES"] + 1
+    config_parm["path"]["exp_basedir"] = exp_basedir
+    config_parm["path"]["exp_case_path"] = exp_case_path
+    config_parm["path"]["PTMP"] = ptmp
+    config_parm["path"]["WARMSTART_DIR"] = warmstart_dir
+
+    return config_parm
+
+
+# ==================================================================== CHJ =====
+def add_new_parm_hpc(machine,config_parm):
     # Calculate HPC parameter values
-    atm_layout_x = config_parm.get("ATM_LAYOUT_X")
-    atm_layout_y = config_parm.get("ATM_LAYOUT_Y")
-    atm_io_layout_x = config_parm.get("ATM_IO_LAYOUT_X")
-    atm_io_layout_y = config_parm.get("ATM_IO_LAYOUT_Y")
-    max_cores_per_node = config_parm.get("MAX_CORES_PER_NODE")
-    nprocs_analysis = config_parm.get("NPROCS_ANALYSIS")
-    nprocs_datm = config_parm.get("NPROCS_DATM")
-    nprocs_ice = config_parm.get("NPROCS_ICE")
-    nprocs_ocn = config_parm.get("NPROCS_OCN")
-    nprocs_prep_data = config_parm.get("NPROCS_PREP_DATA")
-    nprocs_wav = config_parm.get("NPROCS_WAV")
+    app = config_parm["parm"]["APP"]
+    atm_layout_x = config_parm["parm"]["ATM_LAYOUT_X"]
+    atm_layout_y = config_parm["parm"]["ATM_LAYOUT_Y"]
+    atm_io_layout_x = config_parm["parm"]["ATM_IO_LAYOUT_X"]
+    atm_io_layout_y = config_parm["parm"]["ATM_IO_LAYOUT_Y"]
+    max_cores_per_node = config_parm["parm"]["MAX_CORES_PER_NODE"]
+    nprocs_analysis = config_parm["parm"]["NPROCS_ANALYSIS"]
+    nprocs_datm = config_parm["parm"]["NPROCS_DATM"]
+    nprocs_ice = config_parm["parm"]["NPROCS_ICE"]
+    nprocs_ocn = config_parm["parm"]["NPROCS_OCN"]
+    nprocs_prep_data = config_parm["parm"]["NPROCS_PREP_DATA"]
+    nprocs_wav = config_parm["parm"]["NPROCS_WAV"]
 
     if app == "S2SWA":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
@@ -201,42 +223,34 @@ def setup_wflow_env(machine):
     else:
         memory_flag = True
 
-    # Check lowercase/uppercase
-    datm_data_type_orig = config_parm.get("DATM_DATA_TYPE")
-    datm_data_type = datm_data_type_orig.lower()
-    do_free_forecast_orig = config_parm.get("DO_FREE_FORECAST")
-    do_free_forecast_options = ["first", "all", "none", "ctest"]
-    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
-    if isinstance(do_free_forecast_orig, bool):
-        logging.error(err_msg)
-        sys.exit(1)
-    elif not do_free_forecast_orig.islower():
-        do_free_forecast = do_free_forecast_orig.lower()
-        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
-    else:
-        do_free_forecast = do_free_forecast_orig
+    config_parm["parm"]["memory_flag"] = memory_flag
+    config_parm["parm"]["native_default"] = native_default
+    config_parm["parm"]["nnodes_analysis"] = nnodes_analysis
+    config_parm["parm"]["nnodes_forecast"] = nnodes_forecast
+    config_parm["parm"]["nnodes_prep_data"] = nnodes_prep_data
+    config_parm["parm"]["nprocs_forecast"] = nprocs_forecast
+    config_parm["parm"]["nprocs_forecast_atm"] = nprocs_forecast_atm
+    config_parm["parm"]["nprocs_forecast_med"] = nprocs_forecast_med
+    config_parm["parm"]["nprocs_per_node_analysis"] = nprocs_per_node_analysis
+    config_parm["parm"]["NPROCS_PREP_DATA"] = nprocs_prep_data
+    config_parm["parm"]["partition_default"] = partition_default
+    config_parm["parm"]["queue_default"] = queue_default
 
-    if do_free_forecast not in do_free_forecast_options:
-        logging.error(err_msg)
-        sys.exit(1)
+    return config_parm
 
-    # Check for unsupported conditions
-    obs_ghcn_snow = config_parm.get("OBS_GHCN_SNOW")
-    obs_ims_snow = config_parm.get("OBS_IMS_SNOW")
-    obs_sfcsno = config_parm.get("OBS_SFCSNO")
-    obs_smap = config_parm.get("OBS_SMAP")
-    obs_smops = config_parm.get("OBS_SMOPS")
-    if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
-        logging.error("FATAL ERROR: Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
-        sys.exit(1)
-    elif obs_smap == "YES" and obs_smops == "YES":
-        logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
-        sys.exit(1)
 
-    # Set list of JEDI analyses from JEDI types and observations
-    jedi_type_snow = config_parm.get("JEDI_TYPE_SNOW")
-    jedi_type_soca = config_parm.get("JEDI_TYPE_SOCA")
-    jedi_type_soil_moisture = config_parm.get("JEDI_TYPE_SOIL_MOISTURE")
+# ==================================================================== CHJ =====
+def add_new_parm_jedi(home_dir,config_parm):
+    custom_jedi_config_path = config_parm["path"]["CUSTOM_JEDI_CONFIG_PATH"]
+    exp_basedir = config_parm["path"]["exp_basedir"]
+    jedi_bin_path = config_parm["path"]["JEDI_BIN_PATH"]
+    jedi_iodaconv_path = config_parm["path"]["JEDI_IODACONV_PATH"]
+    jedi_py_ver = config_parm["parm"]["JEDI_PY_VER"]
+    jedi_type_snow = config_parm["flag"]["JEDI_TYPE_SNOW"]
+    jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
+    jedi_type_soil_moisture = config_parm["flag"]["JEDI_TYPE_SOIL_MOISTURE"]
+
+    fix_dir = os.path.join(home_dir, 'fix')
 
     list_jedi_land = ""
     if jedi_type_snow == "YES":
@@ -250,6 +264,180 @@ def setup_wflow_env(machine):
             list_jedi_land = "soil_moisture"
         else:
             list_jedi_land = f"{list_jedi_land} soil_moisture"
+
+    # Set machine-dependent paths if not specified in config.yaml
+    if jedi_bin_path is None or jedi_bin_path == "None":
+        jedi_bin_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+
+    if jedi_iodaconv_path is None or jedi_iodaconv_path == "None":
+        jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
+
+    if custom_jedi_config_path is None or custom_jedi_config_path == "None":
+        custom_jedi_config_path = os.path.join(fix_dir, "DATA_jedi", "custom_yaml")
+
+    config_parm["parm"]["list_jedi_land"] = list_jedi_land
+    config_parm["path"]["CUSTOM_JEDI_CONFIG_PATH"] = custom_jedi_config_path
+    config_parm["path"]["JEDI_BIN_PATH"] = jedi_bin_path
+    config_parm["path"]["JEDI_IODACONV_PATH"] = jedi_iodaconv_path
+
+    return config_parm
+
+
+# ==================================================================== CHJ =====
+def add_new_parm_ufs_model(config_parm):
+    allcomp_restart_n = config_parm["parm"]["ALLCOMP_RESTART_N"]
+    app = config_parm["parm"]["APP"]
+    datm_data_type = config_parm["parm"]["DATM_DATA_TYPE"]
+    dt_mom6 = config_parm["parm"]["DT_MOM6"]
+    mom6_dt_therm = config_parm["parm"]["MOM6_DT_THERM"]
+    output_fh = config_parm["parm"]["OUTPUT_FH"]
+    output_fh_cice = config_parm["parm"]["OUTPUT_FH_CICE"]
+    output_fh_mom6 = config_parm["parm"]["OUTPUT_FH_MOM6"]
+    output_fh_ww3 = config_parm["parm"]["OUTPUT_FH_WW3"]
+    restart_interval = config_parm["parm"]["RESTART_INTERVAL"]
+
+    # Set model components
+    if app == "S2SWA":
+        atm_model = "fv3"
+        ocn_model = "mom6"
+        ice_model = "cice6"
+        wav_model = "ww3"
+    elif app == "NG-GODAS":
+        atm_model = "datm"
+        ocn_model = "mom6"
+        ice_model = "cice6"
+        wav_model = ""
+    else:
+        atm_model = ""
+        ocn_model = ""
+        ice_model = ""
+        wav_model = ""
+
+    # Set DATM domain size
+    if datm_data_type == "gfs":
+        datm_nx_global = 3072
+        datm_ny_global = 1536
+    elif datm_data_type == "gefs":
+        datm_nx_global = 1536
+        datm_ny_global = 768
+    elif datm_data_type == "cfsr":
+        datm_nx_global = 1760
+        datm_ny_global = 880
+
+    # MOM6
+    if mom6_dt_therm is None or mom6_dt_therm == "None":
+        mom6_dt_therm = 2*dt_mom6
+
+    # OUTPUT_FH_CICE: output frequency of CICE
+    output_fh_list = list(map(int, output_fh.split()))
+    if output_fh_cice is None or output_fh_cice == "None":
+        if output_fh_list[1] == -1:
+            output_fh_cice = output_fh_list[0]
+        else:
+            output_fh_cice = 6
+            logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cice}" by default.''')
+
+    # OUTPUT_FH_MOM6: output frequency of MOM6
+    if output_fh_mom6 is None or output_fh_mom6 == "None":
+        if output_fh_list[1] == -1:
+            if output_fh_list[0] % 2 == 0:
+                output_fh_mom6 = output_fh_list[0]
+            else:
+                output_fh_mom6 = 6
+                logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[0] is not an even number; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
+        else:
+            output_fh_mom6 = 6
+            logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
+    else:
+        if output_fh_mom6 % 2 != 0:
+            logging.error(f''' FATAL ERROR: OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" in config.yaml, but it is not an even number.''')
+            sys.exit(1)
+
+    # OUTPUT_FH_WW3: output frequency of WW3 ("in hours"), note that this will be converted to seconds in script
+    if output_fh_ww3 is None or output_fh_ww3 == "None":
+        if output_fh_list[1] == -1:
+            output_fh_ww3 = output_fh_list[0]
+        else:
+            output_fh_ww3 = 6
+            logging.warning(f''' OUTPUT_FH_WW3 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_WW3 is set to "{output_fh_ww3} hours" by default.''')
+
+    # ALLCOMP_RESTART_N: output frequency of mediator (CMEPS) restart files
+    restart_interval_list = list(map(int, restart_interval.split()))
+    if allcomp_restart_n is None or allcomp_restart_n == "None":
+        if restart_interval_list[1] == -1:
+            allcomp_restart_n = restart_interval_list[0]
+        else:
+            allcomp_restart_n = 12
+            logging.warning(f''' ALLCOMP_RESTART_N is not specified in config.yaml and RESTART_INTERVAL[1] != -1; ALLCOMP_RESTART_N is set to "{allcomp_restart_n}" by default.''')
+
+    config_parm["parm"]["ALLCOMP_RESTART_N"] = allcomp_restart_n
+    config_parm["parm"]["atm_model"] = atm_model
+    config_parm["parm"]["datm_nx_global"] = datm_nx_global
+    config_parm["parm"]["datm_ny_global"] = datm_ny_global
+    config_parm["parm"]["ice_model"] = ice_model
+    config_parm["parm"]["MOM6_DT_THERM"] = mom6_dt_therm
+    config_parm["parm"]["ocn_model"] = ocn_model
+    config_parm["parm"]["OUTPUT_FH_CICE"] = output_fh_cice
+    config_parm["parm"]["OUTPUT_FH_MOM6"] = output_fh_mom6
+    config_parm["parm"]["OUTPUT_FH_WW3"] = output_fh_ww3
+    config_parm["parm"]["wav_model"] = wav_model
+
+    return config_parm
+
+
+# ==================================================================== CHJ =====
+def check_valid_parm(home_dir,config_parm):
+    # Check whether exec dir is empty
+    exec_dir = os.path.join(home_dir, 'exec')
+    exec_path = Path(exec_dir)
+    fix_dir = os.path.join(home_dir, 'fix')
+    fix_path = Path(fix_dir)
+    if not exec_path.exists():
+        logging.error(f''' exec directory "{exec_path}" does NOT exist. You might skip the build step !!!''')
+        sys.exit(1)        
+    else:
+        visible_files = [p for p in fix_path.iterdir() if not p.name.startswith(".")]
+        if not visible_files:
+            logging.error(f''' fix directory "{fix_path}" is EMPTY. Please check the link in the build script !!!''')
+            sys.exit(1)
+
+    # Check lowercase/uppercase
+    datm_data_type_orig = config_parm["parm"]["DATM_DATA_TYPE"]
+    datm_data_type = datm_data_type_orig.lower()
+    config_parm["parm"]["DATM_DATA_TYPE"] = datm_data_type
+
+    do_free_forecast_orig = config_parm["flag"]["DO_FREE_FORECAST"]
+    do_free_forecast_options = ["first", "all", "none", "ctest"]
+    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
+    if isinstance(do_free_forecast_orig, bool):
+        logging.error(err_msg)
+        sys.exit(1)
+    elif not do_free_forecast_orig.islower():
+        do_free_forecast = do_free_forecast_orig.lower()
+        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
+    else:
+        do_free_forecast = do_free_forecast_orig
+    config_parm["flag"]["DO_FREE_FORECAST"] = do_free_forecast
+
+    if do_free_forecast not in do_free_forecast_options:
+        logging.error(err_msg)
+        sys.exit(1)
+
+    # Check for unsupported conditions
+    jedi_type_snow = config_parm["flag"]["JEDI_TYPE_SNOW"]
+    jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
+    jedi_type_soil_moisture = config_parm["flag"]["JEDI_TYPE_SOIL_MOISTURE"]
+    obs_ghcn_snow = config_parm["flag"]["OBS_GHCN_SNOW"]
+    obs_ims_snow = config_parm["flag"]["OBS_IMS_SNOW"]
+    obs_sfcsno = config_parm["flag"]["OBS_SFCSNO"]
+    obs_smap = config_parm["flag"]["OBS_SMAP"]
+    obs_smops = config_parm["flag"]["OBS_SMOPS"]
+    if obs_ghcn_snow == "YES" and obs_ims_snow == "YES":
+        logging.error("FATAL ERROR: Both OBS_GHCN_SNOW and OBS_IMS_SNOW are selected, but this is not supported by JCB!!!", exc_info=True)
+        sys.exit(1)
+    elif obs_smap == "YES" and obs_smops == "YES":
+        logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
+        sys.exit(1)
 
     if do_free_forecast == "none":
         if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca == "NO":
@@ -271,136 +459,25 @@ def setup_wflow_env(machine):
         elif jedi_type_soil_moisture == "NO" and (obs_smap == "YES" or obs_smops == "YES"):
             logging.error(f'''FATAL ERROR: JEDI_TYPE_SOIL_MOISTURE = "NO", but soil moisture observations are on: SMAP ({obs_smap}) and SMOPS ({obs_smops})!!!''')
             sys.exit(1)
+  
+    exp_case_path = config_parm["path"]["exp_case_path"]
+    with open(os.path.join(exp_case_path,"config_final.yaml"), "w") as f:
+        yaml.dump(config_parm, f, sort_keys=True, default_flow_style=False)
 
-    # Set machine-dependent paths if not specified in config.yaml
-    jedi_bin_path = config_parm.get("JEDI_BIN_PATH")
-    if jedi_bin_path is None:
-        jedi_bin_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+    return config_parm
 
-    jedi_iodaconv_path = config_parm.get("JEDI_IODACONV_PATH")
-    jedi_py_ver = config_parm.get("JEDI_PY_VER")
-    if jedi_iodaconv_path is None:
-        jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
 
-    custom_jedi_config_path = config_parm.get("CUSTOM_JEDI_CONFIG_PATH")
-    if custom_jedi_config_path is None:
-        custom_jedi_config_path = os.path.join(fix_dir, "DATA_jedi", "custom_yaml")
+# ==================================================================== CHJ =====
+def create_xml_extra(parm_dir,config_parm):
+    coldstart = config_parm["flag"]["COLDSTART"]
+    exp_case_path = config_parm["path"]["exp_case_path"]
+    ptmp = config_parm["path"]["PTMP"]
+    envir = config_parm["parm"]["envir"]
+    model_ver = config_parm["parm"]["model_ver"]
+    net = config_parm["parm"]["NET"]
 
-    warmstart_dir = config_parm.get("WARMSTART_DIR")
-    if warmstart_dir is None:
-        warmstart_dir = os.path.join(fix_dir, "DATA_restart")
-
-    # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
-    ptmp = config_parm.get("PTMP")
-    if ptmp is None:
-        ptmp = os.path.join(exp_basedir, "ptmp")
-
-    # Set undefined parameter values
-    ## MOM6
-    mom6_dt_therm = config_parm.get("MOM6_DT_THERM")
-    if mom6_dt_therm is None:
-        dt_mom6 = config_parm.get("DT_MOM6")
-        mom6_dt_therm = 2*dt_mom6
-    ## OUTPUT_FH_CICE: output frequency of CICE
-    output_fh = config_parm.get("OUTPUT_FH")
-    output_fh_list = list(map(int, output_fh.split()))
-    output_fh_cice = config_parm.get("OUTPUT_FH_CICE")
-    if output_fh_cice is None:
-        if output_fh_list[1] == -1:
-            output_fh_cice = output_fh_list[0]
-        else:
-            output_fh_cice = 6
-            logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cice}" by default.''')
-
-    ## OUTPUT_FH_MOM6: output frequency of MOM6
-    output_fh_mom6 = config_parm.get("OUTPUT_FH_MOM6")
-    if output_fh_mom6 is None:
-        if output_fh_list[1] == -1:
-            if output_fh_list[0] % 2 == 0:
-                output_fh_mom6 = output_fh_list[0]
-            else:
-                output_fh_mom6 = 6
-                logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[0] is not an even number; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
-        else:
-            output_fh_mom6 = 6
-            logging.warning(f''' OUTPUT_FH_MOM6 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" by default.''')
-    else:
-        if output_fh_mom6 % 2 != 0:
-            logging.error(f''' FATAL ERROR: OUTPUT_FH_MOM6 is set to "{output_fh_mom6}" in config.yaml, but it is not an even number.''')
-            sys.exit(1)
-
-    ## OUTPUT_FH_WW3: output frequency of WW3 ("in hours"), note that this will be converted to seconds in script
-    output_fh_ww3 = config_parm.get("OUTPUT_FH_WW3")
-    if output_fh_ww3 is None:
-        if output_fh_list[1] == -1:
-            output_fh_ww3 = output_fh_list[0]
-        else:
-            output_fh_ww3 = 6
-            logging.warning(f''' OUTPUT_FH_WW3 is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_WW3 is set to "{output_fh_ww3} hours" by default.''')
-
-    ## ALLCOMP_RESTART_N: output frequency of mediator (CMEPS) restart files
-    restart_interval = config_parm.get("RESTART_INTERVAL")
-    restart_interval_list = list(map(int, restart_interval.split()))
-    allcomp_restart_n = config_parm.get("ALLCOMP_RESTART_N")
-    if allcomp_restart_n is None:
-        if restart_interval_list[1] == -1:
-            allcomp_restart_n = restart_interval_list[0]
-        else:
-            allcomp_restart_n = 12
-            logging.warning(f''' ALLCOMP_RESTART_N is not specified in config.yaml and RESTART_INTERVAL[1] != -1; ALLCOMP_RESTART_N is set to "{allcomp_restart_n}" by default.''')
-
-    # Update config yaml file
-    config_parm.update({
-        'ALLCOMP_RESTART_N': allcomp_restart_n,
-        'atm_model': atm_model,
-        'CUSTOM_JEDI_CONFIG_PATH': custom_jedi_config_path,
-        'date_second_cycle': date_second_cycle,
-        'DATM_DATA_TYPE': datm_data_type,
-        'datm_nx_global': datm_nx_global,
-        'datm_ny_global': datm_ny_global,
-        'DO_FREE_FORECAST': do_free_forecast,
-        'exp_case_path': exp_case_path,
-        'ice_model': ice_model,
-        'JEDI_BIN_PATH': jedi_bin_path,
-        'JEDI_IODACONV_PATH': jedi_iodaconv_path,
-        'list_jedi_land': list_jedi_land,
-        'memory_flag': memory_flag,
-        'MOM6_DT_THERM': mom6_dt_therm,
-        'native_default': native_default,
-        'nnodes_analysis': nnodes_analysis,
-        'nnodes_forecast': nnodes_forecast,
-        'nnodes_prep_data': nnodes_prep_data,
-        'nprocs_forecast': nprocs_forecast,
-        'nprocs_forecast_atm': nprocs_forecast_atm,
-        'nprocs_forecast_med': nprocs_forecast_med,
-        'nprocs_per_node_analysis': nprocs_per_node_analysis,
-        'nprocs_per_node_forecast': nprocs_per_node_forecast,
-        'nprocs_per_node_prep_data': nprocs_per_node_prep_data,
-        'NPROCS_PREP_DATA': nprocs_prep_data,
-        'ocn_model': ocn_model,
-        'OUTPUT_FH_CICE': output_fh_cice,
-        'OUTPUT_FH_MOM6': output_fh_mom6,
-        'OUTPUT_FH_WW3': output_fh_ww3,
-        'partition_default': partition_default,
-        'PTMP': ptmp,
-        'queue_default': queue_default,
-        'WARMSTART_DIR': warmstart_dir,
-        'wav_model': wav_model,
-        })
-   
     config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
     logging.debug(f''' FINAL configuration: {config_parm_str}''')
-
-    if os.path.exists(exp_case_path) and os.path.isdir(exp_case_path):
-        tmp_new_name = exp_case_path+"_old"
-        if os.path.exists(tmp_new_name):
-            shutil.rmtree(tmp_new_name)
-        os.rename(exp_case_path, tmp_new_name)
-        os.makedirs(exp_case_path)
-    else:
-        os.makedirs(exp_case_path)
-
-    logging.info(f''' Experimental case directory {exp_case_path} has been created.''')
 
     # Create YAML file for Rocoto XML from template
     fn_yaml_rocoto_template = "template.rocoto_xml_file.yaml"
@@ -418,7 +495,6 @@ def setup_wflow_env(machine):
               to create a '{fp_yaml_rocoto}' file from a jinja2 template failed.''')
         return False
 
-    # Call uwtools to create Rocoto XML file
     fn_xml_rocoto = "ufsda_rocoto.xml"
     fp_xml_rocoto = os.path.join(exp_case_path, fn_xml_rocoto)
     realize(
@@ -449,9 +525,6 @@ def setup_wflow_env(machine):
     os.chmod(fp_auto_script_expt, 0o755)
 
     # Add links to log/tmp/com directories within exp_case directory
-    envir = config_parm.get("envir")
-    model_ver = config_parm.get("model_ver")
-    net = config_parm.get("NET")
     log_dir_src = os.path.join(ptmp, envir, "com/output/logs")
     log_dir_dst = os.path.join(exp_case_path, "log_dir")
     tmp_dir_src = os.path.join(ptmp, envir, "tmp")
@@ -463,7 +536,6 @@ def setup_wflow_env(machine):
     os.symlink(com_dir_src, com_dir_dst)
 
     # Create coldstart txt file for 1st cycle only for cold start
-    coldstart = config_parm.get("COLDSTART")
     if coldstart == "YES":
         fn_pass = f"task_skip_coldstart_{date_first_cycle}.txt"
         open(os.path.join(exp_case_path,fn_pass), 'a').close()
@@ -473,96 +545,8 @@ def setup_wflow_env(machine):
     open(os.path.join(exp_case_path,fn_pass), 'a').close()
 
 
-# Default values of configuration =================================== CHJ =====
-def set_default_parm():
-# =================================================================== CHJ =====
-
-    default_config = {
-        "ACCOUNT": "epic",
-        "ALLCOMP_RESTART_N": None,
-        "APP": "S2SWA",
-        "ATM_IO_LAYOUT_X": 1,
-        "ATM_IO_LAYOUT_Y": 1,
-        "ATM_LAYOUT_X": 3,
-        "ATM_LAYOUT_Y": 8,
-        "COMINgdas": "",
-        "COMINgfs": "",
-        "CCPP_SUITE": "FV3_GFS_v17_coupled_p8_ugwpv1",
-        "COLDSTART": "NO",
-        "CUSTOM_JEDI_CONFIG_FLAG": "NO",
-        "CUSTOM_JEDI_CONFIG_PATH": None,
-        "CUSTOM_JEDI_CONFIG_PREFIX": "/prefix/of/custom/JEDI/config/file/name",
-        "DATE_CYCLE_FREQ_HR": 24,
-        "DATE_FIRST_CYCLE": 202103220600,
-        "DATE_LAST_CYCLE": 202103230600,
-        "DATM_DATA_TYPE": "gfs",
-        "DCOMINghcn": "",
-        "DCOMINobs": "",
-        "DCOMINsmap": "",
-        "DCOMINsmops": "",
-        "DO_FREE_FORECAST": "none",
-        "DT_ATMOS": 720,
-        "DT_MOM6": 1800,
-        "DT_RUNSEQ": 3600,
-        "EXP_CASE_NAME": None,
-        "envir": "test",
-        "FCST_HRS": 24,
-        "FHROT": 0,
-        "FRAC_GRID": "YES",
-        "IC_DATA_MODEL": "gfs",
-        "IC_FROM_FIX_DIR": "YES",
-        "JEDI_ALGORITHM": "letkf-oi",
-        "JEDI_BIN_PATH": None,
-        "JEDI_IODACONV_PATH": None,
-        "JEDI_PY_VER": "python3.11",
-        "JEDI_TYPE_SNOW": "NO",
-        "JEDI_TYPE_SOIL_MOISTURE": "NO",
-        "JEDI_TYPE_SOCA": "NO",
-        "KEEPDATA": "YES",
-        "MACHINE": "/machine/platform/name",
-        "model_ver": "v1.0.0",
-        "MOM6_DT_THERM": None,
-        "MOM6_NIGLOBAL": 360,
-        "MOM6_NJGLOBAL": 320,
-        "MOM6_NK": 75,
-        "NET": "ufsda",
-        "NPROCS_ANALYSIS": 6,
-        "NPROCS_DATM": 12,
-        "NPROCS_FCST_IC": 36,
-        "NPROCS_ICE": 10,
-        "NPROCS_OCN": 20,
-        "NPROCS_PREP_DATA": 1,
-        "NPROCS_WAV": 60,
-        "NPZ": 127,
-        "OBS_GHCN_SNOW": "NO",
-        "OBS_IMS_SNOW": "NO",
-        "OBS_SFCSNO": "NO",
-        "OBS_SMAP": "NO",
-        "OBS_SMOPS": "NO",
-        "OCN_MESH_FN": "mesh.mx100.nc",
-        "OUTPUT_FH": "6 -1",
-        "OUTPUT_FH_CICE": None,
-        "OUTPUT_FH_MOM6": None,
-        "OUTPUT_FH_WW3": None,
-        "PTMP": None,
-        "PY_LOG_LEVEL": "INFO",
-        "RES": 96,
-        "RESTART_INTERVAL": "12 -1",
-        "RUN": "ufsda",
-        "SMAP_RAW_WINDOW_SPAN_HALF": 5,
-        "WALLTIME_FORECAST": "00:40:00",
-        "WARMSTART_DIR": None,
-        "WRITE_GROUPS": 1,
-        "WRITE_TASKS_PER_GROUP": 6,
-    }
-
-    return default_config
-
-
 # Machine-specific values of configuration ========================== CHJ =====
 def set_machine_parm(machine):
-# =================================================================== CHJ =====
-
     lowercase_machine = machine.lower()
     match lowercase_machine:
         case "gaeac6":
@@ -579,15 +563,31 @@ def set_machine_parm(machine):
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
 
     machine_config = {
-        "MAX_CORES_PER_NODE": MAX_CORES_PER_NODE,
+        'parm':{
+            "MAX_CORES_PER_NODE": MAX_CORES_PER_NODE,
+        }
     }
 
     return machine_config
 
 
+# Merge dictionaries ================================================ CHJ =====
+def merge_dicts(a, b):
+    """Recursively merge dictionary b into dictionary a."""
+    for key, value in b.items():
+        if (
+            key in a
+            and isinstance(a[key], dict)
+            and isinstance(value, dict)
+        ):
+            merge_dicts(a[key], value)
+        else:
+            a[key] = value
+    return a
+
+
 # Parse arguments =================================================== CHJ =====
 def parse_args(argv):
-# =================================================================== CHJ =====
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description="Generate case-specific workflow environment.")
 
@@ -608,8 +608,6 @@ def parse_args(argv):
 
 # Detect platform (machine) ========================================= CHJ =====
 def detect_platform():
-# =================================================================== CHJ =====
-
     if os.path.isdir("/scratch3/NAGAPE"):
         host_str = socket.gethostname()[0:3]
         if host_str == "ufe":

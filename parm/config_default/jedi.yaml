@@ -1,0 +1,14 @@
+flag:
+  CUSTOM_JEDI_CONFIG_FLAG: 'NO'
+  JEDI_TYPE_SNOW: 'NO'
+  JEDI_TYPE_SOIL_MOISTURE: 'NO'
+  JEDI_TYPE_SOCA: 'NO'
+path:
+  CUSTOM_JEDI_CONFIG_PATH: None
+  JEDI_BIN_PATH: None
+  JEDI_IODACONV_PATH: None
+parm:
+  CUSTOM_JEDI_CONFIG_PREFIX: /prefix/of/custom/JEDI/config/file/name
+  JEDI_ALGORITHM: letkf-oi
+  JEDI_PY_VER: python3.11
+
