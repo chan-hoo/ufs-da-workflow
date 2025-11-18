@@ -2,6 +2,7 @@ flag:
 path:
 parm:
   ALLCOMP_RESTART_N: None
+  APP: S2SWA
   ATM_IO_LAYOUT_X: 1
   ATM_IO_LAYOUT_Y: 1
   ATM_LAYOUT_X: 3
