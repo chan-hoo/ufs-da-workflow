@@ -232,6 +232,8 @@ def add_new_parm_hpc(machine,config_parm):
     config_parm["parm"]["nprocs_forecast_atm"] = nprocs_forecast_atm
     config_parm["parm"]["nprocs_forecast_med"] = nprocs_forecast_med
     config_parm["parm"]["nprocs_per_node_analysis"] = nprocs_per_node_analysis
+    config_parm["parm"]["nprocs_per_node_forecast"] = nprocs_per_node_forecast
+    config_parm["parm"]["nprocs_per_node_prep_data"] = nprocs_per_node_prep_data
     config_parm["parm"]["NPROCS_PREP_DATA"] = nprocs_prep_data
     config_parm["parm"]["partition_default"] = partition_default
     config_parm["parm"]["queue_default"] = queue_default
@@ -460,6 +462,7 @@ def check_valid_parm(home_dir,config_parm):
             logging.error(f'''FATAL ERROR: JEDI_TYPE_SOIL_MOISTURE = "NO", but soil moisture observations are on: SMAP ({obs_smap}) and SMOPS ({obs_smops})!!!''')
             sys.exit(1)
   
+    # Print out final configuration to experimental case dir
     exp_case_path = config_parm["path"]["exp_case_path"]
     with open(os.path.join(exp_case_path,"config_final.yaml"), "w") as f:
         yaml.dump(config_parm, f, sort_keys=True, default_flow_style=False)
@@ -472,11 +475,15 @@ def create_xml_extra(parm_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     ptmp = config_parm["path"]["PTMP"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     envir = config_parm["parm"]["envir"]
     model_ver = config_parm["parm"]["model_ver"]
     net = config_parm["parm"]["NET"]
 
-    config_parm_str = yaml.dump(config_parm, sort_keys=True, default_flow_style=False)
+    flat = {}
+    for key, content in config_parm.items():
+        flat.update(content)
+    config_parm_str = yaml.dump(flat, sort_keys=True, default_flow_style=False)
     logging.debug(f''' FINAL configuration: {config_parm_str}''')
 
     # Create YAML file for Rocoto XML from template
