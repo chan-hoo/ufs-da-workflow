@@ -24,7 +24,7 @@
 {%- endif %}
 
 ## Export environment variables
-
+source "{{ exp_case_path }}/task_env/{{ task_name }}.env"
 
 ## Load module files for specific task
 {%- if MACHINE == "gaeac6" %}

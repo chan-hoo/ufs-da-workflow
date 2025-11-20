@@ -14,4 +14,4 @@ parm:
   IC_DATA_MODEL: gfs
   MACHINE: /machine/platform/name
   PY_LOG_LEVEL: INFO
-  WFLOW_MANAGER: rocoto
+  WORKFLOW_MANAGER: rocoto
