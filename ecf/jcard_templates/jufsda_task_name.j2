@@ -1,0 +1,35 @@
+#!/bin/bash -l
+{%- if WFLOW_MANAGER != "rocoto" %}
+{%- if SCHED == "slurm" %}
+#SBATCH --account={{ ACCOUNT }}
+#SBATCH --job-name={{ job_name }}
+#SBATCH --output={{ output_name }}
+#SBATCH --partition={{ partition_queue }}
+#SBATCH --qos={{ qos }}
+#SBATCH --time={{ wall_time }}
+#SBATCH --nodes={{ num_nodes }}
+#SBATCH --ntasks-per-node={{ ntasks_per_node }}
+#SBATCH --mem={{ memory_per_node }}
+{%- elif SCHED == "pbs" %}
+#PBS -S /bin/bash
+#PBS -A {{ ACCOUNT }}
+#PBS -N {{ job_name }}
+#PBS -o {{ output_name }}
+#PBS -j oe
+#PBS -q {{ partition_queue }}
+#PBS -l walltime=02:30:00
+#PBS -l nodes={{ num_nodes }}:ppn={{ ntasks_per_node }}
+#PBS -l mem={{ memory_per_node }}
+{%- endif %}
+{%- endif %}
+
+
+## Export environment variables
+
+
+## Load module files for specific task
+
+
+## Run ex-script for specific task
+
+
