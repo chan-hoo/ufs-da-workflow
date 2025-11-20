@@ -143,6 +143,7 @@ def add_new_parm_base(home_dir,config_parm):
     config_parm["parm"]["res_p1"] = config_parm["parm"]["RES"] + 1
     config_parm["path"]["exp_basedir"] = exp_basedir
     config_parm["path"]["exp_case_path"] = exp_case_path
+    config_parm["path"]["HOMEufsda"] = home_dir
     config_parm["path"]["PTMP"] = ptmp
     config_parm["path"]["WARMSTART_DIR"] = warmstart_dir
 
@@ -556,22 +557,31 @@ def create_xml_extra(parm_dir,config_parm):
 def set_machine_parm(machine):
     lowercase_machine = machine.lower()
     match lowercase_machine:
+        case "derecho":
+            MAX_CORES_PER_NODE = 128
+            SCHED = "pbs"
         case "gaeac6":
             MAX_CORES_PER_NODE = 192
+            SCHED = "slurm"
         case "hera":
             MAX_CORES_PER_NODE = 40
+            SCHED = "slurm"
         case "hercules":
             MAX_CORES_PER_NODE = 80
+            SCHED = "slurm"
         case "orion":
             MAX_CORES_PER_NODE = 40
+            SCHED = "slurm"
         case "ursa":
             MAX_CORES_PER_NODE = 192
+            SCHED = "slurm"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
 
     machine_config = {
         'parm':{
             "MAX_CORES_PER_NODE": MAX_CORES_PER_NODE,
+            "SCHED": SCHED,
         }
     }
 

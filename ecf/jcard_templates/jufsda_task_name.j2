@@ -23,13 +23,19 @@
 {%- endif %}
 {%- endif %}
 
-
 ## Export environment variables
 
 
 ## Load module files for specific task
+{%- if MACHINE == "gaeac6" %}
+module reset
+{%- else %}
+module purge
+{%- endif %}
+source "{{ HOMEufsda }}/versions/run.ver_{{ MACHINE }}"
 
+module use {{ HOMEufsda }}/modulefiles/tasks/{{ MACHINE }}
+module load task.{{ task_name }}
 
-## Run ex-script for specific task
-
-
+## Run task script
+{{ HOMEufsda }}/scripts/exufsda_{{ task_name }}.sh
