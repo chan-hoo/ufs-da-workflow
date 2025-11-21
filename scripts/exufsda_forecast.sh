@@ -3,16 +3,6 @@
 set -xue
 
 ulimit -s unlimited; ulimit -a;
-#
-#-----------------------------------------------------------------------
-# This part replaces the role of J-job script in the NOAA NCO standards
-#-----------------------------------------------------------------------
-#
-source ${HOMEufsda}/parm/jjob_env_setup.sh
-#
-#-----------------------------------------------------------------------
-#-----------------------------------------------------------------------
-#
 
 #export MPI_TYPE_DEPTH=20
 export OMP_STACKSIZE=512M
@@ -652,19 +642,4 @@ if [ "${ocn_model}" = "mom6" ]; then
     ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc" ${DATA_RESTART}/.
   fi
 fi
-
-
-##########################################################################
-#
-#-----------------------------------------------------------------------
-# J-job script ending part
-#-----------------------------------------------------------------------
-#
-if [ -e "$pgmout" ]; then
-  cat $pgmout
-fi
-if [ "${KEEPDATA}" = "NO" ]; then
-  rm -rf ${DATA}
-fi
-date
 

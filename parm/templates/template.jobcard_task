@@ -1,5 +1,5 @@
 #!/bin/bash -l
-{%- if WFLOW_MANAGER != "rocoto" %}
+{%- if WORKFLOW_MANAGER != "rocoto" %}
 {%- if SCHED == "slurm" %}
 #SBATCH --account={{ ACCOUNT }}
 #SBATCH --job-name={{ job_name }}
@@ -17,13 +17,19 @@
 #PBS -o {{ output_name }}
 #PBS -j oe
 #PBS -q {{ partition_queue }}
-#PBS -l walltime=02:30:00
+#PBS -l walltime={{ wall_time }}
 #PBS -l nodes={{ num_nodes }}:ppn={{ ntasks_per_node }}
 #PBS -l mem={{ memory_per_node }}
 {%- endif %}
 {%- endif %}
 
-## Export environment variables
+{%- if WORKFLOW_MANAGER == "ecflow" %}
+%include <head.h>
+%include <envir-p1.h>
+export cyc=%CYC%
+{%- endif %}
+
+## Export task-specific environment variables
 source "{{ exp_case_path }}/task_env/{{ task_name }}.env"
 
 ## Load module files for specific task
@@ -33,9 +39,26 @@ module reset
 module purge
 {%- endif %}
 source "{{ HOMEufsda }}/versions/run.ver_{{ MACHINE }}"
-
 module use {{ HOMEufsda }}/modulefiles/tasks/{{ MACHINE }}
 module load task.{{ task_name }}
+module list
 
-## Run task script
+#################################
+## Replacement of J-job script
+#################################
+source {{ HOMEufsda }}/parm/jjob_env_setup.sh
+
+### Run task ex-script
 {{ HOMEufsda }}/scripts/exufsda_{{ task_name }}.sh
+
+if [ -e "$pgmout" ]; then
+  cat $pgmout
+fi
+if [ "${KEEPDATA}" = "NO" ]; then
+  rm -rf ${DATA}
+fi
+date
+
+{%- if WORKFLOW_MANAGER == "ecflow" %}
+%include <tail.h>
+{%- endif %}

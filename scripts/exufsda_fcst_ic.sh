@@ -3,16 +3,6 @@
 set -xue
 
 ulimit -s unlimited; ulimit -a;
-#
-#-----------------------------------------------------------------------
-# This part replaces the role of J-job script in the NOAA NCO standards
-#-----------------------------------------------------------------------
-#
-source ${HOMEufsda}/parm/jjob_env_setup.sh
-#
-#-----------------------------------------------------------------------
-#-----------------------------------------------------------------------
-#
 
 # Set OpenMP variables.
 export KMP_AFFINITY="scatter"
@@ -122,19 +112,4 @@ do
   cp -p ${DATA}/out.atm.tile${itile}.nc ${COMINOUT}/gfs_data.tile${itile}.nc
   cp -p ${DATA}/out.sfc.tile${itile}.nc ${COMINOUT}/sfc_data.tile${itile}.nc
 done
-
-
-##########################################################################
-#
-#-----------------------------------------------------------------------
-# J-job script ending part
-#-----------------------------------------------------------------------
-#
-if [ -e "$pgmout" ]; then
-  cat $pgmout
-fi
-if [ "${KEEPDATA}" = "NO" ]; then
-  rm -rf ${DATA}
-fi
-date
 

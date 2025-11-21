@@ -52,8 +52,20 @@ def setup_wflow_env(machine):
     # Check if parameters are valid
     config_parm = check_valid_parm(home_dir,config_parm)
 
+    # Remove keys from config_parm
+    flat = {}
+    for key, content in config_parm.items():
+        flat.update(content)
+    config_parm_str = yaml.dump(flat, sort_keys=True, default_flow_style=False)
+    logging.debug(f''' FINAL configuration: {config_parm_str}''')
+
+    # Create job cards and task-specific environment variable files
+    create_jobcard_envvar(parm_dir,config_parm,config_parm_str)
+
     # Create Rocoto XML and extra files
-    create_xml_extra(parm_dir,config_parm)
+    workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
+    if workflow_manager == "rocoto":
+        create_xml_extra(parm_dir,config_parm,config_parm_str)
 
 
 # ==================================================================== CHJ =====
@@ -472,7 +484,70 @@ def check_valid_parm(home_dir,config_parm):
 
 
 # ==================================================================== CHJ =====
-def create_xml_extra(parm_dir,config_parm):
+def create_jobcard_envvar(parm_dir,config_parm,config_parm_str):
+    exp_case_path = config_parm["path"]["exp_case_path"]
+    workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
+    
+    env_fp = os.path.join(exp_case_path,"task_env")
+    os.mkdir(env_fp)
+    # list of tasks based on template files
+    tenv_path = os.path.join(parm_dir,"templates/task_env")
+    prefix = "template."
+    suffix = ".env"
+    tasks = []
+    for fn in os.listdir(tenv_path):
+        if fn.startswith(prefix) and fn.endswith(suffix) and os.path.isfile(os.path.join(tenv_path,fn)):
+            task_name = fn[len(prefix):-len(suffix)]
+            tasks.append(task_name)
+    tasks = sorted(tasks)
+    logging.info(f''' Task env files: {tasks}''')
+
+    # Create task-specific env files from template
+    for itask in tasks:
+        fn_env_template = f'''{prefix}{itask}{suffix}'''
+        fn_env = f'''{itask}{suffix}'''
+        fp_env_template = os.path.join(tenv_path,fn_env_template)
+        fp_env = os.path.join(env_fp,fn_env)
+        try:
+            fill_jinja_template([
+                "-q",
+                "-u", config_parm_str,
+                "-t", fp_env_template,
+                "-o", fp_env ])
+        except:
+            logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+                  to create a '{fp_env}' file from a jinja2 template failed.''')
+            return False
+        logging.info(f''' Task env file: {fn_env} created''')
+
+    # Create job cards from template
+    jcard_fp = os.path.join(exp_case_path,"job_cards")
+    os.mkdir(jcard_fp)
+    fn_jcard_template = "template.jobcard_task"
+    fp_jcard_template = os.path.join(parm_dir,"templates",fn_jcard_template)
+    print(fp_jcard_template)
+    if workflow_manager == "ecflow":
+        jcard_suffix = ".ecf"
+    else:
+        jcard_suffix = ""
+    for itask in tasks:
+        fn_jcard = f'''jufsda_{itask}{jcard_suffix}'''
+        fp_jcard = os.path.join(jcard_fp,fn_jcard)
+        try:
+            fill_jinja_template([
+                "-q",
+                "-u", config_parm_str,
+                "-t", fp_jcard_template,
+                "-o", fp_jcard ])
+        except:
+            logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+                  to create a '{fp_jcard}' file from a jinja2 template failed.''')
+            return False
+        logging.info(f''' Job card for {itask} created''')
+
+
+# ==================================================================== CHJ =====
+def create_xml_extra(parm_dir,config_parm,config_parm_str):
     coldstart = config_parm["flag"]["COLDSTART"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     ptmp = config_parm["path"]["PTMP"]
@@ -480,12 +555,6 @@ def create_xml_extra(parm_dir,config_parm):
     envir = config_parm["parm"]["envir"]
     model_ver = config_parm["parm"]["model_ver"]
     net = config_parm["parm"]["NET"]
-
-    flat = {}
-    for key, content in config_parm.items():
-        flat.update(content)
-    config_parm_str = yaml.dump(flat, sort_keys=True, default_flow_style=False)
-    logging.debug(f''' FINAL configuration: {config_parm_str}''')
 
     # Create YAML file for Rocoto XML from template
     fn_yaml_rocoto_template = "template.rocoto_xml_file.yaml"
@@ -495,6 +564,7 @@ def create_xml_extra(parm_dir,config_parm):
     logging.info(f''' Rocoto YAML template: {fp_yaml_rocoto_template}''')
     try:
         fill_jinja_template([
+            "-q",
             "-u", config_parm_str,
             "-t", fp_yaml_rocoto_template,
             "-o", fp_yaml_rocoto ])
@@ -503,6 +573,7 @@ def create_xml_extra(parm_dir,config_parm):
               to create a '{fp_yaml_rocoto}' file from a jinja2 template failed.''')
         return False
 
+    # Create Rocoto XML file
     fn_xml_rocoto = "ufsda_rocoto.xml"
     fp_xml_rocoto = os.path.join(exp_case_path, fn_xml_rocoto)
     realize(

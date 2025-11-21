@@ -2,16 +2,6 @@
 
 set -xue
 
-#
-#-----------------------------------------------------------------------
-# This part replaces the role of J-job script in the NOAA NCO standards
-#-----------------------------------------------------------------------
-#
-source ${HOMEufsda}/parm/jjob_env_setup.sh
-#
-#-----------------------------------------------------------------------
-#-----------------------------------------------------------------------
-#
 # Set the default values of plotting flags
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -406,19 +396,4 @@ EOF
   # Copy result files to COMINOUT
   cp -p ${out_fn_base}* ${COMINOUTplot}
 fi
-
-
-##########################################################################
-#
-#-----------------------------------------------------------------------
-# J-job script ending part
-#-----------------------------------------------------------------------
-#
-if [ -e "$pgmout" ]; then
-  cat $pgmout
-fi
-if [ "${KEEPDATA}" = "NO" ]; then
-  rm -rf ${DATA}
-fi
-date
 
