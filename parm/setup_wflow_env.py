@@ -60,12 +60,16 @@ def setup_wflow_env(machine):
     logging.debug(f''' FINAL configuration: {config_parm_str}''')
 
     # Create job cards and task-specific environment variable files
-    create_jobcard_envvar(parm_dir,config_parm,config_parm_str)
+    create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str)
 
-    # Create Rocoto XML and extra files
+    # Create workflow-manager dependent files
     workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
     if workflow_manager == "rocoto":
+        # Rocoto
         create_xml_extra(parm_dir,config_parm,config_parm_str)
+
+    # Create symbolic links for com/log/tmp and trigger files
+    create_symlinks_trigger(parm_dir,config_parm)
 
 
 # ==================================================================== CHJ =====
@@ -484,8 +488,11 @@ def check_valid_parm(home_dir,config_parm):
 
 
 # ==================================================================== CHJ =====
-def create_jobcard_envvar(parm_dir,config_parm,config_parm_str):
+def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     exp_case_path = config_parm["path"]["exp_case_path"]
+    account = config_parm["parm"]["ACCOUNT"]
+    machine = config_parm["parm"]["MACHINE"]
+    sched = config_parm["parm"]["SCHED"]
     workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
     
     env_fp = os.path.join(exp_case_path,"task_env")
@@ -525,18 +532,39 @@ def create_jobcard_envvar(parm_dir,config_parm,config_parm_str):
     os.mkdir(jcard_fp)
     fn_jcard_template = "template.jobcard_task"
     fp_jcard_template = os.path.join(parm_dir,"templates",fn_jcard_template)
-    print(fp_jcard_template)
+    if not os.path.exists(fp_jcard_template):
+        logging.error(f'''Job card template {fp_jcard_template} does NOT exist''')
+        sys.exit(1)
     if workflow_manager == "ecflow":
         jcard_suffix = ".ecf"
     else:
         jcard_suffix = ""
+
     for itask in tasks:
+        data_set = {
+            "ACCOUNT": account,
+            "exp_case_path": exp_case_path,
+            "HOMEufsda": home_dir,
+            "MACHINE": machine,
+            "memory_per_node": 1,
+            "ntasks_per_node": 1,
+            "num_nodes": 1,
+            "output_name": 1,
+            "partition_queue": 1,
+            "qos": 1,
+            "SCHED": sched,
+            "task_name": itask,
+            "wall_time": 1,
+            "WORKFLOW_MANAGER": workflow_manager,
+        }
+        data_set_str = yaml.dump(data_set, sort_keys=True)
+        logging.debug(f''' Data for {itask}: {data_set_str}''')
         fn_jcard = f'''jufsda_{itask}{jcard_suffix}'''
         fp_jcard = os.path.join(jcard_fp,fn_jcard)
         try:
             fill_jinja_template([
                 "-q",
-                "-u", config_parm_str,
+                "-u", data_set_str,
                 "-t", fp_jcard_template,
                 "-o", fp_jcard ])
         except:
@@ -548,13 +576,7 @@ def create_jobcard_envvar(parm_dir,config_parm,config_parm_str):
 
 # ==================================================================== CHJ =====
 def create_xml_extra(parm_dir,config_parm,config_parm_str):
-    coldstart = config_parm["flag"]["COLDSTART"]
     exp_case_path = config_parm["path"]["exp_case_path"]
-    ptmp = config_parm["path"]["PTMP"]
-    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
-    envir = config_parm["parm"]["envir"]
-    model_ver = config_parm["parm"]["model_ver"]
-    net = config_parm["parm"]["NET"]
 
     # Create YAML file for Rocoto XML from template
     fn_yaml_rocoto_template = "template.rocoto_xml_file.yaml"
@@ -602,6 +624,17 @@ def create_xml_extra(parm_dir,config_parm,config_parm_str):
     fp_auto_script_expt = os.path.join(exp_case_path, fn_auto_launch_py)
     shutil.copyfile(fp_auto_script_orig, fp_auto_script_expt)
     os.chmod(fp_auto_script_expt, 0o755)
+
+
+# ==================================================================== CHJ =====
+def create_symlinks_trigger(parm_dir,config_parm):
+    coldstart = config_parm["flag"]["COLDSTART"]
+    exp_case_path = config_parm["path"]["exp_case_path"]
+    ptmp = config_parm["path"]["PTMP"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
+    envir = config_parm["parm"]["envir"]
+    model_ver = config_parm["parm"]["model_ver"]
+    net = config_parm["parm"]["NET"]
 
     # Add links to log/tmp/com directories within exp_case directory
     log_dir_src = os.path.join(ptmp, envir, "com/output/logs")

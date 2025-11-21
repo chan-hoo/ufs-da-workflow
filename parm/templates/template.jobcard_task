@@ -2,7 +2,7 @@
 {%- if WORKFLOW_MANAGER != "rocoto" %}
 {%- if SCHED == "slurm" %}
 #SBATCH --account={{ ACCOUNT }}
-#SBATCH --job-name={{ job_name }}
+#SBATCH --job-name={{ task_name }}
 #SBATCH --output={{ output_name }}
 #SBATCH --partition={{ partition_queue }}
 #SBATCH --qos={{ qos }}
@@ -13,7 +13,7 @@
 {%- elif SCHED == "pbs" %}
 #PBS -S /bin/bash
 #PBS -A {{ ACCOUNT }}
-#PBS -N {{ job_name }}
+#PBS -N {{ task_name }}
 #PBS -o {{ output_name }}
 #PBS -j oe
 #PBS -q {{ partition_queue }}
@@ -32,7 +32,7 @@ export cyc=%CYC%
 ## Export task-specific environment variables
 source "{{ exp_case_path }}/task_env/{{ task_name }}.env"
 
-## Load module files for specific task
+## Load module files for task "{{ task_name }}"
 {%- if MACHINE == "gaeac6" %}
 module reset
 {%- else %}
