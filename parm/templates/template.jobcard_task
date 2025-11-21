@@ -6,9 +6,9 @@
 #SBATCH --output={{ output_name }}
 #SBATCH --partition={{ partition_queue }}
 #SBATCH --qos={{ qos }}
-#SBATCH --time={{ wall_time }}
-#SBATCH --nodes={{ num_nodes }}
-#SBATCH --ntasks-per-node={{ ntasks_per_node }}
+#SBATCH --time={{ walltime }}
+#SBATCH --nodes={{ nnodes }}
+#SBATCH --ntasks-per-node={{ nprocs_per_node }}
 #SBATCH --mem={{ memory_per_node }}
 {%- elif SCHED == "pbs" %}
 #PBS -S /bin/bash
@@ -17,9 +17,8 @@
 #PBS -o {{ output_name }}
 #PBS -j oe
 #PBS -q {{ partition_queue }}
-#PBS -l walltime={{ wall_time }}
-#PBS -l nodes={{ num_nodes }}:ppn={{ ntasks_per_node }}
-#PBS -l mem={{ memory_per_node }}
+#PBS -l walltime={{ walltime }}
+#PBS -l select={{ nnodes }}:ncpus={{ nprocs_per_node }}:mpiprocs={{ nprocs_per_node }}
 {%- endif %}
 {%- endif %}
 

@@ -177,8 +177,10 @@ def add_new_parm_hpc(machine,config_parm):
     max_cores_per_node = config_parm["parm"]["MAX_CORES_PER_NODE"]
     nprocs_analysis = config_parm["parm"]["NPROCS_ANALYSIS"]
     nprocs_datm = config_parm["parm"]["NPROCS_DATM"]
+    nprocs_fcst_ic = config_parm["parm"]["NPROCS_FCST_IC"]
     nprocs_ice = config_parm["parm"]["NPROCS_ICE"]
     nprocs_ocn = config_parm["parm"]["NPROCS_OCN"]
+    nprocs_plot_stats = config_parm["parm"]["NPROCS_PLOT_STATS"]
     nprocs_prep_data = config_parm["parm"]["NPROCS_PREP_DATA"]
     nprocs_wav = config_parm["parm"]["NPROCS_WAV"]
 
@@ -199,6 +201,14 @@ def add_new_parm_hpc(machine,config_parm):
         nnodes_analysis = math.ceil(nprocs_analysis/max_cores_per_node)
         nprocs_per_node_analysis = math.ceil(nprocs_analysis/nnodes_analysis)
 
+    # for fcst_ic task
+    if nprocs_fcst_ic <= max_cores_per_node:
+        nnodes_fcst_ic = 1
+        nprocs_per_node_fcst_ic = nprocs_fcst_ic
+    else:
+        nnodes_fcst_ic = math.ceil(nprocs_fcst_ic/max_cores_per_node)
+        nprocs_per_node_fcst_ic = math.ceil(nprocs_fcst_ic/nnodes_fcst_ic)
+
     # for forecast task
     if nprocs_forecast <= max_cores_per_node:
         nnodes_forecast = 1
@@ -206,6 +216,14 @@ def add_new_parm_hpc(machine,config_parm):
     else:
         nnodes_forecast = math.ceil(nprocs_forecast/max_cores_per_node)
         nprocs_per_node_forecast = math.ceil(nprocs_forecast/nnodes_forecast)
+
+    # for plot_stats
+    if nprocs_plot_stats <= max_cores_per_node:
+        nnodes_plot_stats = 1
+        nprocs_per_node_plot_stats = nprocs_plot_stats
+    else:
+        nnodes_plot_stats = math.ceil(nprocs_plot_stats/max_cores_per_node)
+        nprocs_per_node_plot_stats = math.ceil(nprocs_plot_stats/nnodes_plot_stats)
 
     # for prep_data task
     if nprocs_prep_data < 12:
@@ -219,20 +237,6 @@ def add_new_parm_hpc(machine,config_parm):
         nnodes_prep_data = math.ceil(nprocs_prep_data/max_cores_per_node)
         nprocs_per_node_prep_data = math.ceil(nprocs_prep_data/nnodes_prep_data)
 
-    # Machine-specific parameters
-    if machine == "gaeac6":
-        native_default = '-M c6'
-        partition_default = 'batch'
-        queue_default = 'normal'
-    elif machine == "ursa":
-        native_default = None
-        partition_default = 'u1-compute'
-        queue_default = 'batch'
-    else:
-        native_default = None
-        partition_default = machine
-        queue_default = 'batch'
-
     # Slurm memory flag: some platforms do not support the memory flag in slurm
     mem_not_req = [ "gaeac6" ]
     if machine in mem_not_req:
@@ -241,19 +245,20 @@ def add_new_parm_hpc(machine,config_parm):
         memory_flag = True
 
     config_parm["parm"]["memory_flag"] = memory_flag
-    config_parm["parm"]["native_default"] = native_default
     config_parm["parm"]["nnodes_analysis"] = nnodes_analysis
+    config_parm["parm"]["nnodes_fcst_ic"] = nnodes_fcst_ic
     config_parm["parm"]["nnodes_forecast"] = nnodes_forecast
+    config_parm["parm"]["nnodes_plot_stats"] = nnodes_plot_stats
     config_parm["parm"]["nnodes_prep_data"] = nnodes_prep_data
     config_parm["parm"]["nprocs_forecast"] = nprocs_forecast
     config_parm["parm"]["nprocs_forecast_atm"] = nprocs_forecast_atm
     config_parm["parm"]["nprocs_forecast_med"] = nprocs_forecast_med
     config_parm["parm"]["nprocs_per_node_analysis"] = nprocs_per_node_analysis
+    config_parm["parm"]["nprocs_per_node_fcst_ic"] = nprocs_per_node_fcst_ic
     config_parm["parm"]["nprocs_per_node_forecast"] = nprocs_per_node_forecast
+    config_parm["parm"]["nprocs_per_node_plot_stats"] = nprocs_per_node_plot_stats
     config_parm["parm"]["nprocs_per_node_prep_data"] = nprocs_per_node_prep_data
     config_parm["parm"]["NPROCS_PREP_DATA"] = nprocs_prep_data
-    config_parm["parm"]["partition_default"] = partition_default
-    config_parm["parm"]["queue_default"] = queue_default
 
     return config_parm
 
@@ -492,9 +497,13 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     exp_case_path = config_parm["path"]["exp_case_path"]
     account = config_parm["parm"]["ACCOUNT"]
     machine = config_parm["parm"]["MACHINE"]
+    memory_flag = config_parm["parm"]["memory_flag"]
+    native = config_parm["parm"]["NATIVE"]
+    partition_queue = config_parm["parm"]["PARTITION_QUEUE"]
+    qos = config_parm["parm"]["QOS"]
     sched = config_parm["parm"]["SCHED"]
     workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
-    
+
     env_fp = os.path.join(exp_case_path,"task_env")
     os.mkdir(env_fp)
     # list of tasks based on template files
@@ -524,7 +533,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         except:
             logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
                   to create a '{fp_env}' file from a jinja2 template failed.''')
-            return False
+            sys.exit(1)
         logging.info(f''' Task env file: {fn_env} created''')
 
     # Create job cards from template
@@ -540,21 +549,52 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     else:
         jcard_suffix = ""
 
+    ## HPC variable mapping for directives
+    varmap_hpc = {
+        "memory_per_node_analysis": config_parm["parm"]["MEMORY_PER_NODE_ANALYSIS"],
+        "memory_per_node_fcst_ic": config_parm["parm"]["MEMORY_PER_NODE_FCST_IC"],
+        "memory_per_node_forecast": config_parm["parm"]["MEMORY_PER_NODE_FORECAST"],
+        "memory_per_node_plot_stats": config_parm["parm"]["MEMORY_PER_NODE_PLOT_STATS"],
+        "memory_per_node_prep_data": config_parm["parm"]["MEMORY_PER_NODE_PREP_DATA"],
+        "nnodes_analysis": config_parm["parm"]["nnodes_analysis"],
+        "nnodes_fcst_ic": config_parm["parm"]["nnodes_fcst_ic"],
+        "nnodes_forecast": config_parm["parm"]["nnodes_forecast"],
+        "nnodes_plot_stats": config_parm["parm"]["nnodes_plot_stats"],
+        "nnodes_prep_data": config_parm["parm"]["nnodes_prep_data"],
+        "nprocs_per_node_analysis": config_parm["parm"]["nprocs_per_node_analysis"],
+        "nprocs_per_node_fcst_ic": config_parm["parm"]["nprocs_per_node_fcst_ic"],
+        "nprocs_per_node_forecast": config_parm["parm"]["nprocs_per_node_forecast"],
+        "nprocs_per_node_plot_stats": config_parm["parm"]["nprocs_per_node_plot_stats"],
+        "nprocs_per_node_prep_data": config_parm["parm"]["nprocs_per_node_prep_data"],
+        "walltime_analysis": config_parm["parm"]["WALLTIME_ANALYSIS"],
+        "walltime_fcst_ic": config_parm["parm"]["WALLTIME_FCST_IC"],
+        "walltime_forecast": config_parm["parm"]["WALLTIME_FORECAST"],
+        "walltime_plot_stats": config_parm["parm"]["WALLTIME_PLOT_STATS"],
+        "walltime_prep_data": config_parm["parm"]["WALLTIME_PREP_DATA"],
+    }
+    
+    ## Create job cards for tasks
     for itask in tasks:
+        memory_per_node_task = f'''memory_per_node_{itask}'''
+        nnodes_task = f'''nnodes_{itask}'''
+        nprocs_per_node_task = f'''nprocs_per_node_{itask}'''
+        walltime_task = f'''walltime_{itask}'''
+        output_name = f'''{itask}.log'''
         data_set = {
             "ACCOUNT": account,
             "exp_case_path": exp_case_path,
             "HOMEufsda": home_dir,
             "MACHINE": machine,
-            "memory_per_node": 1,
-            "ntasks_per_node": 1,
-            "num_nodes": 1,
-            "output_name": 1,
-            "partition_queue": 1,
-            "qos": 1,
+            "memory_flag": memory_flag,
+            "memory_per_node": varmap_hpc[memory_per_node_task],
+            "nnodes": varmap_hpc[nnodes_task],
+            "nprocs_per_node": varmap_hpc[nprocs_per_node_task],
+            "output_name": output_name,
+            "partition_queue": partition_queue,
+            "qos": qos,
             "SCHED": sched,
             "task_name": itask,
-            "wall_time": 1,
+            "walltime": varmap_hpc[walltime_task],
             "WORKFLOW_MANAGER": workflow_manager,
         }
         data_set_str = yaml.dump(data_set, sort_keys=True)
@@ -570,7 +610,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         except:
             logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
                   to create a '{fp_jcard}' file from a jinja2 template failed.''')
-            return False
+            sys.exit(1)
         os.chmod(fp_jcard, 0o755)
         logging.info(f''' Job card for {itask} created''')
 
@@ -664,21 +704,39 @@ def set_machine_parm(machine):
     match lowercase_machine:
         case "derecho":
             MAX_CORES_PER_NODE = 128
+            NATIVE = None
+            PARTITION_QUEUE = "main"
+            QOS = None
             SCHED = "pbs"
         case "gaeac6":
             MAX_CORES_PER_NODE = 192
+            NATIVE = '-M c6'
+            PARTITION_QUEUE = "batch"
+            QOS = "normal"
             SCHED = "slurm"
         case "hera":
             MAX_CORES_PER_NODE = 40
+            NATIVE = None
+            PARTITION_QUEUE = "hera"
+            QOS = "batch"
             SCHED = "slurm"
         case "hercules":
             MAX_CORES_PER_NODE = 80
+            NATIVE = None
+            PARTITION_QUEUE = "hercules"
+            QOS = "batch"
             SCHED = "slurm"
         case "orion":
             MAX_CORES_PER_NODE = 40
+            NATIVE = None
+            PARTITION_QUEUE = "orion"
+            QOS = "batch"
             SCHED = "slurm"
         case "ursa":
             MAX_CORES_PER_NODE = 192
+            NATIVE = None
+            PARTITION_QUEUE = "u1-compute"
+            QOS = "batch"
             SCHED = "slurm"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
@@ -686,6 +744,9 @@ def set_machine_parm(machine):
     machine_config = {
         'parm':{
             "MAX_CORES_PER_NODE": MAX_CORES_PER_NODE,
+            "NATIVE": NATIVE,
+            "PARTITION_QUEUE": PARTITION_QUEUE,
+            "QOS": QOS,
             "SCHED": SCHED,
         }
     }

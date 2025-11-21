@@ -21,8 +21,9 @@ workflow:
     envir: "{{ envir }}"
     exp_case_path: "{{ exp_case_path }}"
     MACHINE: "{{ MACHINE }}"
-    native_default: "{{ native_default }}"
+    NATIVE: "{{ NATIVE }}"
     NPROCS_ANALYSIS: "{{ NPROCS_ANALYSIS }}"
+    NPROCS_PLOT_STATS: "{{ NPROCS_PLOT_STATS }}"
     NPROCS_PREP_DATA: "{{ NPROCS_PREP_DATA }}"
     nnodes_analysis: "{{ nnodes_analysis }}"
     nnodes_forecast: "{{ nnodes_forecast }}"
@@ -31,9 +32,9 @@ workflow:
     nprocs_per_node_analysis: "{{ nprocs_per_node_analysis }}"
     nprocs_per_node_forecast: "{{ nprocs_per_node_forecast }}"
     nprocs_per_node_prep_data: "{{ nprocs_per_node_prep_data }}"
-    partition_default: "{{ partition_default }}"
+    PARTITION_QUEUE: "{{ PARTITION_QUEUE }}"
     PTMP: "{{ PTMP }}"
-    queue_default: "{{ queue_default }}"
+    QOS: "{{ QOS }}"
     WARMSTART_DIR: "{{ WARMSTART_DIR }}"
     HOMEufsda: "&exp_basedir;/ufs-da-workflow"
     COMROOT: "&PTMP;/&envir;/com"
@@ -63,12 +64,12 @@ workflow:
       command: '&exp_case_path;/job_cards/jufsda_prep_data'
       jobname: prep_data
       nodes: "&nnodes_prep_data;:ppn=&nprocs_per_node_prep_data;"
-      walltime: 00:30:00
-{%- if native_default is not none %}
-      native: "&native_default;"
+      walltime: {{ WALLTIME_PREP_DATA }}
+{%- if NATIVE is not none %}
+      native: "&NATIVE;"
 {%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
+      partition: "&PARTITION_QUEUE;"
+      queue: "&QOS;"
       join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
 {%- if memory_flag %}
       memory: 128G
@@ -109,12 +110,12 @@ workflow:
       command: '&exp_case_path;/job_cards/jufsda_analysis'
       jobname: analysis
       nodes: "&nnodes_analysis;:ppn=&nprocs_per_node_analysis;"
-{%- if native_default is not none %}
-      native: "&native_default;"
+{%- if NATIVE is not none %}
+      native: "&NATIVE;"
 {%- endif %}
-      walltime: 00:30:00
-      partition: "&partition_default;"
-      queue: "&queue_default;"
+      walltime: {{ WALLTIME_ANALYSIS }}
+      partition: "&PARTITION_QUEUE;"
+      queue: "&QOS;"
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
 {%- if MACHINE == "ursa" %}
       memory: 64G
@@ -139,12 +140,12 @@ workflow:
       command: '&exp_case_path;/job_cards/jufsda_fcst_ic'
       jobname: fcst_ic
       nodes: "1:ppn=&NPROCS_FCST_IC;"
-      walltime: 00:15:00
-{%- if native_default is not none %}
-      native: "&native_default;"
+      walltime: {{ WALLTIME_FCST_IC }}
+{%- if NATIVE is not none %}
+      native: "&NATIVE;"
 {%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
+      partition: "&PARTITION_QUEUE;"
+      queue: "&QOS;"
       join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
 {%- if memory_flag %}
       memory: 128G
@@ -167,11 +168,11 @@ workflow:
       jobname: forecast
       nodes: "&nnodes_forecast;:ppn=&nprocs_per_node_forecast;"
       walltime: {{ WALLTIME_FORECAST }}
-{%- if native_default is not none %}
-      native: "&native_default;"
+{%- if NATIVE is not none %}
+      native: "&NATIVE;"
 {%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
+      partition: "&PARTITION_QUEUE;"
+      queue: "&QOS;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
       dependency:
         and:
@@ -225,13 +226,13 @@ workflow:
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_plot_stats'
       jobname: plot_stats
-      cores: 1
-      walltime: 00:10:00
-{%- if native_default is not none %}
-      native: "&native_default;"
+      nodes: "1:ppn=&NPROCS_PLOT_STATS;"
+      walltime: {{ WALLTIME_PLOT_STATS }}
+{%- if NATIVE is not none %}
+      native: "&NATIVE;"
 {%- endif %}
-      partition: "&partition_default;"
-      queue: "&queue_default;"
+      partition: "&PARTITION_QUEUE;"
+      queue: "&QOS;"
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
       dependency:
 {%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
