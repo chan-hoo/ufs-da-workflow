@@ -8,7 +8,7 @@
 #-----------------------------------------------------------------------
 #
 export COMROOT="${COMROOT:-${PTMP}/${envir}/com}"
-export DATAROOT="${DATAROOT:-${PTMP}/${envir}/com}"
+export DATAROOT="${DATAROOT:-${PTMP}/${envir}/tmp}"
 
 export LOGDIR="${LOGDIR:-${COMROOT}/output/logs}"
 
