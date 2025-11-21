@@ -571,6 +571,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
             logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
                   to create a '{fp_jcard}' file from a jinja2 template failed.''')
             return False
+        os.chmod(fp_jcard, 0o755)
         logging.info(f''' Job card for {itask} created''')
 
 

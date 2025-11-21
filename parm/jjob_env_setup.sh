@@ -2,6 +2,7 @@
 
 date
 export PS4='+ $SECONDS + '
+set -x
 #
 #-----------------------------------------------------------------------
 #
@@ -14,27 +15,6 @@ export EXECufsda="${HOMEufsda}/exec"
 export PARMufsda="${HOMEufsda}/parm"
 export FIXufsda="${HOMEufsda}/fix"
 export SCRIPTSufsda="${HOMEufsda}/scripts"
-#
-#-----------------------------------------------------------------------
-#
-# Define job and jobid by default for rocoto
-#
-#-----------------------------------------------------------------------
-#
-WORKFLOW_MANAGER="${WORKFLOW_MANAGER:-rocoto}"
-if [ "${WORKFLOW_MANAGER}" = "rocoto" ]; then
-  if [ "${SCHED}" = "slurm" ]; then
-    job=${SLURM_JOB_NAME}
-    pid=${SLURM_JOB_ID}
-  elif [ "${SCHED}" = "pbspro" ]; then
-    job=${PBS_JOBNAME}
-    pid=${PBS_JOBID}
-  else
-    job="task"
-    pid=$$
-  fi
-  jobid="${job}.${PDY}${cyc}.${pid}"
-fi
 #
 #-----------------------------------------------------------------------
 #

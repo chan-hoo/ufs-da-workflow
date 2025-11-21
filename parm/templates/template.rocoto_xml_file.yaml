@@ -134,6 +134,9 @@ workflow:
       attrs:
         cycledefs: cycled
         maxtries: 2
+      envars:
+        cyc: "&cyc;"
+        PDY: "&PDY;"
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_prep_data'
       jobname: prep_data
@@ -177,6 +180,9 @@ workflow:
         cycledefs: cycled
 {%- endif %}
         maxtries: 2
+      envars:
+        cyc: "&cyc;"
+        PDY: "&PDY;"
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_analysis'
       jobname: analysis
@@ -204,6 +210,9 @@ workflow:
       attrs:
         cycledefs: first_cycle
         maxtries: 2
+      envars:
+        cyc: "&cyc;"
+        PDY: "&PDY;"
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_fcst_ic'
       jobname: fcst_ic
@@ -228,6 +237,9 @@ workflow:
         cycledefs: cycled
 {%- endif %}
         maxtries: 2
+      envars:
+        cyc: "&cyc;"
+        PDY: "&PDY;"
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_forecast'
       jobname: forecast
@@ -285,6 +297,9 @@ workflow:
       attrs:
         cycledefs: cycled
         maxtries: 2
+      envars:
+        cyc: "&cyc;"
+        PDY: "&PDY;"
       account: "&ACCOUNT;"
       command: '&exp_case_path;/job_cards/jufsda_plot_stats'
       jobname: plot_stats

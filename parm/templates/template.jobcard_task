@@ -23,22 +23,39 @@
 {%- endif %}
 {%- endif %}
 
+###########
+set -xue
+###########
+
+## Environment variables
 {%- if WORKFLOW_MANAGER == "ecflow" %}
 %include <head.h>
 %include <envir-p1.h>
 export cyc=%CYC%
+{%- elif WORKFLOW_MANAGER == "rocoto" %}
+### job/jobid
+{%- if SCHED == "slurm" %}
+export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
+export jobid="${job}.${SLURM_JOB_ID}"
+{%- elif SCHED == "pbs" %}
+export job="${PBS_JOBNAME}.${PDY}${cyc}"
+export jobid="${job}.${PBS_JOBID}"
+{%- endif %}
 {%- endif %}
 
-## Export task-specific environment variables
-source "{{ exp_case_path }}/task_env/{{ task_name }}.env"
+## Export environment variables: task-specific
+source {{ exp_case_path }}/task_env/{{ task_name }}.env
 
-## Load module files for task "{{ task_name }}"
+## Export environment variable: job-card level
+source {{ HOMEufsda }}/parm/jcard_env_setup.sh
+
+## Load module files for task
 {%- if MACHINE == "gaeac6" %}
 module reset
 {%- else %}
 module purge
 {%- endif %}
-source "{{ HOMEufsda }}/versions/run.ver_{{ MACHINE }}"
+source {{ HOMEufsda }}/versions/run.ver_{{ MACHINE }}
 module use {{ HOMEufsda }}/modulefiles/tasks/{{ MACHINE }}
 module load task.{{ task_name }}
 module list
