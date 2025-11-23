@@ -74,12 +74,23 @@ def setup_wflow_env(machine):
 
 # ==================================================================== CHJ =====
 def read_default_and_user_configs(machine, parm_dir):
-    # Set default values from yaml files in config_default
-    config_default_path = os.path.join(parm_dir, 'config_default')
-    yaml_files = [ "base.yaml", "hpc.yaml", "jedi.yaml", "nco_var.yaml", "ufs_model.yaml" ]
+    # list of YAML files in config_default dir
+    config_default_path = os.path.join(parm_dir,"config_default")
+    prefix = "default."
+    suffix = ".yaml"
+    config_files = []
+    for fn in os.listdir(config_default_path):
+        if fn.startswith(prefix) and fn.endswith(suffix) \
+           and os.path.isfile(os.path.join(config_default_path,fn)):
+            config_name = fn[len(prefix):-len(suffix)]
+            config_files.append(config_name)
+    config_files = sorted(config_files)
+    logging.info(f''' Config default YAML files: {config_files}''')
+
     config_parm = {}
-    for fp in yaml_files:
-        with open(os.path.join(config_default_path,fp), "r") as f:
+    for icf in config_files:
+        fn = f'''{prefix}{icf}{suffix}'''
+        with open(os.path.join(config_default_path,fn), "r") as f:
             data = yaml.safe_load(f) or {}
         # Replace None sections with empty dict
         for k, v in data.items():
