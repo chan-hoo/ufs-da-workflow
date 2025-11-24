@@ -70,6 +70,12 @@ export DCOMINsmap="${DCOMINsmap:-${FIXufsda}/DATA_smap}"
 # Path to SMOPS raw data files
 export DCOMINsmops="${DCOMINsmops:-${FIXufsda}/DATA_smops}"
 
+##################
+# Log directory
+##################
+export LOGDIR="${LOGDIR:-${COMROOT}/output/logs}"
+mkdir -p ${LOGDIR}
+
 ########################################
 # Create teomporary share directories
 ########################################

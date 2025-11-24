@@ -1,6 +1,6 @@
 #!/bin/bash -l
 {%- if WORKFLOW_MANAGER != "rocoto" %}
-{%- if SCHED == "slurm" %}
+  {%- if SCHED == "slurm" %}
 #SBATCH --account={{ ACCOUNT }}
 #SBATCH --job-name={{ task_name }}
 #SBATCH --output={{ output_name }}
@@ -9,8 +9,13 @@
 #SBATCH --time={{ walltime }}
 #SBATCH --nodes={{ nnodes }}
 #SBATCH --ntasks-per-node={{ nprocs_per_node }}
+    {%- if memory_flag %}
 #SBATCH --mem={{ memory_per_node }}
-{%- elif SCHED == "pbs" %}
+    {%- endif %}
+    {%- if NATIVE is not none %}
+#SBATCH {{ NATIVE }}
+    {%- endif %}
+  {%- elif SCHED == "pbs" %}
 #PBS -S /bin/bash
 #PBS -A {{ ACCOUNT }}
 #PBS -N {{ task_name }}
@@ -19,7 +24,7 @@
 #PBS -q {{ partition_queue }}
 #PBS -l walltime={{ walltime }}
 #PBS -l select={{ nnodes }}:ncpus={{ nprocs_per_node }}:mpiprocs={{ nprocs_per_node }}
-{%- endif %}
+  {%- endif %}
 {%- endif %}
 
 ###########
@@ -30,16 +35,33 @@ set -xue
 {%- if WORKFLOW_MANAGER == "ecflow" %}
 %include <head.h>
 %include <envir-p1.h>
+export PDY=%PDY%
 export cyc=%CYC%
-{%- elif WORKFLOW_MANAGER == "rocoto" %}
-### job/jobid
-{%- if SCHED == "slurm" %}
+  {%- if SCHED == "slurm" %}
 export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
 export jobid="${job}.${SLURM_JOB_ID}"
-{%- elif SCHED == "pbs" %}
+  {%- elif SCHED == "pbs" %}
 export job="${PBS_JOBNAME}.${PDY}${cyc}"
 export jobid="${job}.${PBS_JOBID}"
-{%- endif %}
+  {%- endif %}
+{%- elif WORKFLOW_MANAGER == "rocoto" %}
+  {%- if SCHED == "slurm" %}
+export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
+export jobid="${job}.${SLURM_JOB_ID}"
+  {%- elif SCHED == "pbs" %}
+export job="${PBS_JOBNAME}.${PDY}${cyc}"
+export jobid="${job}.${PBS_JOBID}"
+  {%- endif %}
+{%- else %}
+export PDY="${PDY:-{{ pdy_cdate }}}"
+export cyc="${cyc:-{{ cyc_cdate }}}"
+  {%- if SCHED == "slurm" %}
+export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
+export jobid="${job}.${SLURM_JOB_ID}"
+  {%- elif SCHED == "pbs" %}
+export job="${PBS_JOBNAME}.${PDY}${cyc}"
+export jobid="${job}.${PBS_JOBID}"
+  {%- endif %}
 {%- endif %}
 
 ## Export environment variables: task-specific

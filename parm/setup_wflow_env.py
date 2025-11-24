@@ -507,6 +507,7 @@ def check_valid_parm(home_dir,config_parm):
 def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     exp_case_path = config_parm["path"]["exp_case_path"]
     account = config_parm["parm"]["ACCOUNT"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     machine = config_parm["parm"]["MACHINE"]
     memory_flag = config_parm["parm"]["memory_flag"]
     native = config_parm["parm"]["NATIVE"]
@@ -514,6 +515,9 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     qos = config_parm["parm"]["QOS"]
     sched = config_parm["parm"]["SCHED"]
     workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
+
+    pdy_cdate = str(date_first_cycle)[:8]
+    cyc_cdate = str(date_first_cycle)[-2:]
 
     env_fp = os.path.join(exp_case_path,"task_env")
     os.mkdir(env_fp)
@@ -593,15 +597,18 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         output_name = f'''{itask}.log'''
         data_set = {
             "ACCOUNT": account,
+            "cyc_cdate": cyc_cdate,
             "exp_case_path": exp_case_path,
             "HOMEufsda": home_dir,
             "MACHINE": machine,
             "memory_flag": memory_flag,
             "memory_per_node": varmap_hpc[memory_per_node_task],
+            "NATIVE": native,
             "nnodes": varmap_hpc[nnodes_task],
             "nprocs_per_node": varmap_hpc[nprocs_per_node_task],
             "output_name": output_name,
             "partition_queue": partition_queue,
+            "pdy_cdate": pdy_cdate,
             "qos": qos,
             "SCHED": sched,
             "task_name": itask,
