@@ -39,6 +39,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+# UFS Weather Model (ufs_model)
 list(APPEND UFS_MODEL_ARGS
   "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"    
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
@@ -48,8 +49,6 @@ list(APPEND UFS_MODEL_ARGS
   "-DMPI=ON"
   "-DPDLIB=ON"
 )
-
-# UFS Weather Model (ufs_model)
 list(APPEND TARGET LIST ufs_model.fd)
 ExternalProject_Add(ufs_model.fd
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ufs_model.fd
@@ -61,6 +60,7 @@ ExternalProject_Add(ufs_model.fd
   STEP_TARGETS build
 )
 
+# UFS_UTILS
 if(APP MATCHES "S2SWA")
   # UFS_UTILS
   list(APPEND UFS_UTILS_ARGS
@@ -86,7 +86,6 @@ if(APP MATCHES "S2SWA")
   "-DVCOORD_GEN=OFF"
   "-DWEIGHT_GEN=OFF"
   )
-
   list(APPEND TARGET LIST UFS_UTILS.fd)
   ExternalProject_Add(UFS_UTILS.fd
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/UFS_UTILS.fd
@@ -96,7 +95,10 @@ if(APP MATCHES "S2SWA")
     BUILD_ALWAYS TRUE
     STEP_TARGETS build
   )
+endif()
 
+# For snow / soil-moisture DA analysis
+if((APP MATCHES "S2SWA") OR (APP MATCHES "LND"))
   # APPLY_INCR for JEDI snow-DA
   list(APPEND APPLY_INCR_ARGS
   "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
