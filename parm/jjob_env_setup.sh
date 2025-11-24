@@ -2,7 +2,6 @@
 
 date
 export PS4='+ $SECONDS + '
-set -x
 #
 #-----------------------------------------------------------------------
 #
@@ -39,8 +38,6 @@ export RUN="${RUN:-ufsda}"
 export cycle="${cycle:-t${cyc}z}"
 setpdy.sh
 . ./PDY
-
-[[ "$WORKFLOW_MANAGER" = "rocoto" ]] && export COMROOT=$COMROOT
 
 ###################################
 # COM directories (input/output)
