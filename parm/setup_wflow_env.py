@@ -64,9 +64,11 @@ def setup_wflow_env(machine):
 
     # Create workflow-manager dependent files
     workflow_manager = config_parm["parm"]["WORKFLOW_MANAGER"]
+    ## Rocoto
     if workflow_manager == "rocoto":
-        # Rocoto
         create_xml_extra(parm_dir,config_parm,config_parm_str)
+    elif workflow_manager == "ecflow":
+        create_ecf_def(home_dir,config_parm)
 
     # Create symbolic links for com/log/tmp and trigger files
     create_symlinks_trigger(parm_dir,config_parm)
@@ -587,7 +589,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         "walltime_plot_stats": config_parm["parm"]["WALLTIME_PLOT_STATS"],
         "walltime_prep_data": config_parm["parm"]["WALLTIME_PREP_DATA"],
     }
-    
+     
     ## Create job cards for tasks
     for itask in tasks:
         memory_per_node_task = f'''memory_per_node_{itask}'''
@@ -631,6 +633,55 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
             sys.exit(1)
         os.chmod(fp_jcard, 0o755)
         logging.info(f''' Job card for {itask} created''')
+
+
+# ==================================================================== CHJ =====
+def create_ecf_def(home_dir,config_parm):
+    coldstart = config_parm["flag"]["COLDSTART"]
+    do_free_forecast = config_parm["flag"]["DO_FREE_FORECAST"]
+    exp_case_path = config_parm["path"]["exp_case_path"]
+    date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
+    date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
+    date_second_cycle = config_parm["parm"]["date_second_cycle"]
+
+    date_cycle_freq_min = date_cycle_freq_hr * 60
+    yyyymmdd_first = str(date_first_cycle)[:8]
+    hh_first = str(date_first_cycle)[-2:]
+    yyyymmdd_last = str(date_last_cycle)[:8]
+    hh_last = str(date_last_cycle)[-2:]
+
+    data_set = {
+        "COLDSTART": coldstart,
+        "DATE_CYCLE_FREQ_HR": date_cycle_freq_hr,
+        "date_cycle_freq_min": date_cycle_freq_min,
+        "DATE_FIRST_CYCLE": date_first_cycle,
+        "DATE_LAST_CYCLE": date_last_cycle,
+        "date_second_cycle": date_second_cycle,
+        "DO_FREE_FORECAST": do_free_forecast,
+        "exp_case_path": exp_case_path,
+        "hh_first": hh_first,
+        "hh_last": hh_last,
+        "yyyymmdd_first": yyyymmdd_first,
+        "yyyymmdd_last": yyyymmdd_last,
+    }
+    data_set_str = yaml.dump(data_set, sort_keys=True)
+    logging.debug(f''' Data for ecFlow def file: {data_set_str}''')
+
+    fn_ecf_template = "template.ufsda.def"
+    fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)
+    fn_ecf = f'''ufsda.def'''
+    fp_ecf = os.path.join(exp_case_path,fn_ecf)
+    try:
+        fill_jinja_template([
+            "-q",
+            "-u", data_set_str,
+            "-t", fp_ecf_template,
+            "-o", fp_ecf ])
+    except:
+        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+              to create a '{fp_ecf}' file from a jinja2 template failed.''')
+        sys.exit(1)
 
 
 # ==================================================================== CHJ =====

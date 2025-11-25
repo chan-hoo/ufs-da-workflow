@@ -56,7 +56,7 @@ source {{ exp_case_path }}/task_env/{{ task_name }}.env
 ## Export environment variable: job-card level
 source {{ HOMEufsda }}/parm/jcard_env_setup.sh
 
-## Load module files for task
+## Load module file for task
 {%- if MACHINE == "gaeac6" %}
 module reset
 {%- else %}
