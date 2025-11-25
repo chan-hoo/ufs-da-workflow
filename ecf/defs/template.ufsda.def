@@ -1,0 +1,30 @@
+suite ufsda
+    edit START_TIME {{ yyyymmdd_first }}T{{ hh_first }}00
+    edit END_TIME {{ yyyymmdd_last }}T{{ hh_last }}00
+    # Step = {{ DATE_CYCLE_FREQ_HR }} hours = {{ date_cycle_freq_min }} minutes
+    repeat datetime START_TIME END_TIME {{ date_cycle_freq_min }}
+   
+    family cycle
+{%- if DO_FREE_FORECAST != "ctest" %}
+        task prep_data
+{%- endif %}
+        task analysis
+{%- if DO_FREE_FORECAST != "ctest" %}
+            trigger prep_data == complete
+{%- endif %}
+{%- if DO_FREE_FORECAST != "ctest" %}
+        task forecast
+  {%- if DO_FREE_FORECAST == "none" %}
+            trigger analysis == complete
+  {%- else %}
+            trigger prep_data == complete
+  {%- endif %}
+{%- endif %}
+        task plot_stats
+{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
+            trigger forecast == complete
+{%- else %}
+            trigger analysis == complete or forecast == complete
+{%- endif %}
+    endfamily
+endsuite

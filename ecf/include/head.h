@@ -1,8 +1,6 @@
 date
-hostname
-set -xe  # print commands as they are executed and enable signal trapping
-
 export PS4='+ $SECONDS + '
+set -xue
 
 # Variables needed for communication with ecFlow
 export ECF_NAME=%ECF_NAME%
@@ -15,7 +13,8 @@ export ECF_JOB=%ECF_JOB%
 export ECF_JOBOUT=%ECF_JOBOUT%
 export ecflow_ver=%ecflow_ver%
 
-timeout 300 ecflow_client --init=${ECF_RID}
+# Tell ecFlow we have started
+ecflow_client --init=$$
 
 # Define error handler
 ERROR() {

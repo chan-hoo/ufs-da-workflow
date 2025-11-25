@@ -32,36 +32,22 @@ set -xue
 ###########
 
 ## Environment variables
+### PDY/cyc
 {%- if WORKFLOW_MANAGER == "ecflow" %}
 %include <head.h>
-%include <envir-p1.h>
-export PDY=%PDY%
-export cyc=%CYC%
-  {%- if SCHED == "slurm" %}
-export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
-export jobid="${job}.${SLURM_JOB_ID}"
-  {%- elif SCHED == "pbs" %}
-export job="${PBS_JOBNAME}.${PDY}${cyc}"
-export jobid="${job}.${PBS_JOBID}"
-  {%- endif %}
-{%- elif WORKFLOW_MANAGER == "rocoto" %}
-  {%- if SCHED == "slurm" %}
-export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
-export jobid="${job}.${SLURM_JOB_ID}"
-  {%- elif SCHED == "pbs" %}
-export job="${PBS_JOBNAME}.${PDY}${cyc}"
-export jobid="${job}.${PBS_JOBID}"
-  {%- endif %}
+export PDY=%ECF_DATE%
+export cyc=%HOUR%
 {%- else %}
 export PDY="${PDY:-{{ pdy_cdate }}}"
 export cyc="${cyc:-{{ cyc_cdate }}}"
-  {%- if SCHED == "slurm" %}
+{%- endif %}
+### job/jobid
+{%- if SCHED == "slurm" %}
 export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
 export jobid="${job}.${SLURM_JOB_ID}"
-  {%- elif SCHED == "pbs" %}
+{%- elif SCHED == "pbs" %}
 export job="${PBS_JOBNAME}.${PDY}${cyc}"
 export jobid="${job}.${PBS_JOBID}"
-  {%- endif %}
 {%- endif %}
 
 ## Export environment variables: task-specific
