@@ -67,8 +67,9 @@ def setup_wflow_env(machine):
     ## Rocoto
     if workflow_manager == "rocoto":
         create_xml_extra(parm_dir,config_parm,config_parm_str)
+    ## ecFlow
     elif workflow_manager == "ecflow":
-        create_ecf_def(home_dir,config_parm)
+        create_ecflow_files(home_dir,config_parm)
 
     # Create symbolic links for com/log/tmp and trigger files
     create_symlinks_trigger(parm_dir,config_parm)
@@ -554,17 +555,19 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         logging.info(f''' Task env file: {fn_env} created''')
 
     # Create job cards from template
-    jcard_fp = os.path.join(exp_case_path,"job_cards")
-    os.mkdir(jcard_fp)
     fn_jcard_template = "template.jobcard_task"
     fp_jcard_template = os.path.join(parm_dir,"templates",fn_jcard_template)
     if not os.path.exists(fp_jcard_template):
         logging.error(f'''Job card template {fp_jcard_template} does NOT exist''')
         sys.exit(1)
+
     if workflow_manager == "ecflow":
+        jcard_fp = os.path.join(exp_case_path,"ecf")
         jcard_suffix = ".ecf"
     else:
+        jcard_fp = os.path.join(exp_case_path,"job_cards")
         jcard_suffix = ""
+    os.mkdir(jcard_fp)
 
     ## HPC variable mapping for directives
     varmap_hpc = {
@@ -636,7 +639,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
 
 
 # ==================================================================== CHJ =====
-def create_ecf_def(home_dir,config_parm):
+def create_ecflow_files(home_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
     do_free_forecast = config_parm["flag"]["DO_FREE_FORECAST"]
     exp_case_path = config_parm["path"]["exp_case_path"]
@@ -651,6 +654,7 @@ def create_ecf_def(home_dir,config_parm):
     yyyymmdd_last = str(date_last_cycle)[:8]
     hh_last = str(date_last_cycle)[-2:]
 
+    # ecFlow definition file
     data_set = {
         "COLDSTART": coldstart,
         "DATE_CYCLE_FREQ_HR": date_cycle_freq_hr,
@@ -671,7 +675,7 @@ def create_ecf_def(home_dir,config_parm):
     fn_ecf_template = "template.ufsda.def"
     fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)
     fn_ecf = f'''ufsda.def'''
-    fp_ecf = os.path.join(exp_case_path,fn_ecf)
+    fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
     try:
         fill_jinja_template([
             "-q",
@@ -682,6 +686,40 @@ def create_ecf_def(home_dir,config_parm):
         logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
+
+    # ecFlow launch script 
+    data_set = {
+        "exp_case_path": exp_case_path,
+    }
+    data_set_str = yaml.dump(data_set, sort_keys=True)
+    logging.debug(f''' Data for ecFlow launch script: {data_set_str}''')
+
+    fn_ecf_template = "template.start_server.sh"
+    fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
+    fn_ecf = f'''start_server.sh'''
+    fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
+    try:
+        fill_jinja_template([
+            "-q",
+            "-u", data_set_str,
+            "-t", fp_ecf_template,
+            "-o", fp_ecf ])
+    except:
+        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+              to create a '{fp_ecf}' file from a jinja2 template failed.''')
+        sys.exit(1)
+    os.chmod(fp_ecf, 0o755)
+
+    # Copy stop_server script to exp_case_path
+    source_fp = os.path.join(home_dir,"ecf/stop_server.sh")
+    target_dir = os.path.join(exp_case_path,"ecf")
+    try:
+        shutil.copy(source_fp, target_dir)
+        print(f"File '{source_fp}' copied successfully to '{target_dir}'")
+    except FileNotFoundError:
+        print(f"Error: Source file '{source_fp}' not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 # ==================================================================== CHJ =====
