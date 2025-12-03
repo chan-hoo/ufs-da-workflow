@@ -1,5 +1,3 @@
-whatis("Description: UFS build environment common libraries")
-
 help([[Load UFS Model common libraries]])
 
 local ufs_modules = {

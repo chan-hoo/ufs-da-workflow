@@ -37,9 +37,9 @@ where `[APP]` is `S2SWA` or `NG-GODAS`.
 ```
 cd ..
 module use modulefiles
-module load wflow_[machine] 
+module load wflow_[workflow_manager]_[machine] 
 ```
-where `[machine]` is `gaeac6`, `hera`, `hercules`, `orion`, or `ursa`.
+where `[workflow_manager]` is `rocoto` or `ecflow`, and `[machine]` is `gaeac6`, `hera`, `hercules`, `orion`, or `ursa`.
 
 5. Copy a sample configuration and modify it as needed:
 ```

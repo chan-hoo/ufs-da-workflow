@@ -2,7 +2,6 @@ help([[
   This module loads libraries required for building UFS-DA-Workflow
   on the NOAA RDHPCS machine Gaea C6 using Intel
 ]])
-whatis([===[Loads libraries needed for building the UFS-DA-Workflow on Gaea C6]===])
 
 prepend_path("MODULEPATH", "/ncrc/proj/epic/spack-stack/c6/spack-stack-1.9.2/envs/ue-intel-2023.2.0/install/modulefiles/Core")
 prepend_path("MODULEPATH", "/ncrc/proj/epic/spack-stack/c6/modulefiles")

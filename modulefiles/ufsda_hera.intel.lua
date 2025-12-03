@@ -2,7 +2,6 @@ help([[
   This module loads libraries required for building UFS-DA-Workflow
   on the NOAA RDHPCS machine Hera using Intel
 ]])
-whatis([===[Loads libraries needed for building the UFS-DA-Workflow on Hera]===])
 
 prepend_path("MODULEPATH", "/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/Core")
 prepend_path("MODULEPATH", "/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/intel-oneapi-mpi/2021.13-sbi3u54/gcc/13.3.0")

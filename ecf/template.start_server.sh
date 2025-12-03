@@ -28,5 +28,6 @@ echo "ECF_HOST: ${ECF_HOST}"
 echo "ECF_SUITE: ${ECF_SUITE}"
 
 # Load and begin the suite
+ecflow_client --delete=force yes "/${ECF_SUITE}"
 ecflow_client --port="${ECF_PORT}" --host="${ECF_HOST}" --load="${ECF_HOME}/${ECF_SUITE}.def"
 ecflow_client --port="${ECF_PORT}" --host="${ECF_HOST}" --begin="${ECF_SUITE}"

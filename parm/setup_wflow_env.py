@@ -687,17 +687,33 @@ def create_ecflow_files(home_dir,config_parm):
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
 
-    # ecFlow launch script 
+    # ecFlow launch/kill scripts
     data_set = {
         "exp_case_name": exp_case_name,
         "exp_case_path": exp_case_path,
     }
     data_set_str = yaml.dump(data_set, sort_keys=True)
-    logging.debug(f''' Data for ecFlow launch script: {data_set_str}''')
-
+    logging.debug(f''' Data for ecFlow launch/kill scripts: {data_set_str}''')
+    ## Launch
     fn_ecf_template = "template.start_server.sh"
     fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
     fn_ecf = f'''start_server.sh'''
+    fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
+    try:
+        fill_jinja_template([
+            "-q",
+            "-u", data_set_str,
+            "-t", fp_ecf_template,
+            "-o", fp_ecf ])
+    except:
+        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+              to create a '{fp_ecf}' file from a jinja2 template failed.''')
+        sys.exit(1)
+    os.chmod(fp_ecf, 0o755)
+    ## Kill
+    fn_ecf_template = "template.delete_suite.sh"
+    fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
+    fn_ecf = f'''delete_suite.sh'''
     fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
     try:
         fill_jinja_template([

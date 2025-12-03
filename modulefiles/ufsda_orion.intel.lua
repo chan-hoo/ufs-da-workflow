@@ -2,7 +2,6 @@ help([[
   This module loads libraries required for building UFS-DA-Workflow
   on the MSU HPC machine Orion using Intel
 ]])
-whatis([===[Loads libraries needed for building the UFS-DA-Workflow on Orion]===])
 
 prepend_path("MODULEPATH", "/apps/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.1.0/install/modulefiles/Core")
 prepend_path("MODULEPATH", "/apps/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.1.0/install/modulefiles/intel-oneapi-mpi/2021.13-li242lf/gcc/12.2.0")

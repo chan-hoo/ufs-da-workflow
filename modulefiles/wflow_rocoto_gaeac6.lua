@@ -1,9 +1,7 @@
 help([[
-This module loads python environement for running the UFS-DA workflow on
-the NOAA RDHPC machine Gaea-C6
+This loads the modules and py environment necessary for running the UFS-DA workflow
+with Rocoto on the NOAA RDHPC machine Gaea-C6
 ]])
-
-whatis([===[Loads libraries needed for running the UFS-DA workflow on Gaea-C6 ]===])
 
 prepend_path("MODULEPATH","/ncrc/proj/epic/rocoto/modulefiles/")
 load("rocoto")
