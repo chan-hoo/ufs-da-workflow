@@ -130,6 +130,8 @@ def read_default_and_user_configs(machine, parm_dir):
 
 # ==================================================================== CHJ =====
 def add_new_parm_base(home_dir,config_parm):
+
+
     exp_basedir = os.path.dirname(home_dir)
     logging.info(f''' Experimental base directory (exp_basedir): {exp_basedir} ''')
 
@@ -643,6 +645,7 @@ def create_ecflow_files(home_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
     do_free_forecast = config_parm["flag"]["DO_FREE_FORECAST"]
     exp_case_path = config_parm["path"]["exp_case_path"]
+    exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
@@ -663,6 +666,7 @@ def create_ecflow_files(home_dir,config_parm):
         "DATE_LAST_CYCLE": date_last_cycle,
         "date_second_cycle": date_second_cycle,
         "DO_FREE_FORECAST": do_free_forecast,
+        "exp_case_name": exp_case_name,
         "exp_case_path": exp_case_path,
         "hh_first": hh_first,
         "hh_last": hh_last,
@@ -674,7 +678,7 @@ def create_ecflow_files(home_dir,config_parm):
 
     fn_ecf_template = "template.ufsda.def"
     fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)
-    fn_ecf = f'''ufsda.def'''
+    fn_ecf = f'''{exp_case_name}.def'''
     fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
     try:
         fill_jinja_template([
@@ -689,6 +693,7 @@ def create_ecflow_files(home_dir,config_parm):
 
     # ecFlow launch script 
     data_set = {
+        "exp_case_name": exp_case_name,
         "exp_case_path": exp_case_path,
     }
     data_set_str = yaml.dump(data_set, sort_keys=True)

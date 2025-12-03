@@ -1,4 +1,4 @@
-suite ufsda
+suite {{ exp_case_name }}
     edit START_TIME {{ yyyymmdd_first }}T{{ hh_first }}00
     edit END_TIME {{ yyyymmdd_last }}T{{ hh_last }}00
     # Step = {{ DATE_CYCLE_FREQ_HR }} hours = {{ date_cycle_freq_min }} minutes
