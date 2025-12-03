@@ -130,14 +130,18 @@ def read_default_and_user_configs(machine, parm_dir):
 
 # ==================================================================== CHJ =====
 def add_new_parm_base(home_dir,config_parm):
-
+    ptmp = config_parm["path"]["PTMP"]
+    warmstart_dir = config_parm["path"]["WARMSTART_DIR"]
+    app = config_parm["parm"]["APP"]
+    date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
+    date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
+    exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
+    run = config_parm["parm"]["RUN"]
 
     exp_basedir = os.path.dirname(home_dir)
     logging.info(f''' Experimental base directory (exp_basedir): {exp_basedir} ''')
 
-    app = config_parm["parm"]["APP"]
-    run = config_parm["parm"]["RUN"]
-    exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     # Create an experimental case directory
     if exp_case_name is None or exp_case_name == "None":
         exp_case_name = f'''{app}_{run}'''
@@ -149,9 +153,6 @@ def add_new_parm_base(home_dir,config_parm):
     logging.info(f''' Experimental case directory {exp_case_path} has been created.''')
 
     # Calculate date for the second cycle
-    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
-    date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
-    date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
     if date_first_cycle == date_last_cycle:
         date_second_cycle = None
     else:
@@ -160,13 +161,11 @@ def add_new_parm_base(home_dir,config_parm):
 
     # Directory containing file for warm-start
     fix_dir = os.path.join(home_dir, 'fix')
-    warmstart_dir = config_parm["path"]["WARMSTART_DIR"]
     if warmstart_dir is None or warmstart_dir == "None":
         warmstart_dir = os.path.join(fix_dir, "DATA_restart")
-
     print(fix_dir,warmstart_dir)
+
     # Set PTMP: PTMP/envir = OPSROOT for NOAA NCO EE2 compliance
-    ptmp = config_parm["path"]["PTMP"]
     if ptmp is None or ptmp == "None":
         ptmp = os.path.join(exp_basedir, "ptmp")
 
@@ -281,14 +280,14 @@ def add_new_parm_hpc(machine,config_parm):
 
 # ==================================================================== CHJ =====
 def add_new_parm_jedi(home_dir,config_parm):
+    jedi_type_snow = config_parm["flag"]["JEDI_TYPE_SNOW"]
+    jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
+    jedi_type_soil_moisture = config_parm["flag"]["JEDI_TYPE_SOIL_MOISTURE"]
     custom_jedi_config_path = config_parm["path"]["CUSTOM_JEDI_CONFIG_PATH"]
     exp_basedir = config_parm["path"]["exp_basedir"]
     jedi_bin_path = config_parm["path"]["JEDI_BIN_PATH"]
     jedi_iodaconv_path = config_parm["path"]["JEDI_IODACONV_PATH"]
     jedi_py_ver = config_parm["parm"]["JEDI_PY_VER"]
-    jedi_type_snow = config_parm["flag"]["JEDI_TYPE_SNOW"]
-    jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
-    jedi_type_soil_moisture = config_parm["flag"]["JEDI_TYPE_SOIL_MOISTURE"]
 
     fix_dir = os.path.join(home_dir, 'fix')
 
@@ -564,12 +563,13 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         sys.exit(1)
 
     if workflow_manager == "ecflow":
-        jcard_fp = os.path.join(exp_case_path,"ecf")
+        ecf_suite_family_name = "cycle"
+        jcard_fp = os.path.join(exp_case_path,"ecf",ecf_suite_family_name)
         jcard_suffix = ".ecf"
     else:
         jcard_fp = os.path.join(exp_case_path,"job_cards")
         jcard_suffix = ""
-    os.mkdir(jcard_fp)
+    os.makedirs(jcard_fp)
 
     ## HPC variable mapping for directives
     varmap_hpc = {
@@ -651,7 +651,7 @@ def create_ecflow_files(home_dir,config_parm):
     date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
     date_second_cycle = config_parm["parm"]["date_second_cycle"]
 
-    date_cycle_freq_min = date_cycle_freq_hr * 60
+    date_cycle_freq_day = date_cycle_freq_hr // 24
     yyyymmdd_first = str(date_first_cycle)[:8]
     hh_first = str(date_first_cycle)[-2:]
     yyyymmdd_last = str(date_last_cycle)[:8]
@@ -660,14 +660,10 @@ def create_ecflow_files(home_dir,config_parm):
     # ecFlow definition file
     data_set = {
         "COLDSTART": coldstart,
-        "DATE_CYCLE_FREQ_HR": date_cycle_freq_hr,
-        "date_cycle_freq_min": date_cycle_freq_min,
-        "DATE_FIRST_CYCLE": date_first_cycle,
-        "DATE_LAST_CYCLE": date_last_cycle,
+        "date_cycle_freq_day": date_cycle_freq_day,
         "date_second_cycle": date_second_cycle,
         "DO_FREE_FORECAST": do_free_forecast,
         "exp_case_name": exp_case_name,
-        "exp_case_path": exp_case_path,
         "hh_first": hh_first,
         "hh_last": hh_last,
         "yyyymmdd_first": yyyymmdd_first,
@@ -720,11 +716,20 @@ def create_ecflow_files(home_dir,config_parm):
     target_dir = os.path.join(exp_case_path,"ecf")
     try:
         shutil.copy(source_fp, target_dir)
-        print(f"File '{source_fp}' copied successfully to '{target_dir}'")
+        logging.info(f'''File '{source_fp}' copied successfully to '{target_dir}'.''')
     except FileNotFoundError:
-        print(f"Error: Source file '{source_fp}' not found.")
+        logging.error(f'''FATAL ERROR: Source file '{source_fp}' not found.''')
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f'''FATAL ERROR: An error occurred: {e}''')
+
+    # Copy files in ecf/include to exp_case_path
+    source_dir = os.path.join(home_dir,"ecf/include")
+    target_dir = os.path.join(exp_case_path,"ecf")
+    try:
+        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
+        logging.info(f'''All files from '{source_dir}' copied to '{target_dir}' successfully.''')
+    except shutil.Error as e:
+        logging.error(f'''FATAL ERROR: Error copying directory: {e}''')
 
 
 # ==================================================================== CHJ =====

@@ -1,30 +1,27 @@
 suite {{ exp_case_name }}
-    edit START_TIME {{ yyyymmdd_first }}T{{ hh_first }}00
-    edit END_TIME {{ yyyymmdd_last }}T{{ hh_last }}00
-    # Step = {{ DATE_CYCLE_FREQ_HR }} hours = {{ date_cycle_freq_min }} minutes
-    repeat datetime START_TIME END_TIME {{ date_cycle_freq_min }}
-   
+    repeat date YMD {{ yyyymmdd_first }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
+ 
     family cycle
 {%- if DO_FREE_FORECAST != "ctest" %}
-        task prep_data
+        task jufsda_prep_data
 {%- endif %}
-        task analysis
+        task jufsda_analysis
 {%- if DO_FREE_FORECAST != "ctest" %}
-            trigger prep_data == complete
+            trigger jufsda_prep_data == complete
 {%- endif %}
 {%- if DO_FREE_FORECAST != "ctest" %}
-        task forecast
+        task jufsda_forecast
   {%- if DO_FREE_FORECAST == "none" %}
-            trigger analysis == complete
+            trigger jufsda_analysis == complete
   {%- else %}
-            trigger prep_data == complete
+            trigger jufsda_prep_data == complete
   {%- endif %}
 {%- endif %}
-        task plot_stats
+        task jufsda_plot_stats
 {%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
-            trigger forecast == complete
+            trigger jufsda_forecast == complete
 {%- else %}
-            trigger analysis == complete or forecast == complete
+            trigger jufsda_analysis == complete or jufsda_forecast == complete
 {%- endif %}
     endfamily
 endsuite
