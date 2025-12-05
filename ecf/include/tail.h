@@ -1,5 +1,3 @@
-wait $!                   # wait for background process to stop
-
 ecflow_client --ping --host=${ECF_HOST} --port=${ECF_PORT}
 not_running=$?
 if [[ $not_running -eq 0 ]]; then
