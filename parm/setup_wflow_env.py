@@ -912,9 +912,9 @@ def parse_args(argv):
 def detect_platform():
     if os.path.isdir("/scratch3/NAGAPE"):
         host_str = socket.gethostname()[0:3]
-        if host_str == "ufe":
+        if host_str == "ufe" or host_str == "uec":
             machine = "ursa"
-        elif host_str == "hfe":
+        elif host_str == "hfe" or host_str == "hec":
             machine = "hera"
     elif os.path.isdir("/work/noaa"):
         machine = socket.gethostname().split('-')[0]  # orion/hercules

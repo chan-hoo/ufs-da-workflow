@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+if [ -z "${ECF_HOST}" ]; then
+  export ECF_HOST=$(hostname)
+fi
+if [ -z "${ECF_PORT}" ]; then
+  export ECF_PORT=$(( $(id -u) + 1500 ))
+fi
 export ECF_HOME="{{ exp_case_path }}/ecf"
-export ECF_HOST=$(hostname)
-export ECF_PORT=$(( $(id -u) + 1500 ))
 export ECF_SUITE="{{ exp_case_name }}"
 
 # Find path to ecFlow bin directory

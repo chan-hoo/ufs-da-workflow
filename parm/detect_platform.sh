@@ -4,9 +4,9 @@
 #
 if [[ -d /scratch3/NAGAPE ]] ; then
   hoststr=$(hostname)
-  if [[ "$hoststr" == "ufe"* ]]; then
+  if [[ "$hoststr" == "ufe"* || "$hoststr" == "uecflow"* ]]; then
     PLATFORM="ursa"
-  elif [[ "$hoststr" == "hfe"* ]]; then
+  elif [[ "$hoststr" == "hfe"* || "$hoststr" == "hecflow"* ]]; then
     PLATFORM="hera"
   fi
 elif [[ -d /work/noaa ]]; then
@@ -29,4 +29,4 @@ else
   PLATFORM="unknown"
 fi
 MACHINE="${PLATFORM}"
-
+echo "${PLATFORM}"

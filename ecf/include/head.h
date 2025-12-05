@@ -5,7 +5,6 @@ set -xue
 # Variables needed for communication with ecFlow
 export ECF_HOST=%ECF_HOST%
 export ECF_JOB=%ECF_JOB%
-export ECF_JOB_CMD=%ECF_JOB_CMD%
 export ECF_JOBOUT=%ECF_JOBOUT%
 export ECF_NAME=%ECF_NAME%
 export ECF_PASS=%ECF_PASS%
