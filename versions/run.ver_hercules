@@ -6,6 +6,7 @@ export modulepath_pymodule="/work/noaa/epic/UFS-conda/modulefiles"
 
 export bacio_ver="2.4.1"
 export crtm_ver="2.4.0.1"
+export ecflow_ver="5.11.4"
 export esmf_ver="8.8.0"
 export fms_ver="2024.02"
 export gdas_ver="v16.3"

@@ -1,7 +1,13 @@
 suite {{ exp_case_name }}
-    repeat date YMD {{ yyyymmdd_first }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
- 
     family cycle
+        repeat date YMD {{ yyyymmdd_first }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
+{%- if SCHED == "slurm" %}
+        edit ECF_JOB_CMD "sbatch %ECF_JOB%"
+{%- elif SCHED == "pbs" %}
+        edit ECF_JOB_CMD "qsub %ECF_JOB%"
+{%- endif %}
+        edit ECF_DATE %YMD%
+        edit CYC {{ hh_first }} 
 {%- if DO_FREE_FORECAST != "ctest" %}
         task jufsda_prep_data
 {%- endif %}

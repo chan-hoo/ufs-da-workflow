@@ -31,30 +31,8 @@
 set -xue
 ###########
 
-## Environment variables
-### PDY/cyc
-{%- if WORKFLOW_MANAGER == "ecflow" %}
-%include <head.h>
-export PDY=%ECF_DATE%
-export cyc=%HOUR%
-{%- else %}
-export PDY="${PDY:-{{ pdy_cdate }}}"
-export cyc="${cyc:-{{ cyc_cdate }}}"
-{%- endif %}
-### job/jobid
-{%- if SCHED == "slurm" %}
-export job="${SLURM_JOB_NAME}.${PDY}${cyc}"
-export jobid="${job}.${SLURM_JOB_ID}"
-{%- elif SCHED == "pbs" %}
-export job="${PBS_JOBNAME}.${PDY}${cyc}"
-export jobid="${job}.${PBS_JOBID}"
-{%- endif %}
-
 ## Export environment variables: task-specific
 source {{ exp_case_path }}/task_env/{{ task_name }}.env
-
-## Export environment variable: job-card level
-source {{ HOMEufsda }}/parm/jcard_env_setup.sh
 
 ## Load module file for task
 {%- if MACHINE == "gaeac6" %}
@@ -66,6 +44,28 @@ source {{ HOMEufsda }}/versions/run.ver_{{ MACHINE }}
 module use {{ HOMEufsda }}/modulefiles/tasks/{{ MACHINE }}
 module load task.{{ task_name }}
 module list
+
+## Environment variables
+### PDY/cyc
+{%- if WORKFLOW_MANAGER == "ecflow" %}
+%include <head.h>
+export PDY=%ECF_DATE%
+export cyc=%CYC%
+{%- else %}
+export PDY="${PDY:-{{ pdy_cdate }}}"
+export cyc="${cyc:-{{ cyc_cdate }}}"
+{%- endif %}
+### job/jobid
+{%- if SCHED == "slurm" %}
+export job="{{ task_name }}.${PDY}${cyc}"
+export jobid="${job}.${SLURM_JOB_ID}"
+{%- elif SCHED == "pbs" %}
+export job="{{ task_name }}.${PDY}${cyc}"
+export jobid="${job}.${PBS_JOBID}"
+{%- endif %}
+
+## Export environment variable: job-card level
+source {{ HOMEufsda }}/parm/jcard_env_setup.sh
 
 #################################
 ## Replacement of J-job script

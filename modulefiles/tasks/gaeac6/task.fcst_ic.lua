@@ -9,6 +9,7 @@ load(pathJoin("netcdf-fortran", netcdf_fortran_ver))
 load(pathJoin("parallelio", parallelio_ver))
 load(pathJoin("esmf", esmf_ver))
 load(pathJoin("g2", g2_ver))
+load(pathJoin("ecflow", ecflow_ver))
 load(pathJoin("prod_util", prod_util_ver))
 
 prepend_path("MODULEPATH", os.getenv("modulepath_pymodule"))

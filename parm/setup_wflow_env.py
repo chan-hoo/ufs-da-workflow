@@ -650,6 +650,7 @@ def create_ecflow_files(home_dir,config_parm):
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
     date_second_cycle = config_parm["parm"]["date_second_cycle"]
+    sched = config_parm["parm"]["SCHED"]
 
     date_cycle_freq_day = date_cycle_freq_hr // 24
     yyyymmdd_first = str(date_first_cycle)[:8]
@@ -666,6 +667,7 @@ def create_ecflow_files(home_dir,config_parm):
         "exp_case_name": exp_case_name,
         "hh_first": hh_first,
         "hh_last": hh_last,
+        "SCHED": sched,
         "yyyymmdd_first": yyyymmdd_first,
         "yyyymmdd_last": yyyymmdd_last,
     }
@@ -687,7 +689,7 @@ def create_ecflow_files(home_dir,config_parm):
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
 
-    # ecFlow launch/kill scripts
+    # ecFlow launch script
     data_set = {
         "exp_case_name": exp_case_name,
         "exp_case_path": exp_case_path,
@@ -698,22 +700,6 @@ def create_ecflow_files(home_dir,config_parm):
     fn_ecf_template = "template.start_server.sh"
     fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
     fn_ecf = f'''start_server.sh'''
-    fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
-    try:
-        fill_jinja_template([
-            "-q",
-            "-u", data_set_str,
-            "-t", fp_ecf_template,
-            "-o", fp_ecf ])
-    except:
-        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
-              to create a '{fp_ecf}' file from a jinja2 template failed.''')
-        sys.exit(1)
-    os.chmod(fp_ecf, 0o755)
-    ## Kill
-    fn_ecf_template = "template.delete_suite.sh"
-    fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
-    fn_ecf = f'''delete_suite.sh'''
     fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
     try:
         fill_jinja_template([
