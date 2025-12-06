@@ -608,7 +608,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         if workflow_manager == "ecflow":
             output_fn = f'''{itask}_%ECF_DATE%%CYC%.log'''
         else:
-            output_fn = f'''{itask}.log'''
+            output_fn = f'''{itask}_{date_first_cycle}.log'''
         output_name = os.path.join(log_dir_path,output_fn)
         data_set = {
             "ACCOUNT": account,
