@@ -3,15 +3,11 @@ suite {{ exp_case_name }}
     family cycle
 {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-        edit ECF_KILL_CMD "scancel %ECF_RID%"
-        edit ECF_STATUS_CMD "squeue --job %ECF_RID%"
 {%- elif SCHED == "pbs" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
-        edit ECF_KILL_CMD "qdel %ECF_RID%"
-        edit ECF_STATUS_CMD "qstat %ECF_RID%"
 {%- endif %}
         edit ECF_DATE %YMD%
-        edit CYC {{ hh_first }} 
+        edit CYC {{ hh_first }}
 {%- if DO_FREE_FORECAST != "ctest" %}
         task jufsda_prep_data
 {%- endif %}

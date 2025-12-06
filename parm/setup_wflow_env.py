@@ -510,7 +510,9 @@ def check_valid_parm(home_dir,config_parm):
 # ==================================================================== CHJ =====
 def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     exp_case_path = config_parm["path"]["exp_case_path"]
+    ptmp = config_parm["path"]["PTMP"]
     account = config_parm["parm"]["ACCOUNT"]
+    envir = config_parm["parm"]["envir"]
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     machine = config_parm["parm"]["MACHINE"]
     memory_flag = config_parm["parm"]["memory_flag"]
@@ -596,12 +598,18 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
     }
      
     ## Create job cards for tasks
+    log_dir_path = os.path.join(ptmp,envir,"com/output/logs")
+    os.makedirs(log_dir_path)
     for itask in tasks:
         memory_per_node_task = f'''memory_per_node_{itask}'''
         nnodes_task = f'''nnodes_{itask}'''
         nprocs_per_node_task = f'''nprocs_per_node_{itask}'''
         walltime_task = f'''walltime_{itask}'''
-        output_name = f'''{itask}.log'''
+        if workflow_manager == "ecflow":
+            output_fn = f'''{itask}_%ECF_DATE%%CYC%.log'''
+        else:
+            output_fn = f'''{itask}.log'''
+        output_name = os.path.join(log_dir_path,output_fn)
         data_set = {
             "ACCOUNT": account,
             "cyc_cdate": cyc_cdate,
