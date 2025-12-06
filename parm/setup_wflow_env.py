@@ -71,8 +71,8 @@ def setup_wflow_env(machine):
     elif workflow_manager == "ecflow":
         create_ecflow_files(home_dir,config_parm)
 
-    # Create symbolic links for com/log/tmp and trigger files
-    create_symlinks_trigger(parm_dir,config_parm)
+    # Create symbolic links for com/log/tmp directories
+    create_symlinks_dirs(parm_dir,config_parm)
 
 
 # ==================================================================== CHJ =====
@@ -744,7 +744,9 @@ def create_ecflow_files(home_dir,config_parm):
 
 # ==================================================================== CHJ =====
 def create_xml_extra(parm_dir,config_parm,config_parm_str):
+    coldstart = config_parm["flag"]["COLDSTART"]
     exp_case_path = config_parm["path"]["exp_case_path"]
+    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
 
     # Create YAML file for Rocoto XML from template
     fn_yaml_rocoto_template = "template.rocoto_xml_file.yaml"
@@ -793,13 +795,20 @@ def create_xml_extra(parm_dir,config_parm,config_parm_str):
     shutil.copyfile(fp_auto_script_orig, fp_auto_script_expt)
     os.chmod(fp_auto_script_expt, 0o755)
 
+    # Create coldstart txt file for 1st cycle only for cold start
+    if coldstart == "YES":
+        fn_pass = f"task_skip_coldstart_{date_first_cycle}.txt"
+        open(os.path.join(exp_case_path,fn_pass), 'a').close()
+
+    # Create first cycle txt file to trigger 1st task in 1st cycle
+    fn_pass = f"task_run_firstcyc_{date_first_cycle}.txt"
+    open(os.path.join(exp_case_path,fn_pass), 'a').close()
+
 
 # ==================================================================== CHJ =====
-def create_symlinks_trigger(parm_dir,config_parm):
-    coldstart = config_parm["flag"]["COLDSTART"]
+def create_symlinks_dirs(parm_dir,config_parm):
     exp_case_path = config_parm["path"]["exp_case_path"]
     ptmp = config_parm["path"]["PTMP"]
-    date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     envir = config_parm["parm"]["envir"]
     model_ver = config_parm["parm"]["model_ver"]
     net = config_parm["parm"]["NET"]
@@ -814,15 +823,6 @@ def create_symlinks_trigger(parm_dir,config_parm):
     os.symlink(log_dir_src, log_dir_dst)
     os.symlink(tmp_dir_src, tmp_dir_dst)
     os.symlink(com_dir_src, com_dir_dst)
-
-    # Create coldstart txt file for 1st cycle only for cold start
-    if coldstart == "YES":
-        fn_pass = f"task_skip_coldstart_{date_first_cycle}.txt"
-        open(os.path.join(exp_case_path,fn_pass), 'a').close()
-
-    # Create first cycle txt file to trigger 1st task in 1st cycle
-    fn_pass = f"task_run_firstcyc_{date_first_cycle}.txt"
-    open(os.path.join(exp_case_path,fn_pass), 'a').close()
 
 
 # Machine-specific values of configuration ========================== CHJ =====
