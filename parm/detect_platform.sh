@@ -29,4 +29,4 @@ else
   PLATFORM="unknown"
 fi
 MACHINE="${PLATFORM}"
-echo "${PLATFORM}"
+#echo "${PLATFORM}"
