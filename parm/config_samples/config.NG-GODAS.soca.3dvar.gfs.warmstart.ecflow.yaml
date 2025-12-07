@@ -11,8 +11,8 @@ parm:
   DT_ATMOS: 900
   DT_MOM6: 1800
   DT_RUNSEQ: 3600
-  envir: ng_test
-  EXP_CASE_NAME: ng_test
+  envir: ng_soca_3dvar_ecflow
+  EXP_CASE_NAME: ng_soca_3dvar_ecflow
   JEDI_ALGORITHM: 3dvar
   FCST_HRS: 24
   NPROCS_ANALYSIS: 96
