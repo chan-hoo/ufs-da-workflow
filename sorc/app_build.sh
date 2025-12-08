@@ -178,23 +178,25 @@ fi
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 
 # === Soft-link static input files to FIX directory ===
-ver_fix_data="v1.0"
-if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
-  fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
-elif [ "${PLATFORM}" = "orion" ] || [ "${PLATFORM}" = "hercules" ]; then
-  fix_orig="/work2/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
-elif [ "${PLATFORM}" = "gaeac6" ]; then
-  fix_orig="/gpfs/f6/epic/world-shared/UFS-DA-Workflow_${ver_fix_data}/inputs"
-else
-  printf "FATAL ERROR: path to the fix files is not defined !!!"
-  exit 1
+if [ "${BUILD_JEDI}" != "only" ]; then
+  ver_fix_data="v1.0"
+  if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
+    fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
+  elif [ "${PLATFORM}" = "orion" ] || [ "${PLATFORM}" = "hercules" ]; then
+    fix_orig="/work2/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
+  elif [ "${PLATFORM}" = "gaeac6" ]; then
+    fix_orig="/gpfs/f6/epic/world-shared/UFS-DA-Workflow_${ver_fix_data}/inputs"
+  else
+    printf "FATAL ERROR: path to the fix files is not defined !!!"
+    exit 1
+  fi
+  if find "${HOME_DIR}/fix" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | grep -q .; then
+    echo "At least one directory or symlink exists in FIX directory. Removing ..."
+    rm -rf ${HOME_DIR}/fix/*
+  fi
+  ln -nsf ${fix_orig}/* ${HOME_DIR}/fix
+  [[ "${FIX_ONLY}" == true ]] && exit 0
 fi
-if find "${HOME_DIR}/fix" -mindepth 1 -maxdepth 1 \( -type d -o -type l \) | grep -q .; then
-  echo "At least one directory or symlink exists in FIX directory. Removing ..."
-  rm -rf ${HOME_DIR}/fix/*
-fi
-ln -nsf ${fix_orig}/* ${HOME_DIR}/fix
-[[ "${FIX_ONLY}" == true ]] && exit 0
 
 # Move the pre-compiled executables to the designated location and exit
 if [ "${BUILD}" = false ] && [ "${MOVE}" = true ]; then
