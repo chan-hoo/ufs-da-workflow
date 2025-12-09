@@ -71,10 +71,18 @@ cd ../../exp_case/[EXP_CASE_NAME]
 where `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
 
 8. Launch the workflow tasks:
+- WORKFLOW_MANAGER: rocoto
 ```
 ./automate_launch_script.py -i [time interval in seconds]
 ```
 where the default value of `[time interval in seconds]` is 30. This means that the launch script `launch_rocoto_wflow.sh` is submitted every 30 seconds.
+
+- WORKFLOW_MANAGER: ecflow
+```
+cd ecf
+./start_server.sh
+ecflow_ui &
+```
 
 9. Check the result and log files:
 - `com_dir`: symlink to the directory containing the result files
