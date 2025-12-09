@@ -85,7 +85,7 @@ usage_error () {
 # default settings
 LCL_PID=$$
 SORC_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
-HOME_DIR="${SORC_DIR}/.."
+HOME_DIR=$(realpath "${SORC_DIR}/..")
 BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
 JEDI_BUILD_DIR=""
@@ -252,7 +252,8 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
       JEDI_BUILD_DIR="${HOME_DIR}/../jedi"
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
-      JEDI_BUILD_DIR="${HOME_DIR}/.."
+      JEDI_PDIR=$(dirname "${HOME_DIR}")
+      JEDI_BUILD_DIR="${JEDI_PDIR}/GDASApp"
     fi
   fi
   jedi_build_skip="NO"
@@ -262,13 +263,12 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     read -p "Type Y or y to remove, otherwise this step will be skipped:" jedi_dir_remove
     if [ "${jedi_dir_remove}" = "Y" ] || [ "${jedi_dir_remove}" = "y" ]; then
       rm -rf ${JEDI_BUILD_DIR}
-      printf "The existing JEDI build directory has been removed. Rebuilding ..."
+      printf "The existing JEDI build directory has been removed. Rebuilding ... \n"
     else
       jedi_build_skip="YES"
     fi
   fi
   if [ "${jedi_build_skip}" = "NO" ]; then
-    set -eu
     if [ "${PLATFORM}" = "gaeac6" ]; then
       module reset
     else
@@ -298,7 +298,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
         make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
       fi
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
-      cd "${JEDI_BUILD_DIR}"
+      cd "${JEDI_PDIR}"
       git clone --recursive https://github.com/NOAA-EMC/GDASApp.git
       cd GDASApp
       # For specific hash
@@ -311,7 +311,6 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       # Run build script
       ./build.sh -f -a -d -t ${PLATFORM}
     fi
-    set +eu
     cd "${SORC_DIR}"
   fi
 fi
@@ -341,8 +340,6 @@ if [ -d "${BUILD_DIR}" ]; then
     esac
   done
 fi
-
-set -eu
 
 # cmake settings
 CMAKE_SETTINGS="\
