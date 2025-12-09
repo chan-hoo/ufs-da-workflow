@@ -475,7 +475,11 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
   #########
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
     ## Path to data set
-    path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      path_soca_data="${JEDI_BIN_PATH}/../../sorc/soca/test"
+    else
+      path_soca_data="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
+    fi
     mkdir -p data_output
     mkdir -p testoutput
     mkdir -p data_generated

@@ -15,5 +15,6 @@ path:
 parm:
   CUSTOM_JEDI_CONFIG_PREFIX: /prefix/of/custom/JEDI/config/file/name
   JEDI_ALGORITHM: letkf-oi
+  JEDI_BUNDLE_GDAS: bundle
   JEDI_PY_VER: python3.11
   SMAP_RAW_WINDOW_SPAN_HALF: 5

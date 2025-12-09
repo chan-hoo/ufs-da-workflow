@@ -287,6 +287,7 @@ def add_new_parm_jedi(home_dir,config_parm):
     exp_basedir = config_parm["path"]["exp_basedir"]
     jedi_bin_path = config_parm["path"]["JEDI_BIN_PATH"]
     jedi_iodaconv_path = config_parm["path"]["JEDI_IODACONV_PATH"]
+    jedi_bundle_gdas = config_parm["parm"]["JEDI_BUNDLE_GDAS"]
     jedi_py_ver = config_parm["parm"]["JEDI_PY_VER"]
 
     fix_dir = os.path.join(home_dir, 'fix')
@@ -306,7 +307,11 @@ def add_new_parm_jedi(home_dir,config_parm):
 
     # Set machine-dependent paths if not specified in config.yaml
     if jedi_bin_path is None or jedi_bin_path == "None":
-        jedi_bin_path = os.path.join(exp_basedir, "jedi", "build", "bin")
+        if jedi_bundle_gdas == "gdas":
+            jedi_dir_name = "GDASApp"
+        else:
+            jedi_dir_name = "jedi"
+        jedi_bin_path = os.path.join(exp_basedir, jedi_dir_name, "build", "bin")
 
     if jedi_iodaconv_path is None or jedi_iodaconv_path == "None":
         jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
