@@ -520,7 +520,12 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     done
   
     ### Run soca_gridgen.x
-    export pgm="soca_gridgen.x"
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      jedi_exe_fn="gdas_soca_gridgen.x"
+    else
+      jedi_exe_fn="soca_gridgen.x"
+    fi
+    export pgm="${jedi_exe_fn}"
     . prep_step
     ${run_cmd} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
@@ -556,7 +561,12 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
 
     ### Run soca_setcorscales.x
-    export pgm="soca_setcorscales.x"
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      jedi_exe_fn="gdas_soca_setcorscales.x"
+    else
+      jedi_exe_fn="soca_setcorscales.x"
+    fi
+    export pgm="${jedi_exe_fn}"
     . prep_step
     ${run_cmd} -n 12 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
@@ -599,7 +609,12 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
 
   ### Run soca_error_covariance_toolbox.x
-  export pgm="soca_error_covariance_toolbox.x"
+  if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+    jedi_exe_fn="gdas_soca_error_covariance_toolbox.x"
+  else
+    jedi_exe_fn="soca_error_covariance_toolbox.x"
+  fi
+  export pgm="${jedi_exe_fn}"
   . prep_step
   ${run_cmd} -n ${NPROCS_PREP_DATA} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
   export err=$?; err_chk
@@ -610,7 +625,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   cp -p "${soca_diff_cor_hz1_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz1_fn}_${PDY}${cyc}.nc"
   cp -p "${soca_diff_cor_hz2_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz2_fn}_${PDY}${cyc}.nc"
   cp -p "${soca_diff_cor_vt_fn}.nc" "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc"
-
 
   #############
   cd ${DATA}
