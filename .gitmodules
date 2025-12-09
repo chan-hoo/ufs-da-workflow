@@ -30,3 +30,7 @@
 	url = https://github.com/NOAA-EPIC/land-SCF_proc.git
 	branch = land-DA
 	ignore = dirty
+[submodule "sorc/GDASApp"]
+	path = sorc/GDASApp
+	url = https://github.com/NOAA-EMC/GDASApp.git
+	ignore = dirty
