@@ -25,12 +25,22 @@ where `[APP]` is `S2SWA` or `NG-GODAS`.
 
 - Workflow components: YES, JEDI-bundle: YES
 ```
-./app_build.sh -a=[APP] --jedi=on
+./app_build.sh -a=[APP] --jedi=bundle
 ```
 
 - Workflow components: NO, JEDI-bundle: YES
 ```
-./app_build.sh --jedi=only
+./app_build.sh --jedi=bundle-only
+```
+
+- Workflow components: YES, GDAS App: YES
+```
+./app_build.sh -a=[APP] --jedi=gdas
+```
+
+- Workflow components: NO, GDAS App: YES
+```
+./app_build.sh --jedi=gdas-only
 ```
 
 4. Load the python environment to set up the workflow:
