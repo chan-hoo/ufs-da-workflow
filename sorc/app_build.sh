@@ -35,7 +35,7 @@ OPTIONS
       build directory
   --install-dir=INSTALL_DIR
       installation prefix
-  --jedi=BUILD_JEDI (on|off|only)
+  --jedi=BUILD_JEDI ( off | bundle | gdas | bundle-only | gdas-only )
   --jedi-dir=JEDI_DIR
       installation location of JEDI (bundle|GDAS)
   --build-type=BUILD_TYPE
@@ -88,7 +88,7 @@ SORC_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
 HOME_DIR="${SORC_DIR}/.."
 BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
-JEDI_BUILD_DIR="${HOME_DIR}/../jedi"
+JEDI_BUILD_DIR=""
 COMPILER="intel"
 APPLICATION="S2SWA"
 CCPP_SUITES=""
@@ -178,7 +178,7 @@ fi
 printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 
 # === Soft-link static input files to FIX directory ===
-if [ "${BUILD_JEDI}" != "only" ]; then
+if [ "${BUILD_JEDI}" != "bundle-only" ] && [ "${BUILD_JEDI}" != "gdas-only" ]; then
   ver_fix_data="v1.0"
   if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
     fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
@@ -247,7 +247,14 @@ if [ "${REMOVE}" = true ]; then
 fi
 
 # === Build JEDI-bundle, if requested (default: off) ===
-if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
+if [ "${BUILD_JEDI}" != "off" ]; then
+  if [ -z "${JEDI_BUILD_DIR}" ]; then
+    if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
+      JEDI_BUILD_DIR="${HOME_DIR}/../jedi"
+    elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
+      JEDI_BUILD_DIR="${HOME_DIR}/.."
+    fi
+  fi
   jedi_build_skip="NO"
   if [ -d "${JEDI_BUILD_DIR}" ]; then
     printf "JEDI build directory (${JEDI_BUILD_DIR}) already exists.\n"
@@ -267,8 +274,6 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     else
       module purge
     fi
-    module use ${SORC_DIR}/jedi-bundle/modulefiles
-    module load ${PLATFORM}.${COMPILER}
     if [ "${PLATFORM}" = "gaeac6" ]; then
       module load git
       git lfs install --skip-repo
@@ -277,23 +282,40 @@ if [ "${BUILD_JEDI}" = "on" ] || [ "${BUILD_JEDI}" = "only" ]; then
     else
       module load git-lfs
     fi
-    module list
-    mkdir -p ${JEDI_BUILD_DIR}
-    cd "${JEDI_BUILD_DIR}"
-    cp -rp "${SORC_DIR}/jedi-bundle" .
-    mkdir -p build
-    cd build
-    ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
-    if [ "${PLATFORM}" = "orion" ]; then
-      printf "!!! === Please go to (${SORC_DIR}/jedi-bundle/modulefiles) and run (sbatch job_card_orion.sh) === !!!"
-    else
-      make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
+    if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
+      module use ${SORC_DIR}/jedi-bundle/modulefiles
+      module load ${PLATFORM}.${COMPILER}
+      module list
+      mkdir -p ${JEDI_BUILD_DIR}
+      cd "${JEDI_BUILD_DIR}"
+      cp -rp "${SORC_DIR}/jedi-bundle" .
+      mkdir -p build
+      cd build
+      ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
+      if [ "${PLATFORM}" = "orion" ]; then
+        printf "!!! === Please go to (${SORC_DIR}/jedi-bundle/modulefiles) and run (sbatch job_card_orion.sh) === !!!"
+      else
+        make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
+      fi
+    elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
+      cd "${JEDI_BUILD_DIR}"
+      git clone --recursive https://github.com/NOAA-EMC/GDASApp.git
+      cd GDASApp
+      # For specific hash
+      git checkout 54dbb71
+      git submodule update --init --recursive
+      # Load module file
+      module use modulefiles/GDAS
+      module load ${PLATFORM}.${COMPILER}
+      module list
+      # Run build script
+      ./build.sh -f -a -d -t ${PLATFORM}
     fi
-    cd "${SORC_DIR}"
     set +eu
+    cd "${SORC_DIR}"
   fi
 fi
-[[ "${BUILD_JEDI}" == "only" ]] && exit 0
+[[ "${BUILD_JEDI}" == "bundle-only" || "${BUILD_JEDI}" == "gdas-only" ]] && exit 0
 
 # === Build workflow components === 
 if [ -d "${BUILD_DIR}" ]; then
