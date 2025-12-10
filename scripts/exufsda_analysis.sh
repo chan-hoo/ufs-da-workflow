@@ -496,18 +496,19 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ##################################################################
     ## Run "JEDI_ALGORITHM" and its pre-requisite tasks in sequence
     ##################################################################
-    ## Set list of tasks and executable name for jedi algorithm
-    if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_ALGORITHM}")
+    ## Set list of tasks and executable name for jedi c-test
+    if [ "${JEDI_CTEST_NAME}" = "3dvar" ]; then
+      list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" "${JEDI_CTEST_NAME}")
       jedi_exe_soca_fn="soca_var.x"
-    elif [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+    elif [ "${JEDI_CTEST_NAME}" = "3dvarfgat_pseudo" ]; then
       list_soca_tasks=("gridgen" "setcorscales" "parameters_diffusion" \
-	               "forecast_mom6" "${JEDI_ALGORITHM}")
+	               "forecast_mom6" "${JEDI_CTEST_NAME}")
       jedi_exe_soca_fn="soca_var.x"
     else
-      list_soca_tasks=("${JEDI_ALGORITHM}")
+      list_soca_tasks=("${JEDI_CTEST_NAME}")
       jedi_exe_soca_fn="soca_${JEDI_ALGORITHM}.x"
     fi
+
     for isoca in "${list_soca_tasks[@]}"; do
       ### JEDI input yaml file
       jedi_nml_fn="${isoca}.yml"
@@ -526,7 +527,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
         fi
         [[ -e "input.nml" ]] && rm input.nml
       else
-        if [ "${isoca}" = "${JEDI_ALGORITHM}" ]; then
+        if [ "${isoca}" = "${JEDI_CTEST_NAME}" ]; then
           jedi_exe_fn="${jedi_exe_soca_fn}"
         elif [ "${isoca}" = "parameters_diffusion" ]; then
           jedi_exe_fn="soca_error_covariance_toolbox.x"
@@ -542,14 +543,12 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
           err_exit "JEDI SOCA C-test for ${isoca} failed"
         fi
       fi
-
       ### Copy output files
       mkdir -p "data_generated/${isoca}"
       cp -p data_output/* "data_generated/${isoca}"
       
       echo "========== SOCA task ${isoca} completed !!! =========="
     done
-
   fi
 
   # Copy observation files to COMINOUTobs
@@ -578,29 +577,29 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
 
   fn_ocn_data="MOM.res.nc"
   fn_ocn_incr="MOM.incr.res.nc"
-  if [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
-    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
+  if [ "${JEDI_CTEST_NAME}" = "3dvarfgat_pseudo" ]; then
+    fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
     fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
   else
-    fn_ocn_data_after="ocn.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ocn_incr_orig="ocn.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ocn_incr_orig="ocn.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
   fi
   ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
   ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
   ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
 
-  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+  if [ "${JEDI_CTEST_NAME}" = "3dvar" ]; then
     cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
     cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
 
     fn_sfc_data="sfc.res.nc"
     fn_sfc_incr="sfc.incr.res.nc"
-    fn_sfc_data_after="sfc.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_sfc_incr_orig="sfc.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_sfc_data_after="sfc.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_sfc_incr_orig="sfc.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
     fn_ice_data="cice.res.nc"
     fn_ice_incr="cice.incr.res.nc"
-    fn_ice_data_after="ice.${JEDI_ALGORITHM}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ice_incr_orig="ice.${JEDI_ALGORITHM}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_data_after="ice.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    fn_ice_incr_orig="ice.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
     ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
     ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
     ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
