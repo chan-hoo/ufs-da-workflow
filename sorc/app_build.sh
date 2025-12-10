@@ -304,10 +304,6 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       # For specific hash
       git checkout 54dbb71
       git submodule update --init --recursive
-      # Load module file
-      module use modulefiles/GDAS
-      module load ${PLATFORM}.${COMPILER}
-      module list
       # Run build script
       ./build.sh -f -a -d -t ${PLATFORM}
     fi
