@@ -274,10 +274,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     else
       module purge
     fi
-    if [ "${PLATFORM}" = "gaeac6" ]; then
-      module load git
-      git lfs install --skip-repo
-    elif [ "${PLATFORM}" = "hera" ]; then
+    if [ "${PLATFORM}" = "hera" ]; then
       git lfs install --skip-repo
     else
       module load git-lfs
