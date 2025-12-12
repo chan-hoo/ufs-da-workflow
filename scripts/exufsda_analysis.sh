@@ -607,6 +607,23 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
     ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
   fi
+  #############
+  # FV3-JEDI
+  ############
+  if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
+    ## Path to data set
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      path_fv3_data="${JEDI_BIN_PATH}/../../sorc/fv3-jedi/test"
+    else
+      path_fv3_data="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi/test"
+    fi
+
+    ## Symlink data/input directories
+    ln -nsf "${path_fv3_data}/Data" "data_static"
+    ln -nsf "${path_fv3_data}/testinput" .
+    ln -nsf "${path_fv3_data}/testref" .
+
+  fi
 fi
 
 
