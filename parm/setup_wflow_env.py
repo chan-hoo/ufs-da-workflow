@@ -253,7 +253,7 @@ def add_new_parm_hpc(machine,config_parm):
         nprocs_per_node_prep_data = math.ceil(nprocs_prep_data/nnodes_prep_data)
 
     # Slurm memory flag: some platforms do not support the memory flag in slurm
-    mem_not_req = [ "gaeac6" ]
+    mem_not_req = [ "gaeac6", "orion" ]
     if machine in mem_not_req:
         memory_flag = False
     else:
