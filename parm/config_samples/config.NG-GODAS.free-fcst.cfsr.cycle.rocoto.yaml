@@ -1,6 +1,5 @@
 flag:
   COLDSTART: 'YES'
-  DO_FREE_FORECAST: all
   IC_FROM_FIX_DIR: 'YES'  
 path:
 parm:
@@ -10,6 +9,7 @@ parm:
   DATE_FIRST_CYCLE: 2011100100
   DATE_LAST_CYCLE: 2011100112
   DATM_DATA_TYPE: cfsr
+  DO_FREE_FORECAST: all
   DT_ATMOS: 900
   DT_RUNSEQ: 3600
   envir: ng_fcst_cfsr

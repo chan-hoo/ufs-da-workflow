@@ -450,7 +450,7 @@ def check_valid_parm(home_dir,config_parm):
     datm_data_type = datm_data_type_orig.lower()
     config_parm["parm"]["DATM_DATA_TYPE"] = datm_data_type
 
-    do_free_forecast_orig = config_parm["flag"]["DO_FREE_FORECAST"]
+    do_free_forecast_orig = config_parm["parm"]["DO_FREE_FORECAST"]
     do_free_forecast_options = ["first", "all", "none", "ctest"]
     err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
     if isinstance(do_free_forecast_orig, bool):
@@ -461,7 +461,7 @@ def check_valid_parm(home_dir,config_parm):
         logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
     else:
         do_free_forecast = do_free_forecast_orig
-    config_parm["flag"]["DO_FREE_FORECAST"] = do_free_forecast
+    config_parm["parm"]["DO_FREE_FORECAST"] = do_free_forecast
 
     if do_free_forecast not in do_free_forecast_options:
         logging.error(err_msg)
@@ -656,13 +656,13 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
 # ==================================================================== CHJ =====
 def create_ecflow_files(home_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
-    do_free_forecast = config_parm["flag"]["DO_FREE_FORECAST"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
     date_second_cycle = config_parm["parm"]["date_second_cycle"]
+    do_free_forecast = config_parm["parm"]["DO_FREE_FORECAST"]
     sched = config_parm["parm"]["SCHED"]
 
     date_cycle_freq_day = date_cycle_freq_hr // 24

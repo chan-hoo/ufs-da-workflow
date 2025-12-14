@@ -1,5 +1,4 @@
 flag:
-  DO_FREE_FORECAST: 'none'
   FRAC_GRID: 'YES'
   IC_FROM_FIX_DIR: 'YES'
 path:
@@ -10,6 +9,7 @@ parm:
   DATE_CYCLE_FREQ_HR: 24
   DATE_FIRST_CYCLE: 202103220600
   DATE_LAST_CYCLE: 202103230600
+  DO_FREE_FORECAST: 'none'
   EXP_CASE_NAME: None
   IC_DATA_MODEL: gfs
   MACHINE: /machine/platform/name
