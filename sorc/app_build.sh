@@ -289,11 +289,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       mkdir -p build
       cd build
       ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
-      if [ "${PLATFORM}" = "orion" ]; then
-        printf "!!! === Please go to (${SORC_DIR}/jedi-bundle/modulefiles) and run (sbatch job_card_orion.sh) === !!!"
-      else
-        make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
-      fi
+      make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
       cd "${JEDI_PDIR}"
       git clone --recursive https://github.com/NOAA-EMC/GDASApp.git
