@@ -21,7 +21,6 @@ load(pathJoin("sp", sp_ver))
 load(pathJoin("w3emc", w3emc_ver))
 load(pathJoin("gftl-shared", gftl_shared_ver))
 load(pathJoin("mapl", mapl_ver))
-load(pathJoin("ecflow", ecflow_ver))
 load(pathJoin("prod_util", prod_util_ver))
 
 load(pathJoin("py-jinja2", py_jinja2_ver))
@@ -29,3 +28,5 @@ load(pathJoin("py-netcdf4", py_netcdf4_ver))
 load(pathJoin("py-numpy", py_numpy_ver))
 load(pathJoin("py-pyyaml", py_pyyaml_ver))
 
+prepend_path("MODULEPATH", "/ncrc/proj/epic/spack-stack/c6/spack-stack-1.9.2/envs/ue-intel-2023.2.0/install/modulefiles/gcc/12.3.0")
+load("ecflow/5.11.4")

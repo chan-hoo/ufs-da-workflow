@@ -1,6 +1,6 @@
 help([[
 This loads the modules and py environment for running the UFS-DA workflow
-with Rocoto on the MSU machine Orion
+with ecFlow on the MSU machine Orion
 ]])
 
 prepend_path("MODULEPATH", "/apps/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.1.0/install/modulefiles/Core")
