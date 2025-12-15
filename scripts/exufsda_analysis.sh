@@ -549,79 +549,113 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       
       echo "========== SOCA task ${isoca} completed !!! =========="
     done
-  fi
 
-  # Copy observation files to COMINOUTobs
-  obs_fns=( "sst" "sss" "adt" "prof" "icec" )
-  for ifn in "${obs_fns[@]}" ; do
-    ifp="${DATA}/data_static/obs/${ifn}.nc"
-    if [ -e "${ifp}" ]; then
-      cp -p ${ifp} "${COMINOUTobs}/obs.${PDY}.${cycle}.${ifn}.nc"
+    # Copy observation files to COMINOUTobs
+    obs_fns=( "sst" "sss" "adt" "prof" "icec" )
+    for ifn in "${obs_fns[@]}" ; do
+      ifp="${DATA}/data_static/obs/${ifn}.nc"
+      if [ -e "${ifp}" ]; then
+        cp -p ${ifp} "${COMINOUTobs}/obs.${PDY}.${cycle}.${ifn}.nc"
+      fi
+    done
+  
+    # Copy output to COMINOUT
+    cp -rp data_generated/* ${COMINOUT}
+    cp -p data_output/* ${COMINOUT}
+  
+    # Copy H(x) output to COMINOUT
+    cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
+    cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
+    cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
+    cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
+    cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
+  
+    # Set and symlink output/increment file names for plotting
+    bkg_file_dir="data_static/72x35x25/restarts"
+    anl_file_dir="data_output"
+  
+    fn_ocn_data="MOM.res.nc"
+    fn_ocn_incr="MOM.incr.res.nc"
+    if [ "${JEDI_CTEST_NAME}" = "3dvarfgat_pseudo" ]; then
+      fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
+      fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+    else
+      fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+      fn_ocn_incr_orig="ocn.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
     fi
-  done
-
-  # Copy output to COMINOUT
-  cp -rp data_generated/* ${COMINOUT}
-  cp -p data_output/* ${COMINOUT}
-
-  # Copy H(x) output to COMINOUT
-  cp -p data_output/sst.nc "${COMINOUThofx}/diag.SeaSurfaceTemp_${PDY}${cyc}.nc"
-  cp -p data_output/sss.nc "${COMINOUThofx}/diag.SeaSurfaceSalinity_${PDY}${cyc}.nc"
-  cp -p data_output/adt.nc "${COMINOUThofx}/diag.ADT_${PDY}${cyc}.nc"
-  cp -p data_output/prof_T.nc "${COMINOUThofx}/diag.InsituTemperature_${PDY}${cyc}.nc"
-  cp -p data_output/prof_S.nc "${COMINOUThofx}/diag.InsituSalinity_${PDY}${cyc}.nc"
-
-  # Set and symlink output/increment file names for plotting
-  bkg_file_dir="data_static/72x35x25/restarts"
-  anl_file_dir="data_output"
-
-  fn_ocn_data="MOM.res.nc"
-  fn_ocn_incr="MOM.incr.res.nc"
-  if [ "${JEDI_CTEST_NAME}" = "3dvarfgat_pseudo" ]; then
-    fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T12:00:00Z.nc"
-    fn_ocn_incr_orig="ocn.cor_rh.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  else
-    fn_ocn_data_after="ocn.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ocn_incr_orig="ocn.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-  fi
-  ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
-  ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
-  ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
-
-  if [ "${JEDI_CTEST_NAME}" = "3dvar" ]; then
-    cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
-    cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
-
-    fn_sfc_data="sfc.res.nc"
-    fn_sfc_incr="sfc.incr.res.nc"
-    fn_sfc_data_after="sfc.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_sfc_incr_orig="sfc.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ice_data="cice.res.nc"
-    fn_ice_incr="cice.incr.res.nc"
-    fn_ice_data_after="ice.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    fn_ice_incr_orig="ice.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
-    ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
-    ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
-    ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
-    ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
-    ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
-    ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
+    ln -nsf "${bkg_file_dir}/${fn_ocn_data}" "${fn_ocn_data}_soca_ctest_before_inc"
+    ln -nsf "${anl_file_dir}/${fn_ocn_data_after}" "${fn_ocn_data}_soca_ctest_after_inc"
+    ln -nsf "${anl_file_dir}/${fn_ocn_incr_orig}" ${fn_ocn_incr}
+  
+    if [ "${JEDI_CTEST_NAME}" = "3dvar" ]; then
+      cp -p data_output/sst_coolskin.nc "${COMINOUThofx}/diag.CoolSkin_${PDY}${cyc}.nc"
+      cp -p data_output/icec.nc "${COMINOUThofx}/diag.SeaIceFraction_${PDY}${cyc}.nc"
+  
+      fn_sfc_data="sfc.res.nc"
+      fn_sfc_incr="sfc.incr.res.nc"
+      fn_sfc_data_after="sfc.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+      fn_sfc_incr_orig="sfc.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+      fn_ice_data="cice.res.nc"
+      fn_ice_incr="cice.incr.res.nc"
+      fn_ice_data_after="ice.${JEDI_CTEST_NAME}.an.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+      fn_ice_incr_orig="ice.${JEDI_CTEST_NAME}.iter1.incr.${YYYY}-${MM}-${DD}T${HH}:00:00Z.nc"
+      ln -nsf "${bkg_file_dir}/${fn_sfc_data}" "${fn_sfc_data}_soca_ctest_before_inc"
+      ln -nsf "${anl_file_dir}/${fn_sfc_data_after}" "${fn_sfc_data}_soca_ctest_after_inc"
+      ln -nsf "${anl_file_dir}/${fn_sfc_incr_orig}" ${fn_sfc_incr}
+      ln -nsf "${bkg_file_dir}/${fn_ice_data}" "${fn_ice_data}_soca_ctest_before_inc"
+      ln -nsf "${anl_file_dir}/${fn_ice_data_after}" "${fn_ice_data}_soca_ctest_after_inc"
+      ln -nsf "${anl_file_dir}/${fn_ice_incr_orig}" ${fn_ice_incr}
+    fi
   fi
   #############
   # FV3-JEDI
   ############
   if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
     ## Path to data set
-    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
-      path_fv3_data="${JEDI_BIN_PATH}/../../sorc/fv3-jedi/test"
-    else
-      path_fv3_data="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi/test"
+    path_fv3_data="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi-data/testinput_tier_1"
+    path_fv3_test="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi/test"
+    ln -nsf "${path_fv3_test}/testoutput" .
+
+    mkdir -p ${DATA}/Data
+    mkdir -p ${DATA}/Data/fv3files
+    mkdir -p ${DATA}/Data/obs/testinput_tier_1
+    cd ${DATA}/Data
+    ## Symlink data/input directories
+    ln -nsf ${path_fv3_test}/Data/fv3files/* ${DATA}/Data/fv3files/.
+    ln -nsf ${path_fv3_data}/inputs/fv3files/* ${DATA}/Data/fv3files/.
+    ln -nsf "${path_fv3_data}/inputs" .
+    ln -nsf "${path_fv3_data}/obs/aod_viirs_npp_obs_2018041500.nc4" ${DATA}/Data/obs/testinput_tier_1/.
+    ln -nsf "${path_fv3_data}/obs/VIIRS_npp_bias_coeff.nc4" ${DATA}/Data/obs/testinput_tier_1/.
+    cd ${DATA}
+
+    if [ "${JEDI_CTEST_NAME}" = "3dvar_gfs_aero" ]; then
+      list_ctest_tasks=("staticb_cor_aero" "${JEDI_CTEST_NAME}")
+      jedi_exe_fv3_fn="fv3jedi_var.x"
+      mkdir -p ${DATA}/Data/staticb_aero
     fi
 
-    ## Symlink data/input directories
-    ln -nsf "${path_fv3_data}/Data" "data_static"
-    ln -nsf "${path_fv3_data}/testinput" .
-    ln -nsf "${path_fv3_data}/testref" .
+    for itest in "${list_ctest_tasks[@]}"; do
+      ### JEDI input yaml file
+      jedi_nml_fn="${itest}.yaml"
+      cp -p "${path_fv3_test}/testinput/${jedi_nml_fn}" .
+
+      if [ "${itest}" = "${JEDI_CTEST_NAME}" ]; then
+        jedi_exe_fn="${jedi_exe_fv3_fn}"
+      elif [ "${itest}" = "staticb_cor_aero" ]; then
+        jedi_exe_fn="fv3jedi_error_covariance_toolbox.x"
+      else
+        jedi_exe_fn="fv3jedi_${itest}.x"
+      fi
+      export pgm="${jedi_exe_fn}"
+      . prep_step
+      ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+      export err=$?; err_chk
+      cp errfile errfile_ctest_${itest}
+      if [[ $err != 0 ]]; then
+        err_exit "JEDI FV3-JEDI C-test for ${itest} failed"
+      fi
+      echo "========== FV3-JEDI task ${itest} completed !!! =========="
+    done
 
   fi
 fi
