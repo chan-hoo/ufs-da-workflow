@@ -5,11 +5,11 @@ path:
 parm:
   ACCOUNT: epic
   DATE_CYCLE_FREQ_HR: 24
-  DATE_FIRST_CYCLE: 2020121500
-  DATE_LAST_CYCLE: 2020121500
+  DATE_FIRST_CYCLE: 2020090318
+  DATE_LAST_CYCLE: 2020090318
   DO_FREE_FORECAST: ctest
-  envir: fv3_ctest_3dvar_gfs
-  EXP_CASE_NAME: fv3_ctest_3dvar_gfs
+  envir: fv3_ctest_3dvar_geos
+  EXP_CASE_NAME: fv3_ctest_3dvar_geos
   JEDI_ALGORITHM: 3dvar
-  JEDI_CTEST_NAME: 3dvar_gfs_0obs
+  JEDI_CTEST_NAME: 3dvar_geos_cf
   NPROCS_ANALYSIS: 6

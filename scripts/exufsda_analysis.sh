@@ -617,10 +617,11 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ln -nsf "${path_fv3_test}/testinput" .
 
     mkdir -p ${DATA}/Data
-    mkdir -p ${DATA}/Data/fv3files
-    mkdir -p ${DATA}/Data/obs/testinput_tier_1
-    mkdir -p ${DATA}/Data/hofx
     mkdir -p ${DATA}/Data/analysis
+    mkdir -p ${DATA}/Data/bump
+    mkdir -p ${DATA}/Data/fv3files
+    mkdir -p ${DATA}/Data/hofx
+    mkdir -p ${DATA}/Data/obs/testinput_tier_1
     mkdir -p ${DATA}/testoutput
 
     cd ${DATA}/Data
@@ -632,7 +633,10 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ln -nsf ${path_fv3_data}/obs/* ${DATA}/Data/obs/testinput_tier_1/.
     cd ${DATA}
 
-    if [ "${JEDI_CTEST_NAME}" = "3dvar_gfs_0obs" ]; then
+    if [ "${JEDI_CTEST_NAME}" = "3dvar_geos_cf" ]; then
+      list_ctest_tasks=( "bumpparameters_nicas_geos_cf" "${JEDI_CTEST_NAME}")
+      jedi_exe_fv3_fn="fv3jedi_var.x"
+    elif [ "${JEDI_CTEST_NAME}" = "3dvar_gfs_0obs" ]; then
       list_ctest_tasks=( "convertstate_gfs" "${JEDI_CTEST_NAME}")
       jedi_exe_fv3_fn="fv3jedi_var.x"
     fi
@@ -647,7 +651,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
         jedi_exe_fn="${jedi_exe_fv3_fn}"
       elif [ "${itest}" = "convertstate_gfs" ]; then
 	jedi_exe_fn="fv3jedi_convertstate.x"
-      elif [ "${itest}" = "staticb_cor_aero" ]; then
+      elif [ "${itest}" = "bumpparameters_nicas_geos_cf" ] || [ "${itest}" = "staticb_cor_aero" ]; then
         jedi_exe_fn="fv3jedi_error_covariance_toolbox.x"
       else
         jedi_exe_fn="fv3jedi_${itest}.x"
