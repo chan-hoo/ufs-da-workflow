@@ -158,6 +158,7 @@ if __name__ == '__main__':
     DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
     hofx_data_path = yaml_data['hofx_data_path']
     JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
+    JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     work_dir = yaml_data['work_dir']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
@@ -190,6 +191,9 @@ if __name__ == '__main__':
                 svar_list += ["CoolSkin","SeaIceFraction"]
         else:
             svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
+    if JEDI_TYPE_FV3 == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            svar_list = ["NO2"]
     if OBS_GHCN_SNOW == "YES":
         svar_list.append("ghcn_snow")
     if OBS_IMS_SNOW == "YES":
@@ -226,6 +230,8 @@ if __name__ == '__main__':
             svar_long = "seaSurfaceSalinity"
         elif svar == "SeaSurfaceTemp":
             svar_long = "seaSurfaceTemperature"
+        elif svar == "NO2":
+            svar_long = "nitrogendioxideColumn"
         else:
             svar_long = svar
 

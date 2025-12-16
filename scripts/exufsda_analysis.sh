@@ -672,7 +672,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       ## observation
       cp -p "${DATA}/Data/obs/testinput_tier_1/tropomi_no2_tropo_2020090318_m.nc4" "${COMINOUTobs}/obs.${PDY}.${cycle}.tropomi_no2.nc"
       ## H(x) result
-      cp -p ${DATA}/Data/hofx/* ${COMINOUThofx}
+      cp -p "${DATA}/Data/hofx/tropomi_no2_hofx_geos_2020090318_m.nc" "${COMINOUThofx}/diag.NO2_${PDY}${cyc}.nc"
       ## Analysis result
       cp -p ${DATA}/Data/analysis/* ${COMINOUT}
       ## plot off: no increment file
