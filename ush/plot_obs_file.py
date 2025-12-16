@@ -33,6 +33,7 @@ def main():
     work_dir = yaml_data['work_dir']
     cartopy_ne_path = yaml_data['cartopy_ne_path']
     DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
     OBS_IMS_SNOW = yaml_data['OBS_IMS_SNOW']
@@ -70,7 +71,7 @@ def main():
     # Plot SMOPS
     if OBS_SMOPS == "YES":
         obs_plot("smops",PDY,work_dir,obs_prefix,"smops")
-    # Plot C-test of SOCA
+    # Plot SOCA
     if JEDI_TYPE_SOCA == "YES":
         if DO_FREE_FORECAST == "ctest":
             obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
@@ -85,6 +86,10 @@ def main():
             obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss_salinity")
             obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof_insitu")
             obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof_insitu")
+    # Plot FV3-JEDI
+    if JEDI_TYPE_FV3 == "YES":
+        if DO_FREE_FORECAST == "ctest":
+            obs_plot("fv3_geos",PDY,work_dir,obs_prefix,"tropomi_no2")
 
 
 # obs plot =============================================== CHJ =====
@@ -116,12 +121,13 @@ def obs_plot(obs_type,PDY,work_dir,fn_prefix,fn_suffix):
 
     #extent=[lon_min,lon_max,lat_min,lat_max]
     extent=[]
-    if obs_type != "smap":
-        # for Northern Hemisphere
-        extent=[-179,179,0,82.5]
+    if obs_type == "fv3_geos":
         # for CONUS
-        #extent=[-125,-66,23,53]
-        logging.info(f''' Map extent= {extent}''')
+        extent=[-125,-66,23,53]
+    else:
+        # for Northern Hemisphere (default)
+        extent=[-179,179,0,82.5]
+    logging.info(f''' Map extent= {extent}''')
 
     #c_lon=np.mean(extent[:2])
     c_lon=-77.0369 # D.C.
@@ -170,6 +176,9 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     elif obs_type == "soca_prof_s":
         gvar = "salinity"
         pvar = "Insitu Salinity"
+    elif obs_type == "fv3_geos":
+        gvar = "nitrogendioxideColumn"
+        pvar = "Nitrogen dioxide (NO2)"
     else:
         gvar = svar
         pvar = svar
@@ -230,6 +239,9 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         elif obs_type == 'soca_icec':
             cs_max = 1
             cs_min = 0
+        elif obs_type == 'fv3_geos':
+            cs_max = 3e-05
+            cs_min = 0
         else:
             cs_max=300.0
     else:
@@ -240,7 +252,7 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
 
     # Plot field
     fig,ax=plt.subplots(1,1,subplot_kw=dict(projection=ccrs.Robinson(c_lon)))
-    if obs_type == "ghcn":
+    if obs_type == "ghcn" or obs_type == "fv3_geos":
         ax.set_extent(extent, ccrs.PlateCarree())
     else:
         ax.set_global()

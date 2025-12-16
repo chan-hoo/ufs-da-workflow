@@ -667,6 +667,17 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       echo "========== FV3-JEDI task ${itest} completed !!! =========="
     done
 
+    # Copy output to COMINOUT
+    if [ "${JEDI_CTEST_NAME}" = "3dvar_geos_cf" ]; then
+      ## observation
+      cp -p "${DATA}/Data/obs/testinput_tier_1/tropomi_no2_tropo_2020090318_m.nc4" "${COMINOUTobs}/obs.${PDY}.${cycle}.tropomi_no2.nc"
+      ## H(x) result
+      cp -p ${DATA}/Data/hofx/* ${COMINOUThofx}
+      ## Analysis result
+      cp -p ${DATA}/Data/analysis/* ${COMINOUT}
+      ## plot off: no increment file
+      DO_PLOT_COMP_JEDI_INCR="NO"
+    fi
   fi
 fi
 

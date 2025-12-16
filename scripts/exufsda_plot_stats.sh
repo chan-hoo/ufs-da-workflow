@@ -3,11 +3,17 @@
 set -xue
 
 # Set the default values of plotting flags
+do_plot_obs="NO"
+do_plot_stats="NO"
+do_plot_time_history="NO"
+do_plot_fcst_out_fv3="NO"
+do_plot_fcst_out_mom6="NO"
+do_plot_fcst_out_cice="NO"
+do_plot_fcst_restart_fv3="NO"
+do_plot_fcst_restart_mom6="NO"
+do_plot_fcst_restart_cice="NO"
 if [ "${DO_FREE_FORECAST}" = "first" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    do_plot_obs="NO"
-    do_plot_stats="NO"
-    do_plot_time_history="NO"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
     do_plot_fcst_out_cice="YES"
@@ -18,17 +24,8 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_obs="YES"
     do_plot_stats="YES"
     do_plot_time_history="YES"
-    do_plot_fcst_out_fv3="NO"
-    do_plot_fcst_out_mom6="NO"
-    do_plot_fcst_out_cice="NO"
-    do_plot_fcst_restart_fv3="NO"
-    do_plot_fcst_restart_mom6="NO"
-    do_plot_fcst_restart_cice="NO"
   fi
 elif [ "${DO_FREE_FORECAST}" = "all" ]; then
-  do_plot_obs="NO"
-  do_plot_stats="NO"
-  do_plot_time_history="NO"
   do_plot_fcst_out_fv3="YES"
   do_plot_fcst_out_mom6="YES"
   do_plot_fcst_out_cice="YES"
@@ -36,20 +33,15 @@ elif [ "${DO_FREE_FORECAST}" = "all" ]; then
   do_plot_fcst_restart_mom6="YES"
   do_plot_fcst_restart_cice="YES"
 elif [ "${DO_FREE_FORECAST}" = "ctest" ]; then
-  do_plot_obs="YES"
-  do_plot_stats="YES"
-  do_plot_time_history="YES"
-  do_plot_fcst_out_fv3="NO"
-  do_plot_fcst_out_mom6="NO"
-  do_plot_fcst_out_cice="NO"
-  do_plot_fcst_restart_fv3="NO"
-  do_plot_fcst_restart_mom6="NO"
-  do_plot_fcst_restart_cice="NO"
+  if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+    do_plot_obs="YES"
+    do_plot_stats="YES"
+  elif [ "${JEDI_TYPE_FV3}" = "YES" ]; then
+    do_plot_obs="YES"
+    do_plot_stats="YES"
+  fi
 else
   if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    do_plot_obs="NO"
-    do_plot_stats="NO"
-    do_plot_time_history="NO"
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
     do_plot_fcst_out_cice="YES"
@@ -116,6 +108,7 @@ if [ "${DO_PLOT_OBS}" = "YES" ]; then
   cat > plot_obs_file.yaml << EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
+JEDI_TYPE_FV3: '${JEDI_TYPE_FV3}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
 OBS_IMS_SNOW: '${OBS_IMS_SNOW}'
