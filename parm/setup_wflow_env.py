@@ -184,6 +184,7 @@ def add_new_parm_base(home_dir,config_parm):
 # ==================================================================== CHJ =====
 def add_new_parm_hpc(machine,config_parm):
     # Calculate HPC parameter values
+    jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
     app = config_parm["parm"]["APP"]
     atm_layout_x = config_parm["parm"]["ATM_LAYOUT_X"]
     atm_layout_y = config_parm["parm"]["ATM_LAYOUT_Y"]
@@ -241,7 +242,7 @@ def add_new_parm_hpc(machine,config_parm):
         nprocs_per_node_plot_stats = math.ceil(nprocs_plot_stats/nnodes_plot_stats)
 
     # for prep_data task
-    if nprocs_prep_data < 12:
+    if jedi_type_soca == "YES" and nprocs_prep_data < 12:
         logging.warning(f''' NPROCS_PREP_DATA < 12 => changed to 12 because setcorscales uses 12 !!!''')
         nprocs_prep_data = 12
 

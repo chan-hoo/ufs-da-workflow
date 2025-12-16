@@ -614,33 +614,39 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
     ## Path to data set
     path_fv3_data="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi-data/testinput_tier_1"
     path_fv3_test="${JEDI_BIN_PATH}/../../jedi-bundle/fv3-jedi/test"
-    ln -nsf "${path_fv3_test}/testoutput" .
+    ln -nsf "${path_fv3_test}/testinput" .
 
     mkdir -p ${DATA}/Data
     mkdir -p ${DATA}/Data/fv3files
     mkdir -p ${DATA}/Data/obs/testinput_tier_1
+    mkdir -p ${DATA}/Data/hofx
+    mkdir -p ${DATA}/Data/analysis
+    mkdir -p ${DATA}/testoutput
+
     cd ${DATA}/Data
     ## Symlink data/input directories
     ln -nsf ${path_fv3_test}/Data/fv3files/* ${DATA}/Data/fv3files/.
+    ln -nsf "${path_fv3_test}/Data/gsibec" ${DATA}/Data/.
     ln -nsf ${path_fv3_data}/inputs/fv3files/* ${DATA}/Data/fv3files/.
     ln -nsf "${path_fv3_data}/inputs" .
-    ln -nsf "${path_fv3_data}/obs/aod_viirs_npp_obs_2018041500.nc4" ${DATA}/Data/obs/testinput_tier_1/.
-    ln -nsf "${path_fv3_data}/obs/VIIRS_npp_bias_coeff.nc4" ${DATA}/Data/obs/testinput_tier_1/.
+    ln -nsf ${path_fv3_data}/obs/* ${DATA}/Data/obs/testinput_tier_1/.
     cd ${DATA}
 
-    if [ "${JEDI_CTEST_NAME}" = "3dvar_gfs_aero" ]; then
-      list_ctest_tasks=("staticb_cor_aero" "${JEDI_CTEST_NAME}")
+    if [ "${JEDI_CTEST_NAME}" = "3dvar_gfs_0obs" ]; then
+      list_ctest_tasks=( "convertstate_gfs" "${JEDI_CTEST_NAME}")
       jedi_exe_fv3_fn="fv3jedi_var.x"
-      mkdir -p ${DATA}/Data/staticb_aero
     fi
 
     for itest in "${list_ctest_tasks[@]}"; do
+      ln -nsf "${path_fv3_test}/testoutput/${itest}.ref" ${DATA}/testoutput/.
       ### JEDI input yaml file
       jedi_nml_fn="${itest}.yaml"
       cp -p "${path_fv3_test}/testinput/${jedi_nml_fn}" .
 
       if [ "${itest}" = "${JEDI_CTEST_NAME}" ]; then
         jedi_exe_fn="${jedi_exe_fv3_fn}"
+      elif [ "${itest}" = "convertstate_gfs" ]; then
+	jedi_exe_fn="fv3jedi_convertstate.x"
       elif [ "${itest}" = "staticb_cor_aero" ]; then
         jedi_exe_fn="fv3jedi_error_covariance_toolbox.x"
       else
