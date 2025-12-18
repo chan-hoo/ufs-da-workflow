@@ -98,12 +98,21 @@ fi
 ########################################
 ## UFS weather model input: input.nml
 ########################################
-if [ "${APP}" = "NG-GODAS" ]; then
-  fn_template="template.${APP}.input.nml"
+if [ "${CUSTOM_UFS_INPUT_NML_FLAG}" = "YES" ]; then
+  input_nml_fp="${CUSTOM_UFS_INPUT_NML_PATH}/${CUSTOM_UFS_INPUT_NML_FN}"
+  if [ -e "${input_nml_fp}" ]; then
+    rsync -avh ${input_nml_fp} "input.nml"
+    rsync -avh ${input_nml_fp} "${COMINOUT}/input.nml_${PDY}${cyc}"
+  else
+    err_exit "UFS input.nml file (${input_nml_fp}) does not exist." 
+  fi
 else
-  fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
-fi
-settings="\
+  if [ "${APP}" = "NG-GODAS" ]; then
+    fn_template="template.${APP}.input.nml"
+  else
+    fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
+  fi
+  settings="\
   'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
   'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
   'ATM_LAYOUT_X': ${ATM_LAYOUT_X}
@@ -121,10 +130,11 @@ settings="\
   'res_p1': ${res_p1}
   'warm_start': '${warm_start}'
 " # End of settings variable
-fp_template="${PARMufsda}/templates/${fn_template}"
-fn_namelist="input.nml"
-${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
-rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+  fp_template="${PARMufsda}/templates/${fn_template}"
+  fn_namelist="input.nml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+fi
 
 ############################################
 ## UFS weather model input: ufs.configure

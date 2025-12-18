@@ -1,5 +1,7 @@
 flag:
+  CUSTOM_UFS_INPUT_NML_FLAG: 'NO'
 path:
+  CUSTOM_UFS_INPUT_NML_PATH: None
 parm:
   ALLCOMP_RESTART_N: None
   APP: S2SWA
@@ -8,6 +10,7 @@ parm:
   ATM_LAYOUT_X: 3
   ATM_LAYOUT_Y: 8
   CCPP_SUITE: FV3_GFS_v17_coupled_p8_ugwpv1
+  CUSTOM_UFS_INPUT_NML_FN: None
   DATM_DATA_TYPE: gfs
   DT_ATMOS: 720
   DT_MOM6: 1800
