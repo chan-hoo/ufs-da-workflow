@@ -124,7 +124,7 @@ LND_attributes::
   input_dir = INPUT/
   fixed_dir = ./
   ic_type = sfc
-  layout = {{ LND_LAYOUT_X }}:{{ LND_LAYOUT_Y }} # need to be consistent with number of PEs
+  layout = {{ lnd_layout_x }}:{{ lnd_layout_y }} # need to be consistent with number of PEs
   num_soil_levels = 4
   forcing_height = 10
   soil_level_thickness = 0.10:0.30:0.60:1.00
@@ -144,7 +144,7 @@ LND_attributes::
   surface_evap_resistance_option = 1 # not used, it is fixed to 4 in sfc_noahmp_drv.F90
   glacier_option = 1
   surface_thermal_roughness_option = 2
-  output_freq = {{ lnd_output_freq_sec }}
+  output_freq = {{ LND_OUTPUT_FREQ }}
   restart_freq = -1
   calc_snet = .false.
   initial_albedo = 0.2

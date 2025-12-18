@@ -204,6 +204,10 @@ def add_new_parm_hpc(machine,config_parm):
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
         nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav
+    elif app == "S2SWAL":
+        nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
+        nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
+        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav + nprocs_forecast_med
     elif app == "NG-GODAS":
         nprocs_forecast_atm = nprocs_datm
         nprocs_forecast_med = nprocs_forecast_atm

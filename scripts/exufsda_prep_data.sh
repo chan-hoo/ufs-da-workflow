@@ -83,7 +83,7 @@ fi
 
 ## Application dependent variables
 datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
-if [ "${APP}" = "S2SWA" ]; then
+if [ "${APP}" = "S2SWA" ] || [ "${APP}" = "S2SWAL" ]; then
   # ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
@@ -98,10 +98,10 @@ fi
 ########################################
 ## UFS weather model input: input.nml
 ########################################
-if [ "${APP}" = "S2SWA" ]; then
-  fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
-elif [ "${APP}" = "NG-GODAS" ]; then
+if [ "${APP}" = "NG-GODAS" ]; then
   fn_template="template.${APP}.input.nml"
+else
+  fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
 fi
 settings="\
   'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
@@ -135,6 +135,8 @@ nprocs_atm_ocn=$(( nprocs_forecast_atm + NPROCS_OCN ))
 nprocs_atm_ocn_m1=$(( nprocs_atm_ocn - 1 ))
 nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
 nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
+nprocs_atm_ocn_ice_wav=$(( nprocs_atm_ocn_ice + NPROCS_WAV ))
+nprocs_atm_ocn_ice_wav_m1=$(( nprocs_atm_ocn_ice_wav - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
 
@@ -152,6 +154,9 @@ settings="\
   'atm_stop_n': ${FCST_HRS}
   'atm_petlist_bounds_n1': 0
   'atm_petlist_bounds_n2': ${nprocs_atm_m1}
+  'chm_model': ${chm_model}
+  'chm_petlist_bounds_n1': 0
+  'chm_petlist_bounds_n2': ${nprocs_med_m1}
   'cmeps_coupling_mode': ${cmeps_coupling_mode}
   'cmeps_mapuv_with_cart3d': ${cmeps_mapuv_with_cart3d}
   'ice_mesh_ice': ${OCN_MESH_FN}
@@ -159,16 +164,23 @@ settings="\
   'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
   'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
   'ice_stop_n': ${FCST_HRS}
+  'lnd_layout_x': ${ATM_LAYOUT_X}
+  'lnd_layout_y': ${ATM_LAYOUT_Y}
+  'lnd_model': ${lnd_model}
+  'LND_OUTPUT_FREQ': ${LND_OUTPUT_FREQ}
+  'lnd_petlist_bounds_n1': ${nprocs_atm_ocn_ice_wav}
+  'lnd_petlist_bounds_n2': ${nprocs_forecast_m1}
   'med_petlist_bounds_n1': 0
   'med_petlist_bounds_n2': ${nprocs_med_m1}
   'ocn_mesh_ocn': ${OCN_MESH_FN}
   'ocn_model': ${ocn_model}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
+  'RES': ${RES}
   'wav_mesh_wav': mesh.global_270k.nc
   'wav_model': ${wav_model}
   'wav_petlist_bounds_n1': ${nprocs_atm_ocn_ice}
-  'wav_petlist_bounds_n2': ${nprocs_forecast_m1}
+  'wav_petlist_bounds_n2': ${nprocs_atm_ocn_ice_wav_m1}
 " # End of settings variable
 fp_template="${PARMufsda}/templates/template.ufs.configure"
 fn_namelist="ufs.configure"
@@ -219,7 +231,7 @@ rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 ################################
 ## MOM6 input file: MOM_input
 ################################
-if [ "${APP}" = "S2SWA" ]; then
+if [ "${APP}" = "S2SWA" ] || [ "${APP}" = "S2SWAL" ]; then
   mom6_use_waves="True"
 else
   mom6_use_waves="False"
