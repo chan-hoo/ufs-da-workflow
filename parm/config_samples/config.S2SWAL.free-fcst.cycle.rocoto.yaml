@@ -4,15 +4,15 @@ flag:
 path:
 parm:
   ACCOUNT: epic
-  APP: S2SWA
+  APP: S2SWAL
   DATE_CYCLE_FREQ_HR: 12
   DATE_FIRST_CYCLE: 2021032206
   DATE_LAST_CYCLE: 2021032218
   DO_FREE_FORECAST: all
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2swa_fcst_cycle
-  EXP_CASE_NAME: s2swa_freefcst_cycle
+  envir: s2swal_fcst_cycle
+  EXP_CASE_NAME: s2swal_freefcst_cycle
   FCST_HRS: 12
   OUTPUT_FH: '6 -1'
 

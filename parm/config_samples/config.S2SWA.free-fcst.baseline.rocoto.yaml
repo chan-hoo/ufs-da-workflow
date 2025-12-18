@@ -11,7 +11,7 @@ parm:
   DO_FREE_FORECAST: first
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: fcst_baseline
+  envir: s2swa_fcst_baseline
   EXP_CASE_NAME: s2swa_freefcst_baseline
   FCST_HRS: 24
   OUTPUT_FH: '6 -1'

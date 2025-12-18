@@ -9,6 +9,8 @@ globalResourceControl:  true
 # EARTH #
 {%- if APP == "S2SWA" %}
 EARTH_component_list: MED ATM OCN ICE WAV
+{%- elif APP == "S2SWAL" %}
+EARTH_component_list: MED ATM CHM OCN ICE WAV LND
 {%- elif APP == "NG-GODAS" %}
 EARTH_component_list: MED ATM OCN ICE
 {%- endif %}
@@ -30,10 +32,10 @@ ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
   DumpFields = false
-{%- if APP == "S2SWA" %}
+  {%- if APP == "S2SWA" %}
   ProfileMemory = false
   OverwriteSlice = true
-{%- elif APP == "NG-GODAS" %}
+  {%- elif APP == "NG-GODAS" %}
   mesh_atm  = INPUT/{{ atm_mesh_atm }}
   diro = "."
   logfile = atm.log
@@ -41,7 +43,17 @@ ATM_attributes::
   stop_option = nhours
   stop_ymd = -999
   write_restart_at_endofrun = .true.
+  {%- endif %}
+::
 {%- endif %}
+
+{%- if chm_model %}
+# CHM #
+CHM_model:                      {{ chm_model }}
+CHM_petlist_bounds:             {{ chm_petlist_bounds_n1 }} {{ chm_petlist_bounds_n2 }}
+CHM_omp_num_threads:            1
+CHM_attributes::
+  Verbosity = 0
 ::
 {%- endif %}
 
@@ -100,6 +112,45 @@ WAV_attributes::
 ::
 {%- endif %}
 
+{%- if lnd_model %}
+# LND #
+LND_model:                      {{ lnd_model }}
+LND_petlist_bounds:             {{ lnd_petlist_bounds_n1 }} {{ lnd_petlist_bounds_n2 }}
+LND_omp_num_threads:            1
+LND_attributes::
+  Verbosity = 1
+  Diagnostic = 0
+  mosaic_file = INPUT/C{{ RES }}_mosaic.nc
+  input_dir = INPUT/
+  fixed_dir = ./
+  ic_type = sfc
+  layout = {{ LND_LAYOUT_X }}:{{ LND_LAYOUT_Y }} # need to be consistent with number of PEs
+  num_soil_levels = 4
+  forcing_height = 10
+  soil_level_thickness = 0.10:0.30:0.60:1.00
+  soil_level_nodes = 0.05:0.25:0.70:1.50
+  dynamic_vegetation_option = 4
+  canopy_stomatal_resistance_option = 2
+  soil_wetness_option = 1
+  runoff_option = 1
+  surface_exchange_option = 3
+  supercooled_soilwater_option = 1
+  frozen_soil_adjust_option = 1
+  radiative_transfer_option = 3
+  snow_albedo_option = 1
+  precip_partition_option = 4
+  soil_temp_lower_bdy_option = 2
+  soil_temp_time_scheme_option = 3
+  surface_evap_resistance_option = 1 # not used, it is fixed to 4 in sfc_noahmp_drv.F90
+  glacier_option = 1
+  surface_thermal_roughness_option = 2
+  output_freq = {{ lnd_output_freq_sec }}
+  restart_freq = -1
+  calc_snet = .false.
+  initial_albedo = 0.2
+::
+{%- endif %}
+
 # CMEPS run sequence
 runSeq::
 @{{ DT_RUNSEQ }}
@@ -129,6 +180,42 @@ runSeq::
    WAV -> MED :remapMethod=redist
    MED med_phases_post_ocn
    MED med_phases_post_wav
+   MED med_phases_restart_write
+{%- elif APP == "S2SWAL" %}
+   MED med_phases_prep_ocn_avg
+   MED -> OCN :remapMethod=redist
+   OCN
+   @{{ DT_ATMOS }}
+     MED med_phases_prep_atm
+     MED med_phases_prep_ice
+     MED med_phases_prep_wav_accum
+     MED med_phases_prep_wav_avg
+     MED med_phases_prep_lnd
+     MED -> ATM :remapMethod=redist
+     MED -> ICE :remapMethod=redist
+     MED -> WAV :remapMethod=redist
+     MED -> LND :remapMethod=redist
+     ATM phase1
+     ATM -> CHM
+     CHM
+     CHM -> ATM
+     ATM phase2
+     ICE
+     WAV
+     LND
+     ATM -> MED :remapMethod=redist
+     MED med_phases_post_atm
+     ICE -> MED :remapMethod=redist
+     MED med_phases_post_ice
+     WAV -> MED :remapMethod=redist
+     MED med_phases_post_wav
+     LND -> MED :remapMethod=redist
+     MED med_phases_post_lnd
+     MED med_phases_ocnalb_run
+     MED med_phases_prep_ocn_accum
+   @
+   OCN -> MED :remapMethod=redist
+   MED med_phases_post_ocn
    MED med_phases_restart_write
 {%- elif APP == "NG-GODAS" %}
    MED med_phases_prep_ocn_avg
@@ -170,6 +257,9 @@ MED_attributes::
 {%- if wav_model %}
       WAV_model = {{ wav_model }}
 {%- endif %}
+{%- if lnd_model %}
+      LND_model = {{ lnd_model }}
+{%- endif %}
       coupling_mode = {{ cmeps_coupling_mode }}
       mapuv_with_cart3d = {{ cmeps_mapuv_with_cart3d | lower }}
       ocean_albedo_limit = 0.06
@@ -184,7 +274,7 @@ ALLCOMP_attributes::
       ScalarFieldCount = 3
       ScalarFieldIdxGridNX = 1
       ScalarFieldIdxGridNY = 2
-{%- if APP == "S2SWA" %}
+{%- if APP == "S2SWA" or APP == "S2SWAL" %}
       ScalarFieldIdxGridNTile = 3
 {%- elif APP == "NG-GODAS" %}
       ScalarFieldIdxNextSwCday = 3

@@ -8,7 +8,7 @@ nhours_fcst:             {{ FCST_HRS }}
 fhrot:                   {{ FHROT }}
 dt_atmos:                {{ DT_ATMOS }}
 restart_fh:               
-{%- if APP == "S2SWA" %}
+{%- if APP == "S2SWA" or APP == "S2SWAL" %}
 restart_interval:        {{ RESTART_INTERVAL }}
 
 quilting:                .true.

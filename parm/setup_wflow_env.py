@@ -344,18 +344,31 @@ def add_new_parm_ufs_model(config_parm):
     # Set model components
     if app == "S2SWA":
         atm_model = "fv3"
-        ocn_model = "mom6"
+        chm_model = ""
         ice_model = "cice6"
+        lnd_model = ""
+        ocn_model = "mom6"
+        wav_model = "ww3"
+    elif app == "S2SWAL":
+        atm_model = "fv3"
+        chm_model = "gocart"
+        ice_model = "cice6"
+        lnd_model = "noahmp"
+        ocn_model = "mom6"
         wav_model = "ww3"
     elif app == "NG-GODAS":
         atm_model = "datm"
-        ocn_model = "mom6"
+        chm_model = ""
         ice_model = "cice6"
+        lnd_model = ""
+        ocn_model = "mom6"
         wav_model = ""
     else:
         atm_model = ""
-        ocn_model = ""
+        chm_model = ""
         ice_model = ""
+        lnd_model = ""
+        ocn_model = ""
         wav_model = ""
 
     # Set DATM domain size
@@ -417,9 +430,11 @@ def add_new_parm_ufs_model(config_parm):
 
     config_parm["parm"]["ALLCOMP_RESTART_N"] = allcomp_restart_n
     config_parm["parm"]["atm_model"] = atm_model
+    config_parm["parm"]["chm_model"] = chm_model
     config_parm["parm"]["datm_nx_global"] = datm_nx_global
     config_parm["parm"]["datm_ny_global"] = datm_ny_global
     config_parm["parm"]["ice_model"] = ice_model
+    config_parm["parm"]["lnd_model"] = lnd_model
     config_parm["parm"]["MOM6_DT_THERM"] = mom6_dt_therm
     config_parm["parm"]["ocn_model"] = ocn_model
     config_parm["parm"]["OUTPUT_FH_CICE"] = output_fh_cice
