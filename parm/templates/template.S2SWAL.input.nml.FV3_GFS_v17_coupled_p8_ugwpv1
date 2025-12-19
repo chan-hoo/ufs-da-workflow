@@ -134,6 +134,9 @@
   bl_mynn_edmf = 1
   bl_mynn_tkeadvect = .true.
   bl_mynn_edmf_mom = 1
+  tte_edmf     = .false.
+  cscale       = 1.0
+  do_ngw_ec    = .false.
   do_ugwp      = .false.
   do_tofd      = .false.
   gwd_opt      = 2
@@ -205,7 +208,7 @@
   iopt_tbot    = 2
   iopt_stc     = 3
   debug        = .false.
-  nstf_name    = {{ nstf_name }}
+  nstf_name    = 2,0,0,0,0
   nst_anl      = .true.
   psautco      = 0.0008,0.0005
   prautco      = 0.00015,0.00015
@@ -224,9 +227,7 @@
   rrtmgp_nGptsLW     = 128
   rrtmgp_nBandsLW    = 16
   rrtmgp_nBandsSW    = 14
-  doGP_cldoptics_LUT = .true.
   doGP_lwscat        = .true.
-  doGP_sgs_cnv       = .true.
   do_sppt      = .false.
   do_shum      = .false.
   do_skeb      = .false.
@@ -276,6 +277,7 @@
   land_iau_upd_slc = .true.
   land_iau_do_stcsmc_adjustment = .true.
   land_iau_min_T_increment = 0.0001
+  land_iau_min_SLC_increment = 0.000001
 /
 
 &cires_ugwp_nml
@@ -407,7 +409,8 @@
 /
 
 &nam_stochy
-  STOCHINI=.false.,
+  new_lscale=.false.
+  STOCHINI=.false.
   skeb = -999.
   iseed_skeb = 0
   skeb_tau = 21600,

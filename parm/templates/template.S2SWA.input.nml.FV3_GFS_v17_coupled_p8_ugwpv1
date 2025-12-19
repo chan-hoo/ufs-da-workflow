@@ -134,6 +134,9 @@
   bl_mynn_edmf = 1
   bl_mynn_tkeadvect = .true.
   bl_mynn_edmf_mom = 1
+  tte_edmf     = .false.
+  cscale       = 1.0
+  do_ngw_ec    = .false.
   do_ugwp      = .false.
   do_tofd      = .false.
   gwd_opt      = 2
@@ -205,7 +208,7 @@
   iopt_tbot    = 2
   iopt_stc     = 3
   debug        = .false.
-  nstf_name    = {{ nstf_name }}
+  nstf_name    = 2,0,0,0,0
   nst_anl      = .true.
   psautco      = 0.0008,0.0005
   prautco      = 0.00015,0.00015
@@ -224,9 +227,7 @@
   rrtmgp_nGptsLW     = 128
   rrtmgp_nBandsLW    = 16
   rrtmgp_nBandsSW    = 14
-  doGP_cldoptics_LUT = .true.
   doGP_lwscat        = .true.
-  doGP_sgs_cnv       = .true.
   do_sppt      = .false.
   do_shum      = .false.
   do_skeb      = .false.
@@ -239,6 +240,7 @@
   cplwav2atm   = .true.
   cpllnd       = .false.
   cpllnd2atm   = .false.
+  use_oceanuv  = .false.
   do_ca        = .true.
   ca_global    = .false.
   ca_sgs       = .true.
@@ -275,6 +277,7 @@
   land_iau_upd_slc = .true.
   land_iau_do_stcsmc_adjustment = .true.
   land_iau_min_T_increment = 0.0001
+  land_iau_min_SLC_increment = 0.000001
 /
 
 &cires_ugwp_nml
@@ -390,7 +393,7 @@
   FAISS    = 99999
   FSNOL    = 99999
   FSNOS    = 99999
-  FSICL    = 0
+  FSICL    = 99999
   FSICS    = 0
   FTSFL    = 99999
   FVETL    = 99999
@@ -406,37 +409,38 @@
 /
 
 &nam_stochy
-  STOCHINI=.false.,
+  new_lscale=.false.
+  STOCHINI=.false.
   skeb = -999.
   iseed_skeb = 0
   skeb_tau = 21600,
-  skeb_lscale = 500000,
-  skebnorm = 1,
+  skeb_lscale = 250000,
+  skebnorm = 0,
   skeb_npass = 30,
   skeb_vdof = 5,
-  skebint = 1800
+  skebint = 0
   shum = -999.
   iseed_shum = 1,
   shum_tau = 21600,
   shum_lscale = 500000,
-  shumint = 3600
+  shumint = 0
   sppt = -999.
-  iseed_sppt = 20210325000103,20210325000104,20210325000105,20210325000106,20210325000107
-  sppt_tau = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
-  sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+  iseed_sppt = 20210325000103
+  sppt_tau = 2.16E4
+  sppt_lscale = 500.E3
   sppt_logit = .true.,
   sppt_sfclimit = .true.,
   use_zmtnblck = .true.
-  spptint = 1800
-  pbl_taper = 0,0,0,0.125,0.25,0.5,0.75
-  OCNSPPT = 0.8,0.4,0.2,0.08,0.04
-  OCNSPPT_LSCALE = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  OCNSPPT_TAU = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
-  ISEED_OCNSPPT =20210325000108,20210325000109,20210325000110,20210325000111,20210325000112
+  spptint = 0
+  pbl_taper = 0,0,0,0.1,0.2,0.4,0.6
+  OCNSPPT = -999.
+  OCNSPPT_LSCALE = 500.E3
+  OCNSPPT_TAU = 2.16E4
+  ISEED_OCNSPPT =20210325000108
   EPBL = -999.
-  EPBL_LSCALE = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  EPBL_TAU = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
-  ISEED_EPBL = 20210325000113,20210325000114,20210325000115,20210325000116,20210325000117
+  EPBL_LSCALE = 500.E3
+  EPBL_TAU = 2.16E4
+  ISEED_EPBL = 20210325000113
 /
 
 &nam_sfcperts

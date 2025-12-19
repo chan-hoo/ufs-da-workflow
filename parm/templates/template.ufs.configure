@@ -70,6 +70,9 @@ OCN_attributes::
   mesh_ocn = {{ ocn_mesh_ocn }}
   use_coldstart = false
   use_mommesh = true
+  mom6_output_dir = ./MOM6_OUTPUT
+  mom6_output_fh = {{ OUTPUT_FH_MOM6 }}
+  mom6_restart_dir = ./RESTART/
 ::
 {%- endif %}
 
@@ -261,8 +264,8 @@ MED_attributes::
       LND_model = {{ lnd_model }}
 {%- endif %}
       coupling_mode = {{ cmeps_coupling_mode }}
-      mapuv_with_cart3d = {{ cmeps_mapuv_with_cart3d | lower }}
       ocean_albedo_limit = 0.06
+      mapuv_with_cart3d = {{ cmeps_mapuv_with_cart3d | lower }}
       pio_typename = pnetcdf
       pio_numiotasks = -99
       pio_stride = 4
@@ -291,7 +294,6 @@ ALLCOMP_attributes::
       stop_n = {{ allcomp_stop_n }}
       stop_option = nhours
       stop_ymd = -999
-      read_restart = {{ allcomp_read_restart }}
       orb_eccen = 1.e36
       orb_iyear = 2000
       orb_iyear_align = 2000

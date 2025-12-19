@@ -54,7 +54,6 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
   warm_start=".false."
 
   # ufs.configure
-  allcomp_read_restart=".false."
   allcomp_start_type="startup" 
   
   # ice_in
@@ -73,7 +72,6 @@ else
   warm_start=".true."
 
   # ufs.configure
-  allcomp_read_restart=".true."
   allcomp_start_type="continue"
 
   # ice_in
@@ -164,7 +162,6 @@ settings="\
   'DT_RUNSEQ': ${DT_RUNSEQ}
   'ALLCOMP_RESTART_N': ${ALLCOMP_RESTART_N}
   'allcomp_case_name': ${allcomp_case_name}
-  'allcomp_read_restart': ${allcomp_read_restart}
   'allcomp_start_type': ${allcomp_start_type}
   'allcomp_stop_n': ${FCST_HRS}
   'atm_mesh_atm': ${datm_mesh_fn}
@@ -194,6 +191,7 @@ settings="\
   'ocn_model': ${ocn_model}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
+  'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
   'wav_mesh_wav': ${wav_mesh_wav}
   'wav_model': ${wav_model}

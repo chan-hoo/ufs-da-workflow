@@ -6,11 +6,13 @@ start_minute:            0
 start_second:            0
 nhours_fcst:             {{ FCST_HRS }}
 fhrot:                   {{ FHROT }}
+
 dt_atmos:                {{ DT_ATMOS }}
 restart_fh:               
 {%- if APP == "S2SWA" or APP == "S2SWAL" %}
 restart_interval:        {{ RESTART_INTERVAL }}
 
+use_saved_routehandles:  .true.
 quilting:                .true.
 quilting_restart:        .false.
 write_groups:            {{ WRITE_GROUPS }}
