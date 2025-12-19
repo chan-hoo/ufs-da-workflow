@@ -56,12 +56,12 @@ mkdir -p RESTART
 ########################
 echo "==================== ATM model component ============================"
 if [ "${atm_model}" = "fv3" ]; then
-  echo "==================== ATM: FV3 ======================================="
+  echo "===== ATM: FV3 ====="
   ###############
   # FV3 files
   ###############
   # field_table
-  cp -p "${PARMufsda}/templates/template.field_table" field_table
+  cp -p "${COMINOUT}/field_table_${PDY}${cyc}" field_table
 
   # FV3 global fix files
   ln -nsf ${FIXufsda}/DATA_fix/FV3/Global/* .
@@ -168,14 +168,14 @@ if [ "${atm_model}" = "fv3" ]; then
   
     ### create coupler.res file
     settings="\
-    'yyyp': !!str ${YYYY}
-    'mp': !!str ${MM}
-    'dp': !!str ${DD}
-    'hp': !!str ${HH}
-    'yyyy': !!str ${YYYY}
-    'mm': !!str ${MM}
-    'dd': !!str ${DD}
-    'hh': !!str ${HH}
+  'yyyp': !!str ${YYYY}
+  'mp': !!str ${MM}
+  'dp': !!str ${DD}
+  'hp': !!str ${HH}
+  'yyyy': !!str ${YYYY}
+  'mm': !!str ${MM}
+  'dd': !!str ${DD}
+  'hh': !!str ${HH}
 " # End of settings variable
     fp_template="${PARMufsda}/templates/template.coupler.res"
     fn_namelist="coupler.res"
@@ -187,7 +187,7 @@ if [ "${atm_model}" = "fv3" ]; then
   datm_mesh_fn=""
 
 elif [ "${atm_model}" = "datm" ]; then
-  echo "==================== ATM: DATM ======================================"
+  echo "===== ATM: DATM ====="
   ######################
   # DATM forcing data
   ######################
@@ -264,15 +264,15 @@ elif [ "${atm_model}" = "datm" ]; then
       err_exit "Symlink failed: ${r_fp} file does not exist."
     fi
   fi
-
 fi
+
 
 ########################
 # OCN model component
 ########################
 echo "==================== OCN model component ============================"
 if [ "${ocn_model}" = "mom6" ]; then
-  echo "==================== OCN: MOM6 ======================================"
+  echo "===== OCN: MOM6 ====="
   ###############
   # MOM6 files
   ###############
@@ -352,12 +352,13 @@ if [ "${ocn_model}" = "mom6" ]; then
   cd ${DATA}
 fi
 
+
 ########################
 # ICE model component
 ########################
 echo "==================== ICE model component ============================"
 if [ "${ice_model}" = "cice6" ]; then
-  echo "==================== ICE: CICE6 ====================================="
+  echo "===== ICE: CICE6 ====="
   ###############
   # CICE files
   ###############
@@ -406,12 +407,13 @@ if [ "${ice_model}" = "cice6" ]; then
   fi
 fi
 
+
 ########################
 # WAV model component
 ########################
 echo "==================== WAV model component ============================"
 if [ "${wav_model}" = "ww3" ]; then
-  echo "==================== WAV: WW3 ======================================="
+  echo "===== WAV: WW3 ====="
   ##############
   # WW3 files
   ##############
@@ -451,6 +453,41 @@ if [ "${wav_model}" = "ww3" ]; then
   fi
 fi
 
+
+#########################
+# LAND model component
+#########################
+echo "==================== LAND model component ============================"
+if [ "${lnd_model}" = "noahmp" ]; then
+  echo "===== LAND: Noah-MP ====="
+
+  # LND IC files for cold start
+  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
+      data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
+    else
+      data_dir="${COMINOUT}"
+    fi
+#    for itile in {1..6}
+#    do
+#      ln -nsf "${data_dir}/ufs.cpld.lnd.ini.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc" .
+#    done
+  fi
+fi
+
+
+#########################
+# CHEM model component
+#########################
+echo "==================== CHEM model component ============================"
+if [ "${chm_model}" = "gocart" ]; then
+  echo "===== CHEM: GOCART ====="
+  # fix files   
+  ln -nsf ${FIXufsda}/DATA_fix/GOCART/* .
+#  ln -nsf ${FIXufsda}/DATA_fix/GOCART/ExtData .
+fi
+
+
 ##############
 # CMEPS files
 ##############
@@ -476,6 +513,7 @@ if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]
     err_exit "Symlink failed: ${r_fp} file does not exist."
   fi
 fi
+
 
 #####################################
 # Copy app-independent input files

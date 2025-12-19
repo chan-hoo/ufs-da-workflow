@@ -83,16 +83,24 @@ fi
 
 ## Application dependent variables
 datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
-if [ "${APP}" = "S2SWA" ] || [ "${APP}" = "S2SWAL" ]; then
+if [ "${APP}" = "S2SWA" ]; then
   # ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
   cmeps_mapuv_with_cart3d="true"
+  wav_mesh_wav="mesh.global_270k.nc"
+elif [ "${APP}" = "S2SWAL" ]; then
+  # ufs.configure
+  allcomp_case_name="ufs.cpld"
+  cmeps_coupling_mode="ufs.frac"
+  cmeps_mapuv_with_cart3d="true"
+  wav_mesh_wav="mesh.mx100.nc"
 elif [ "${APP}" = "NG-GODAS" ]; then
   # ufs.configure
   allcomp_case_name="DATM_${datm_data_type_upper}"
   cmeps_coupling_mode="ufs.nfrac.aoflux"
   cmeps_mapuv_with_cart3d="false"
+  wav_mesh_wav="mesh.global_270k.nc"
 fi
 
 ########################################
@@ -187,7 +195,7 @@ settings="\
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
   'RES': ${RES}
-  'wav_mesh_wav': mesh.global_270k.nc
+  'wav_mesh_wav': ${wav_mesh_wav}
   'wav_model': ${wav_model}
   'wav_petlist_bounds_n1': ${nprocs_atm_ocn_ice}
   'wav_petlist_bounds_n2': ${nprocs_atm_ocn_ice_wav_m1}
@@ -237,6 +245,20 @@ fp_template="${PARMufsda}/templates/template.diag_table"
 fn_namelist="diag_table"
 ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+
+#################################
+## FV3 input file: field_table
+#################################
+if [ "${atm_model}" = "fv3" ]; then
+  settings="\
+  'atm_model': ${atm_model}
+  'chm_model': ${chm_model}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.field_table"
+  fn_namelist="field_table"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+fi
 
 ################################
 ## MOM6 input file: MOM_input
