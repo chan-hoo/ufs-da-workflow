@@ -341,6 +341,7 @@ def add_new_parm_ufs_model(config_parm):
     mom6_dt_therm = config_parm["parm"]["MOM6_DT_THERM"]
     output_fh = config_parm["parm"]["OUTPUT_FH"]
     output_fh_cice = config_parm["parm"]["OUTPUT_FH_CICE"]
+    output_fh_lnd = config_parm["parm"]["OUTPUT_FH_LND"]
     output_fh_mom6 = config_parm["parm"]["OUTPUT_FH_MOM6"]
     output_fh_ww3 = config_parm["parm"]["OUTPUT_FH_WW3"]
     restart_interval = config_parm["parm"]["RESTART_INTERVAL"]
@@ -399,6 +400,11 @@ def add_new_parm_ufs_model(config_parm):
             output_fh_cice = 6
             logging.warning(f''' OUTPUT_FH_CICE is not specified in config.yaml and OUTPU_FH[1] != -1; OUTPUT_FH_CICE is set to "{output_fh_cice}" by default.''')
 
+    # OUTPUT_FH_LND: output frequency of LND
+    if output_fh_lnd is None or output_fh_lnd == "None":
+        output_fh_lnd = 6
+        logging.warning(f''' OUTPUT_FH_LND is not specified in config.yaml; OUTPUT_FH_LND is set to "{output_fh_lnd}" by default.''')
+
     # OUTPUT_FH_MOM6: output frequency of MOM6
     if output_fh_mom6 is None or output_fh_mom6 == "None":
         if output_fh_list[1] == -1:
@@ -442,6 +448,7 @@ def add_new_parm_ufs_model(config_parm):
     config_parm["parm"]["MOM6_DT_THERM"] = mom6_dt_therm
     config_parm["parm"]["ocn_model"] = ocn_model
     config_parm["parm"]["OUTPUT_FH_CICE"] = output_fh_cice
+    config_parm["parm"]["OUTPUT_FH_LND"] = output_fh_lnd
     config_parm["parm"]["OUTPUT_FH_MOM6"] = output_fh_mom6
     config_parm["parm"]["OUTPUT_FH_WW3"] = output_fh_ww3
     config_parm["parm"]["wav_model"] = wav_model

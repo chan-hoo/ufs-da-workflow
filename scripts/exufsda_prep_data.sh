@@ -158,6 +158,7 @@ nprocs_atm_ocn_ice_wav=$(( nprocs_atm_ocn_ice + NPROCS_WAV ))
 nprocs_atm_ocn_ice_wav_m1=$(( nprocs_atm_ocn_ice_wav - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
+output_fh_lnd_sec=$(( OUTPUT_FH_LND * 3600 ))
 
 settings="\
   'APP': ${APP}
@@ -185,7 +186,6 @@ settings="\
   'lnd_layout_x': ${ATM_LAYOUT_X}
   'lnd_layout_y': ${ATM_LAYOUT_Y}
   'lnd_model': ${lnd_model}
-  'LND_OUTPUT_FREQ': ${LND_OUTPUT_FREQ}
   'lnd_petlist_bounds_n1': ${nprocs_atm_ocn_ice_wav}
   'lnd_petlist_bounds_n2': ${nprocs_forecast_m1}
   'med_petlist_bounds_n1': 0
@@ -194,6 +194,7 @@ settings="\
   'ocn_model': ${ocn_model}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}
+  'output_fh_lnd_sec': ${output_fh_lnd_sec}
   'OUTPUT_FH_MOM6': ${OUTPUT_FH_MOM6}
   'RES': ${RES}
   'wav_mesh_wav': ${wav_mesh_wav}

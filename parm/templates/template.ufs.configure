@@ -147,7 +147,7 @@ LND_attributes::
   surface_evap_resistance_option = 1 # not used, it is fixed to 4 in sfc_noahmp_drv.F90
   glacier_option = 1
   surface_thermal_roughness_option = 2
-  output_freq = {{ LND_OUTPUT_FREQ }}
+  output_freq = {{ output_fh_lnd_sec }}
   restart_freq = -1
   calc_snet = .false.
   initial_albedo = 0.2

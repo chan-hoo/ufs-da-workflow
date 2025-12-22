@@ -65,15 +65,15 @@ workflow:
       jobname: prep_data
       nodes: "&nnodes_prep_data;:ppn=&nprocs_per_node_prep_data;"
       walltime: {{ WALLTIME_PREP_DATA }}
-{%- if NATIVE is not none %}
+  {%- if NATIVE is not none %}
       native: "&NATIVE;"
-{%- endif %}
+  {%- endif %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
       join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
-{%- if memory_flag %}
+  {%- if memory_flag %}
       memory: 128G
-{%- endif %}
+  {%- endif %}
       dependency:
         or:
           taskdep_forecast:
@@ -82,7 +82,7 @@ workflow:
               cycle_offset: '-{{ DATE_CYCLE_FREQ_HR }}:00:00'
           datadep_first:
             value: "&DATADEP_FIRSTCYC;"
-{%- if DO_FREE_FORECAST == "first" %}
+  {%- if DO_FREE_FORECAST == "first" %}
           or:
             datadep_sfc1:
               attrs:
@@ -92,16 +92,16 @@ workflow:
               attrs:
                 age: 5
               value: "&DATADEP_SFC2;"
-{%- endif %}
+  {%- endif %}
 {%- endif %}
 {%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or (date_second_cycle is none and DO_FREE_FORECAST == "none" ) or DO_FREE_FORECAST == "ctest" %}
     task_analysis:
       attrs:
-{%- if COLDSTART == "YES" %}
+  {%- if COLDSTART == "YES" %}
         cycledefs: cycled_from_second
-{%- else %}
+  {%- else %}
         cycledefs: cycled
-{%- endif %}
+  {%- endif %}
         maxtries: 2
       envars:
         cyc: "&cyc;"
@@ -110,23 +110,23 @@ workflow:
       command: '&exp_case_path;/job_cards/jufsda_analysis'
       jobname: analysis
       nodes: "&nnodes_analysis;:ppn=&nprocs_per_node_analysis;"
-{%- if NATIVE is not none %}
+  {%- if NATIVE is not none %}
       native: "&NATIVE;"
-{%- endif %}
+  {%- endif %}
       walltime: {{ WALLTIME_ANALYSIS }}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
-{%- if MACHINE == "ursa" %}
+  {%- if MACHINE == "ursa" %}
       memory: 64G
-{%- endif %}
-{%- if DO_FREE_FORECAST != "ctest" %}
+  {%- endif %}
+  {%- if DO_FREE_FORECAST != "ctest" %}
       dependency:
         and:
           taskdep_prep_data:
             attrs:
               task: prep_data
-{%- endif %}
+  {%- endif %}
 {%- endif %}
 {%- if COLDSTART == "YES" and IC_FROM_FIX_DIR == "NO" %}
     task_fcst_ic:
@@ -141,24 +141,24 @@ workflow:
       jobname: fcst_ic
       nodes: "1:ppn=&NPROCS_FCST_IC;"
       walltime: {{ WALLTIME_FCST_IC }}
-{%- if NATIVE is not none %}
+  {%- if NATIVE is not none %}
       native: "&NATIVE;"
-{%- endif %}
+  {%- endif %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
       join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
-{%- if memory_flag %}
+  {%- if memory_flag %}
       memory: 128G
-{%- endif %}
+  {%- endif %}
 {%- endif %}
 {%- if DO_FREE_FORECAST != "ctest" %}
     task_forecast:
       attrs:
-{%- if DO_FREE_FORECAST == "first" %}
+  {%- if DO_FREE_FORECAST == "first" %}
         cycledefs: first_cycle
-{%- else %}
+  {%- else %}
         cycledefs: cycled
-{%- endif %}
+  {%- endif %}
         maxtries: 2
       envars:
         cyc: "&cyc;"
@@ -168,9 +168,9 @@ workflow:
       jobname: forecast
       nodes: "&nnodes_forecast;:ppn=&nprocs_per_node_forecast;"
       walltime: {{ WALLTIME_FORECAST }}
-{%- if NATIVE is not none %}
+  {%- if NATIVE is not none %}
       native: "&NATIVE;"
-{%- endif %}
+  {%- endif %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
@@ -180,22 +180,22 @@ workflow:
             attrs:
               task: prep_data
           or:
-{%- if IC_FROM_FIX_DIR == "YES" %}
+  {%- if IC_FROM_FIX_DIR == "YES" %}
             datadep_coldstart:
               attrs:
                 age: 5
               value: "&DATADEP_COLDSTART;"
-{%- else %}
+  {%- else %}
             taskdep_fcst_ic:
               attrs:
                 task: fcst_ic
-{%- endif %}
-{%- if DO_FREE_FORECAST == "none" %}
+  {%- endif %}
+  {%- if DO_FREE_FORECAST == "none" %}
             taskdep_analysis:
               attrs:
                 task: analysis
-{%- else %}
-{%- if APP == "S2SWA" %}
+  {%- else %}
+    {%- if APP == "S2SWA" or APP == "S2SWAL" %}
             datadep_sfc1:
               attrs:
                 age: 5
@@ -204,7 +204,7 @@ workflow:
               attrs:
                 age: 5
               value: "&DATADEP_SFC2;"
-{%- elif APP == "NG-GODAS" %}
+    {%- elif APP == "NG-GODAS" %}
             datadep_mom1:
               attrs:
                 age: 5
@@ -213,8 +213,8 @@ workflow:
               attrs:
                 age: 5
               value: "&DATADEP_MOM2;"
-{%- endif %}
-{%- endif %}
+    {%- endif %}
+  {%- endif %}
 {%- endif %}
     task_plot_stats:
       attrs:
