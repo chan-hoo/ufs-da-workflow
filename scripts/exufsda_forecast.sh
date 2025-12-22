@@ -653,7 +653,9 @@ fi
 if [ "${wav_model}" = "ww3" ]; then
   cp -p *.out_grd.ww3 ${COMINOUT}
   cp -p *.out_pnt.ww3.nc ${COMINOUT}
-  cp -p out.pnt_wght.ww3.nc ${COMINOUT}
+  if [ "${APP}" != "S2SWAL" ]; then
+    cp -p out.pnt_wght.ww3.nc ${COMINOUT}
+  fi
   list_out_fh_ww3=$(seq ${OUTPUT_FH_WW3} ${OUTPUT_FH_WW3} ${FCST_HRS})
   for ihr in ${list_out_fh_ww3}
   do
@@ -672,9 +674,9 @@ fi
 # Copy only newer files and exclude all symlinks
 rsync -av --update --no-links ${DATA}/RESTART/ ${COMINOUTrestart}
 
-#########################################################
-# Set soft-links to DATA_RESTART to trigger next tasks
-#########################################################
+###################################################################
+# Set soft-links to DATA_RESTART to trigger next tasks in Rocoto
+###################################################################
 # sfc_data
 if [ "${atm_model}" = "fv3" ]; then
   if [ "${DO_FREE_FORECAST}" = "first" ]; then
