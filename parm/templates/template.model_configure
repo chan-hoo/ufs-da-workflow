@@ -12,7 +12,7 @@ restart_fh:
 {%- if APP == "S2SWA" or APP == "S2SWAL" %}
 restart_interval:        {{ RESTART_INTERVAL }}
 
-use_saved_routehandles:  .true.
+use_saved_routehandles:  {{ use_saved_routehandles }}
 quilting:                .true.
 quilting_restart:        .false.
 write_groups:            {{ WRITE_GROUPS }}

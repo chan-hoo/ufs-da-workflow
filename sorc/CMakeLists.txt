@@ -45,10 +45,14 @@ list(APPEND UFS_MODEL_ARGS
   "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
   "-DAPP=${APP}"
   "-DCCPP_SUITES=${CCPP_SUITES}"
-  "-D32BIT=ON"
   "-DMPI=ON"
-  "-DPDLIB=ON"
 )
+if( NOT APP STREQUAL "S2SWAL" )
+  list(APPEND UFS_MODEL_ARGS
+    "-D32BIT=ON"
+    "-DPDLIB=ON"
+  )
+endif()
 list(APPEND TARGET LIST ufs_model.fd)
 ExternalProject_Add(ufs_model.fd
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ufs_model.fd

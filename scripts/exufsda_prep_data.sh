@@ -86,18 +86,21 @@ if [ "${APP}" = "S2SWA" ]; then
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
   cmeps_mapuv_with_cart3d="true"
+  use_saved_routehandles=".true."
   wav_mesh_wav="mesh.global_270k.nc"
 elif [ "${APP}" = "S2SWAL" ]; then
   # ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
   cmeps_mapuv_with_cart3d="true"
+  use_saved_routehandles=".false."
   wav_mesh_wav="mesh.mx100.nc"
 elif [ "${APP}" = "NG-GODAS" ]; then
   # ufs.configure
   allcomp_case_name="DATM_${datm_data_type_upper}"
   cmeps_coupling_mode="ufs.nfrac.aoflux"
   cmeps_mapuv_with_cart3d="false"
+  use_saved_routehandles="N/A"
   wav_mesh_wav="mesh.global_270k.nc"
 fi
 
@@ -217,6 +220,7 @@ settings="\
   'FHROT': ${FHROT}
   'OUTPUT_FH': ${OUTPUT_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
+  'use_saved_routehandles': ${use_saved_routehandles}
   'WRITE_GROUPS': ${WRITE_GROUPS}
   'WRITE_TASKS_PER_GROUP': ${WRITE_TASKS_PER_GROUP}
 " # End of settings variable
@@ -249,6 +253,7 @@ rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 #################################
 if [ "${atm_model}" = "fv3" ]; then
   settings="\
+  'APP': ${APP}
   'atm_model': ${atm_model}
   'chm_model': ${chm_model}
 " # End of settings variable

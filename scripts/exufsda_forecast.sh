@@ -4,18 +4,19 @@ set -xue
 
 ulimit -s unlimited; ulimit -a;
 
-#export MPI_TYPE_DEPTH=20
 export OMP_STACKSIZE=512M
 export KMP_AFFINITY=scatter
 export OMP_NUM_THREADS=1
-#export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
-#export PSM_RANKS_PER_CONTEXT=4
-#export PSM_SHAREDCONTEXTS=1
 export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
 export I_MPI_EXTRA_FILESYSTEM=ON
 export FI_MLX_INJECT_LIMIT=0
-
+if [ "${APP}" = "S2SWAL" ]; then
+  export MPI_TYPE_DEPTH=20
+  export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
+  export PSM_RANKS_PER_CONTEXT=4
+  export PSM_SHAREDCONTEXTS=1
+fi
 
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
@@ -427,7 +428,7 @@ if [ "${wav_model}" = "ww3" ]; then
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
 
   # fix files	
-  wav_fns=( "mod_def.ww3" "ww3_points.list" "mesh.global_270k.nc" )
+  wav_fns=( "ww3_points.list" "mesh.global_270k.nc" )
   for ifn in "${wav_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/WW3/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -436,6 +437,15 @@ if [ "${wav_model}" = "ww3" ]; then
       err_exit "Symlink failed: ${ifp} does not exist."
     fi
   done
+
+  # mod_def.ww3 file
+  ifp="${FIXufsda}/DATA_fix/WW3/mod_def.ww3_${APP}"
+  if [ -e "${ifp}" ]; then
+    ln -nsf ${ifp} "mod_def.ww3"
+  else
+    err_exit "Symlink failed: ${ifp} does not exist."
+  fi  
+
   # CMEPS restart files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -482,9 +492,12 @@ fi
 echo "==================== CHEM model component ============================"
 if [ "${chm_model}" = "gocart" ]; then
   echo "===== CHEM: GOCART ====="
-  # fix files   
-  ln -nsf ${FIXufsda}/DATA_fix/GOCART/* .
-#  ln -nsf ${FIXufsda}/DATA_fix/GOCART/ExtData .
+  # Fix files   
+  ln -nsf ${FIXufsda}/DATA_fix/GOCART/ExtData .
+  # Input files
+  cp -p ${PARMufsda}/templates/gocart/*.rc .
+  # cap_restart file
+#  cat <<< "${PDY} ${cyc}0000" > cap_restart
 fi
 
 

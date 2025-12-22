@@ -32,7 +32,7 @@ ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
   DumpFields = false
-  {%- if APP == "S2SWA" %}
+  {%- if APP == "S2SWA" or APP == "S2SWAL" %}
   ProfileMemory = false
   OverwriteSlice = true
   {%- elif APP == "NG-GODAS" %}
