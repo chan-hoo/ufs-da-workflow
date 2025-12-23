@@ -243,6 +243,10 @@ def plot_his_omb(var_dict_anal,out_fn_base,work_dir,var_nm,hofx_data_path,obs_ty
 
     omb_fn = f'''hofx_omb_timehis_{obs_type}.txt'''
     omb_fp = os.path.join(hofx_data_path, omb_fn)
+    if not os.path.isfile(omb_fp):
+        logging.warning(f''' File {omb_fp} does not exist !!!''')
+        sys.exit(0)
+
     with open(omb_fp, 'r') as f:
         lines = f.readlines()
     column_data = [line.strip().split(' ') for line in lines]

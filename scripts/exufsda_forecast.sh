@@ -464,12 +464,12 @@ if [ "${wav_model}" = "ww3" ]; then
 fi
 
 
-#########################
-# CHEM model component
-#########################
-echo "==================== CHEM model component ============================"
+########################
+# CHM model component
+########################
+echo "==================== CHM model component ============================"
 if [ "${chm_model}" = "gocart" ]; then
-  echo "===== CHEM: GOCART ====="
+  echo "===== CHM: GOCART ====="
   # Fix files   
   ln -nsf ${FIXufsda}/DATA_fix/GOCART/ExtData .
   # Input files
@@ -481,12 +481,12 @@ if [ "${chm_model}" = "gocart" ]; then
 fi
 
 
-#########################
-# LAND model component
-#########################
-echo "==================== LAND model component ============================"
+########################
+# LND model component
+########################
+echo "==================== LND model component ============================"
 if [ "${lnd_model}" = "noahmp" ]; then
-  echo "===== LAND: Noah-MP ====="
+  echo "===== LND: Noah-MP ====="
   # LND restart files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then

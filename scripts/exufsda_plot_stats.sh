@@ -164,8 +164,11 @@ EOF
   fi
   
   # Copy result files to COMINOUT
-  cp -p "${DATA}/hofx_omb"* ${COMINOUTplot}
-  cp -p "${DATA_HOFX}/hofx_omb_timehis"* ${COMINOUThofx}
+  num_hofx=$(find . -maxdepth 1 -type f -name "hofx_omb*" | wc -l)
+  if [ "${num_hofx}" -gt 0 ]; then
+    cp -p "${DATA}/hofx_omb"* ${COMINOUTplot}
+    cp -p "${DATA_HOFX}/hofx_omb_timehis"* ${COMINOUThofx}
+  fi
 fi
 
 ###########################
@@ -201,7 +204,10 @@ EOF
   fi
 
   # Copy result files to COMINOUT
-  cp -p ${out_fn_base}* ${COMINOUTplot}
+  num_his=$(find . -maxdepth 1 -type f -name "${out_fn_base}*" | wc -l)
+  if [ "${num_his}" -gt 0 ]; then
+    cp -p ${out_fn_base}* ${COMINOUTplot}
+  fi
 fi
 
 ####################################

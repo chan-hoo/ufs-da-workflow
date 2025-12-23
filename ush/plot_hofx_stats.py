@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import logging
 import yaml
 import numpy as np
@@ -29,6 +30,10 @@ def get_obs_stats(fname, svar_long):
     numpt_omb=len(omb)
     numpt_obs=len(obs)
     logging.info(f'''Number of points (raw): {numpt_omb}, {numpt_obs}''')
+    if numpt_omb == 0 or numpt_obs == 0:
+        logging.warning(f''' Number of OMB or OBS is zero !!!''')
+        sys.exit(0)
+
     obs = [x for x, y in zip(obs, omb) if y>-5000 and y<5000]
     lat = [x for x, y in zip(lat, omb) if y>-5000 and y<5000]
     lon = [x for x, y in zip(lon, omb) if y>-5000 and y<5000]
