@@ -678,7 +678,23 @@ fi
 # GOCART
 ###########
 if [ "${chm_model}" = "gocart" ]; then
-  cp -p gocart.inst_aod.* ${COMINOUT}
+  # Copy GOCART output to COMINOUT
+  read -ra out_fh <<< "${OUTPUT_FH}"
+  out_fh1="${out_fh[0]}"
+  out_fh2="${out_fh[1]}"
+  if [ "${out_fh2}" = "-1" ]; then
+    list_out_fh=$(seq ${out_fh1} ${out_fh1} ${FCST_HRS})
+  else
+    list_out_fh=${OUTPUT_FH}
+  fi
+  for ihr in ${list_out_fh}
+  do
+    idate=$($NDATE ${ihr} $PDY$cyc)
+    ipdy=${idate:0:8}
+    ihh=${idate:8:2}
+    ihr_3d=$(printf "%03d" "${ihr}")
+    cp -p "${DATA}/gocart.inst_aod.${ipdy}_${ihh}00z.nc4" "${COMINOUT}/${NET}.${cycle}.aod.f${ihr_3d}.c${RES}.nc"
+  done  
 fi
 
 ############
