@@ -465,28 +465,6 @@ fi
 
 
 #########################
-# LAND model component
-#########################
-echo "==================== LAND model component ============================"
-if [ "${lnd_model}" = "noahmp" ]; then
-  echo "===== LAND: Noah-MP ====="
-
-  # LND IC files for cold start
-  if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    if [ "${IC_FROM_FIX_DIR}" = "YES" ]; then
-      data_dir="${FIXufsda}/DATA_ics/${PDY}/${cyc}"
-    else
-      data_dir="${COMINOUT}"
-    fi
-#    for itile in {1..6}
-#    do
-#      ln -nsf "${data_dir}/ufs.cpld.lnd.ini.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc" .
-#    done
-  fi
-fi
-
-
-#########################
 # CHEM model component
 #########################
 echo "==================== CHEM model component ============================"
@@ -497,13 +475,41 @@ if [ "${chm_model}" = "gocart" ]; then
   # Input files
   cp -p ${PARMufsda}/templates/gocart/*.rc .
   # cap_restart file
-#  cat <<< "${PDY} ${cyc}0000" > cap_restart
+  if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+    cat <<< "${PDY} ${cyc}0000" > cap_restart
+  fi
 fi
 
 
-##############
+#########################
+# LAND model component
+#########################
+echo "==================== LAND model component ============================"
+if [ "${lnd_model}" = "noahmp" ]; then
+  echo "===== LAND: Noah-MP ====="
+  # LND restart files
+  if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+    if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+      data_dir="${WARMSTART_DIR}"
+    else
+      data_dir="${COMINOUTcm1}/RESTART"
+    fi
+    for itile in {1..6};
+    do
+      r_fp="${data_dir}/ufs.cpld.lnd.out.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc"
+      if [ -e "${r_fp}" ]; then
+        ln -nsf "${r_fp}" RESTART/.
+      else
+        err_exit "Symlink failed: ${r_fp} file does not exist."
+      fi
+    done
+  fi
+fi
+
+
+################
 # CMEPS files
-##############
+################
 echo "==================== CMEPS Files ===================================="
 if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -564,10 +570,9 @@ fi
 ##################################
 # Copy output files to COMINOUT
 ##################################
-########################
-# ATM model component
-########################
-## FV3
+########
+# FV3
+########
 if [ "${atm_model}" = "fv3" ]; then
   read -ra out_fh <<< "${OUTPUT_FH}"
   out_fh1="${out_fh[0]}"
@@ -587,9 +592,11 @@ if [ "${atm_model}" = "fv3" ]; then
     done
   done
 
-## DATM
+#########
+# DATM
+#########
 elif [ "${atm_model}" = "datm" ]; then
-  ### Restart file
+  # Restart file
   cp -p "DATM_${datm_data_type_upper}.datm.r.${nYYYY}-${nMM}-${nDD}-${nHHsec_5d}.nc" "${COMINOUT}/RESTART"
 fi
 
@@ -651,11 +658,6 @@ fi
 # WW3
 ########
 if [ "${wav_model}" = "ww3" ]; then
-  cp -p *.out_grd.ww3 ${COMINOUT}
-  cp -p *.out_pnt.ww3.nc ${COMINOUT}
-  if [ "${APP}" != "S2SWAL" ]; then
-    cp -p out.pnt_wght.ww3.nc ${COMINOUT}
-  fi
   list_out_fh_ww3=$(seq ${OUTPUT_FH_WW3} ${OUTPUT_FH_WW3} ${FCST_HRS})
   for ihr in ${list_out_fh_ww3}
   do
@@ -663,9 +665,58 @@ if [ "${wav_model}" = "ww3" ]; then
     ipdy=${idate:0:8}
     ihh=${idate:8:2}
     ihr_3d=$(printf "%03d" "${ihr}")
+    cp -p "${DATA}/${ipdy}.${ihh}0000.out_grd.ww3" "${COMINOUT}/${NET}.${cycle}.wav_grd.f${ihr_3d}.c${RES}.ww3"
     cp -p "${DATA}/${ipdy}.${ihh}0000.out_pnt.ww3.nc" "${COMINOUT}/${NET}.${cycle}.wav.f${ihr_3d}.c${RES}.nc"
   done
-  cp -p ufs.cpld.ww3.r.* ${COMINOUT}
+  if [ "${APP}" != "S2SWAL" ]; then
+    rsync -av --update --no-links out.pnt_wght.ww3.nc ${COMINOUT}
+  fi
+  rsync -av --update --no-links ${DATA}/ufs.cpld.ww3.r.* ${COMINOUT}
+fi
+
+###########
+# GOCART
+###########
+if [ "${chm_model}" = "gocart" ]; then
+  cp -p gocart.inst_aod.* ${COMINOUT}
+fi
+
+############
+# Noah-MP
+############
+if [ "${lnd_model}" = "noahmp" ]; then
+  # Copy LND output to COMINOUT/RESTART
+  rsync -av --update --no-links ${DATA}/ufs.cpld.lnd.out.* ${COMINOUTrestart}
+
+  # Copy LND output to COMINOUT
+  ## ufs.cpld.lnd.ini
+  for itile in {1..6};
+  do
+    cp -p "${DATA}/ufs.cpld.lnd.ini.${YYYY}-${MM}-${DD}-${HHsec_5d}.tile${itile}.nc" "${COMINOUT}/${NET}.${cycle}.lnd.f000.c${RES}.tile${itile}.nc"
+  done
+  ## ufs.cpld.lnd.out
+  list_out_fh_lnd=$(seq ${OUTPUT_FH_LND} ${OUTPUT_FH_LND} ${FCST_HRS})
+  for ihr in ${list_out_fh_lnd}
+  do
+    idate=$($NDATE ${ihr} $PDY$cyc)
+    iyyyy=${idate:0:4}
+    imm=${idate:4:2}
+    idd=${idate:6:2}
+    ihh=${idate:8:2}
+    ihh_nz="${ihh#0}"
+    if (( "${icnt}" == 0 )); then
+      ihr0=$(( cyc - ihh_nz ))
+      ihr=$(( ihr + ihr0 ))
+      icnt=$(( icnt + 1 ))
+    fi
+    ihh_sec=$(( ihh_nz * 3600 ))
+    ihh_sec_5d=$(printf "%05d" "${ihh_sec}")
+    ihr_3d=$(printf "%03d" "${ihr}")
+    for itile in {1..6};
+    do
+      cp -p "${DATA}/ufs.cpld.lnd.out.${iyyyy}-${imm}-${idd}-${ihh_sec_5d}.tile${itile}.nc" "${COMINOUT}/${NET}.${cycle}.lnd.f${ihr_3d}.c${RES}.tile${itile}.nc"
+    done
+  done
 fi
 
 ######################
