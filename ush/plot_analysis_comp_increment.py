@@ -369,6 +369,11 @@ def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jtype,out_title_base,
     n_rnd=0
     cbar_extend='neither'
 
+    if plt_var_nm == 'snodl' or plt_var_nm == 'snwdph':
+        cs_max = 150
+        cs_min = -150
+        cbar_extend='both'
+
     if jtype == 'soil_moisture':
         out_title=f'''{out_title_base}::{plt_var_nm}::L{zlvl+1}::{plt_out_txt}'''
         out_fn=f'''{out_fn_base}_{plt_var_nm}_z{zlvl+1}_{plt_out_txt}'''
@@ -413,7 +418,10 @@ def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type,out_title_base,
     logging.info(f''' var_max05= {var_max05}''')
     logging.info(f''' var_min05= {var_min05}''')
 
-    cmap_range_opt='real'
+    if plt_var_nm == 'snodl' or plt_var_nm == 'snwdph':
+        cmap_range_opt='fixed'
+    else:
+        cmap_range_opt='real'
     cs_cmap='gist_ncar_r'
     if cmap_range_opt=='symmetry':
         n_rnd=0
@@ -432,7 +440,7 @@ def plot_data(plt_var,plt_var_nm,plt_out_txt,zlvl,jedi_type,out_title_base,
         cbar_extend='neither'
     elif cmap_range_opt=='fixed':
         cs_min=0.0
-        cs_max=150.0
+        cs_max=800.0
         cbar_extend='both'
     else:
         sys.exit('FATAL ERROR: wrong colormap-range flag !!!')
