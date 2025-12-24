@@ -26,6 +26,14 @@ MMp=${PTIME:4:2}
 DDp=${PTIME:6:2}
 HHp=${PTIME:8:2}
 
+# For JEDI time window
+cycle_freq_hr_half=$(( DATE_CYCLE_FREQ_HR / 2 ))
+date_hf=$($NDATE -${cycle_freq_hr_half} $PDY$cyc)
+yyyy_hf=${date_hf:0:4}
+mm_hf=${date_hf:4:2}
+dd_hf=${date_hf:6:2}
+hh_hf=${date_hf:8:2}
+
 machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
   run_cmd="srun"
@@ -321,13 +329,6 @@ echo "========== PART II: JCB =========="
 #####################################################################
 #
 if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
-  cycle_freq_hr_half=$(( DATE_CYCLE_FREQ_HR / 2 ))
-  date_hf=$($NDATE -${cycle_freq_hr_half} $PDY$cyc)
-  yyyy_hf=${date_hf:0:4}
-  mm_hf=${date_hf:4:2}
-  dd_hf=${date_hf:6:2}
-  hh_hf=${date_hf:8:2}
-
   ###########################
   ## Marine: SOCA analysis
   ###########################
@@ -694,9 +695,7 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
   obs_out_fn_smap=""
   # GHCN snow depth data
   if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
-    # GHCN are time-stamped at 18. If assimilating at 00, need to use previous day's obs, 
-    # so that obs are within DA window.
-    obs_fn="ghcn_snwd_ioda_${YYYYp}${MMp}${DDp}${HHp}.nc"
+    obs_fn="ghcn_snwd_ioda_${PDY}${cyc}.nc"
     obs_dp="${DCOMINobs}/ghcn/${YYYY}"
     obs_fp="${obs_dp}/${obs_fn}"
     obs_out_fn_ghcn="obs.${PDY}.${cycle}.ghcn_snow.nc"
@@ -719,7 +718,7 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
       fi
       ghcn_station_file="${DCOMINghcn}/ghcnd-stations.txt"
   
-      ${USHufsda}/ghcn_snod2ioda.py -i ${input_ghcn_file} -o ${obs_fn} -f ${ghcn_station_file} -d ${YYYYp}${MMp}${DDp}${HHp} -m maskout
+      ${USHufsda}/ghcn_snod2ioda.py -i ${input_ghcn_file} -o ${obs_fn} -f ${ghcn_station_file} -d ${date_hf}
       if [ $? -ne 0 ]; then
         err_exit "Generation of GHCN obs file failed !!!"
       fi
