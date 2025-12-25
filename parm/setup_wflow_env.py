@@ -683,6 +683,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
 # ==================================================================== CHJ =====
 def create_ecflow_files(home_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
+    ic_from_fix_dir = config_parm["flag"]["IC_FROM_FIX_DIR"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
@@ -695,6 +696,10 @@ def create_ecflow_files(home_dir,config_parm):
     date_cycle_freq_day = date_cycle_freq_hr // 24
     yyyymmdd_first = str(date_first_cycle)[:8]
     hh_first = str(date_first_cycle)[-2:]
+    if date_second_cycle is None or date_second_cycle == "None":
+        yyyymmdd_second = date_second_cycle
+    else:
+        yyyymmdd_second = str(date_second_cycle)[:8]
     yyyymmdd_last = str(date_last_cycle)[:8]
     hh_last = str(date_last_cycle)[-2:]
 
@@ -708,14 +713,18 @@ def create_ecflow_files(home_dir,config_parm):
         "exp_case_path": exp_case_path,
         "hh_first": hh_first,
         "hh_last": hh_last,
+        "IC_FROM_FIX_DIR": ic_from_fix_dir,
         "SCHED": sched,
         "yyyymmdd_first": yyyymmdd_first,
+        "yyyymmdd_second": yyyymmdd_second,
         "yyyymmdd_last": yyyymmdd_last,
     }
     data_set_str = yaml.dump(data_set, sort_keys=True)
     logging.debug(f''' Data for ecFlow def file: {data_set_str}''')
     if do_free_forecast == "all" and date_cycle_freq_hr < 24:
         fn_ecf_template = "template.ufsda.def_1d2c"
+    elif coldstart == "YES":
+        fn_ecf_template = "template.ufsda.def_coldstart"
     else:
         fn_ecf_template = "template.ufsda.def"
     fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)

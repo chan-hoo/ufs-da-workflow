@@ -17,17 +17,13 @@ suite {{ exp_case_name }}
 {%- endif %}
 {%- if DO_FREE_FORECAST != "ctest" %}
         task jufsda_forecast
-  {%- if DO_FREE_FORECAST == "none" %}
             trigger jufsda_analysis == complete
-  {%- else %}
-            trigger jufsda_prep_data == complete
-  {%- endif %}
 {%- endif %}
         task jufsda_plot_stats
-{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
-            trigger jufsda_forecast == complete
+{%- if DO_FREE_FORECAST == "ctest" %}
+            trigger jufsda_analysis == complete
 {%- else %}
-            trigger jufsda_analysis == complete or jufsda_forecast == complete
+            trigger jufsda_forecast == complete
 {%- endif %}
     endfamily
 endsuite
