@@ -1,0 +1,33 @@
+suite {{ exp_case_name }}
+    family {{ hh_first }}
+{%- if SCHED == "slurm" %}
+        edit ECF_JOB_CMD "sbatch %ECF_JOB%"
+{%- elif SCHED == "pbs" %}
+        edit ECF_JOB_CMD "qsub %ECF_JOB%"
+{%- endif %}
+        edit ECF_FILES "{{ exp_case_path }}/ecf/cycle"
+        edit ECF_DATE {{ yyyymmdd_first }}
+        edit CYC {{ hh_first }}
+        task jufsda_prep_data
+        task jufsda_forecast
+            trigger jufsda_prep_data == complete
+        task jufsda_plot_stats
+            trigger jufsda_forecast == complete
+    endfamily
+    family {{ hh_last }}
+        trigger {{ hh_first }} == complete
+{%- if SCHED == "slurm" %}
+        edit ECF_JOB_CMD "sbatch %ECF_JOB%"
+{%- elif SCHED == "pbs" %}
+        edit ECF_JOB_CMD "qsub %ECF_JOB%"
+{%- endif %}
+        edit ECF_FILES "{{ exp_case_path }}/ecf/cycle"
+        edit ECF_DATE {{ yyyymmdd_last }}
+        edit CYC {{ hh_last }}
+        task jufsda_prep_data
+        task jufsda_forecast
+            trigger jufsda_prep_data == complete
+        task jufsda_plot_stats
+            trigger jufsda_forecast == complete
+    endfamily
+endsuite

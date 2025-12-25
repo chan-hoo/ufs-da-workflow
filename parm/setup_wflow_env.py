@@ -705,6 +705,7 @@ def create_ecflow_files(home_dir,config_parm):
         "date_second_cycle": date_second_cycle,
         "DO_FREE_FORECAST": do_free_forecast,
         "exp_case_name": exp_case_name,
+        "exp_case_path": exp_case_path,
         "hh_first": hh_first,
         "hh_last": hh_last,
         "SCHED": sched,
@@ -713,8 +714,10 @@ def create_ecflow_files(home_dir,config_parm):
     }
     data_set_str = yaml.dump(data_set, sort_keys=True)
     logging.debug(f''' Data for ecFlow def file: {data_set_str}''')
-
-    fn_ecf_template = "template.ufsda.def"
+    if do_free_forecast == "all" and date_cycle_freq_hr < 24:
+        fn_ecf_template = "template.ufsda.def_1d2c"
+    else:
+        fn_ecf_template = "template.ufsda.def"
     fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)
     fn_ecf = f'''{exp_case_name}.def'''
     fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
