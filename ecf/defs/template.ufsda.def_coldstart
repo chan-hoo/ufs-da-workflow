@@ -24,6 +24,7 @@ suite {{ exp_case_name }}
 {%- elif SCHED == "pbs" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
 {%- endif %}
+        edit ECF_FILES "{{ exp_case_path }}/ecf/cycle"
         edit ECF_DATE %YMD%
         edit CYC {{ hh_first }}
         task jufsda_prep_data

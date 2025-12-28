@@ -684,6 +684,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
 def create_ecflow_files(home_dir,config_parm):
     coldstart = config_parm["flag"]["COLDSTART"]
     ic_from_fix_dir = config_parm["flag"]["IC_FROM_FIX_DIR"]
+    exp_basedir = config_parm["path"]["exp_basedir"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     exp_case_name = config_parm["parm"]["EXP_CASE_NAME"]
     date_cycle_freq_hr = config_parm["parm"]["DATE_CYCLE_FREQ_HR"]
@@ -703,7 +704,53 @@ def create_ecflow_files(home_dir,config_parm):
     yyyymmdd_last = str(date_last_cycle)[:8]
     hh_last = str(date_last_cycle)[-2:]
 
-    # ecFlow definition file
+    # ecFlow server directory
+    exp_ecf_path = os.path.join(exp_basedir, "exp_case/ecf_server")
+    if not os.path.exists(exp_ecf_path):
+        os.makedirs(exp_ecf_path)
+        # ecFlow server control scripts
+        data_set = {
+            "exp_case_name": exp_case_name,
+            "exp_case_path": exp_case_path,
+            "exp_ecf_path": exp_ecf_path,
+        }
+        data_set_str = yaml.dump(data_set, sort_keys=True)
+        logging.debug(f''' Data for ecFlow server scripts: {data_set_str}''')
+        ## start_server
+        fn_ecf_template = "template.start_server.sh"
+        fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
+        fn_ecf = f'''start_server.sh'''
+        fp_ecf = os.path.join(exp_ecf_path,fn_ecf)
+        try:
+            fill_jinja_template([
+                "-q",
+                "-u", data_set_str,
+                "-t", fp_ecf_template,
+                "-o", fp_ecf ])
+        except:
+            logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+                  to create a '{fp_ecf}' file from a jinja2 template failed.''')
+            sys.exit(1)
+        os.chmod(fp_ecf, 0o755)
+        ## Copy stop_server script to exp_case_path
+        source_fp = os.path.join(home_dir,"ecf/stop_server.sh")
+        try:
+            shutil.copy(source_fp,exp_ecf_path)
+            logging.info(f'''File '{source_fp}' copied successfully to '{exp_ecf_path}'.''')
+        except FileNotFoundError:
+            logging.error(f'''FATAL ERROR: Source file '{source_fp}' not found.''')
+        except Exception as e:
+            logging.error(f'''FATAL ERROR: An error occurred: {e}''')
+        ## Copy files in ecf/include to ecf_server
+        source_dir = os.path.join(home_dir,"ecf/include")
+        try:
+            shutil.copytree(source_dir, exp_ecf_path, dirs_exist_ok=True)
+            logging.info(f'''All files from '{source_dir}' copied to '{exp_ecf_path}' successfully.''')
+        except shutil.Error as e:
+            logging.error(f'''FATAL ERROR: Error copying directory: {e}''')
+
+    # ecFlow case-specific files
+    ## Definition file
     data_set = {
         "COLDSTART": coldstart,
         "date_cycle_freq_day": date_cycle_freq_day,
@@ -740,18 +787,10 @@ def create_ecflow_files(home_dir,config_parm):
         logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
-
-    # ecFlow launch script
-    data_set = {
-        "exp_case_name": exp_case_name,
-        "exp_case_path": exp_case_path,
-    }
-    data_set_str = yaml.dump(data_set, sort_keys=True)
-    logging.debug(f''' Data for ecFlow launch/kill scripts: {data_set_str}''')
-    ## Launch
-    fn_ecf_template = "template.start_server.sh"
+    ## Suite begin script
+    fn_ecf_template = "template.begin_suite.sh"
     fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
-    fn_ecf = f'''start_server.sh'''
+    fn_ecf = f'''begin_suite.sh'''
     fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
     try:
         fill_jinja_template([
@@ -780,26 +819,6 @@ def create_ecflow_files(home_dir,config_parm):
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
     os.chmod(fp_ecf, 0o755)
-
-    # Copy stop_server script to exp_case_path
-    source_fp = os.path.join(home_dir,"ecf/stop_server.sh")
-    target_dir = os.path.join(exp_case_path,"ecf")
-    try:
-        shutil.copy(source_fp, target_dir)
-        logging.info(f'''File '{source_fp}' copied successfully to '{target_dir}'.''')
-    except FileNotFoundError:
-        logging.error(f'''FATAL ERROR: Source file '{source_fp}' not found.''')
-    except Exception as e:
-        logging.error(f'''FATAL ERROR: An error occurred: {e}''')
-
-    # Copy files in ecf/include to exp_case_path
-    source_dir = os.path.join(home_dir,"ecf/include")
-    target_dir = os.path.join(exp_case_path,"ecf")
-    try:
-        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
-        logging.info(f'''All files from '{source_dir}' copied to '{target_dir}' successfully.''')
-    except shutil.Error as e:
-        logging.error(f'''FATAL ERROR: Error copying directory: {e}''')
 
 
 # ==================================================================== CHJ =====

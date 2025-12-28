@@ -13,4 +13,4 @@ parm:
   JEDI_ALGORITHM: 3dvar
   JEDI_CTEST_NAME: 3dvar_geos_cf
   NPROCS_ANALYSIS: 6
-  WORKFLOW_MANAGER: rocoto
+  WORKFLOW_MANAGER: ecflow
