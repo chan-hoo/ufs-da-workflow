@@ -15,9 +15,10 @@ parm:
   DO_FREE_FORECAST: none
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2swal_snowDA_letkfoi
-  EXP_CASE_NAME: s2swal_snowDA_letkfoi
+  envir: s2swal_snowDA_letkfoi_ecf
+  EXP_CASE_NAME: s2swal_snowDA_letkfoi_ecf
   FCST_HRS: 24
   JEDI_ALGORITHM: letkf-oi
   NPROCS_WAV: 20
   OUTPUT_FH: '6 -1'
+  WORKFLOW_MANAGER: ecflow

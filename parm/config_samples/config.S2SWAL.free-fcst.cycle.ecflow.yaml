@@ -11,9 +11,10 @@ parm:
   DO_FREE_FORECAST: all
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2swal_fcst_cycle
-  EXP_CASE_NAME: s2swal_freefcst_cycle
+  envir: s2swal_freefcst_ecf
+  EXP_CASE_NAME: s2swal_freefcst_ecf
   FCST_HRS: 12
   NPROCS_WAV: 20
   OUTPUT_FH: '6 -1'
   OUTPUT_FH_LND: 6
+  WORKFLOW_MANAGER: ecflow

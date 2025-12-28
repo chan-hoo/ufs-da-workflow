@@ -764,6 +764,22 @@ def create_ecflow_files(home_dir,config_parm):
               to create a '{fp_ecf}' file from a jinja2 template failed.''')
         sys.exit(1)
     os.chmod(fp_ecf, 0o755)
+    ## Suite control script
+    fn_ecf_template = "template.control_suite.sh"
+    fp_ecf_template = os.path.join(home_dir,"ecf",fn_ecf_template)
+    fn_ecf = f'''control_suite.sh'''
+    fp_ecf = os.path.join(exp_case_path,"ecf",fn_ecf)
+    try:
+        fill_jinja_template([
+            "-q",
+            "-u", data_set_str,
+            "-t", fp_ecf_template,
+            "-o", fp_ecf ])
+    except:
+        logging.error(f''' FATAL ERROR: Call to python script fill_jinja_template.py
+              to create a '{fp_ecf}' file from a jinja2 template failed.''')
+        sys.exit(1)
+    os.chmod(fp_ecf, 0o755)
 
     # Copy stop_server script to exp_case_path
     source_fp = os.path.join(home_dir,"ecf/stop_server.sh")
