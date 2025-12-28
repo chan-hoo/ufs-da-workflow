@@ -65,27 +65,25 @@ Change the parameter values such as `ACCOUNT` as needed.
 ./setup_wflow_env.py
 ```
 
-7. Move to the experimental case directory:
-```
-cd ../../exp_case/[EXP_CASE_NAME]
-```
-where `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
-
-8. Launch the workflow tasks:
+7. Launch the workflow tasks:
 - WORKFLOW_MANAGER: rocoto
 ```
+cd ../../exp_case/[EXP_CASE_NAME]
 ./automate_launch_script.py -i [time interval in seconds]
 ```
-where the default value of `[time interval in seconds]` is 30. This means that the launch script `launch_rocoto_wflow.sh` is submitted every 30 seconds.
+where the default value of `[time interval in seconds]` is 30. This means that the launch script `launch_rocoto_wflow.sh` is submitted every 30 seconds. `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
+
 
 - WORKFLOW_MANAGER: ecflow
 ```
-cd ecf
+cd ../../exp_case/ecf_server
 ./start_server.sh
+cd ../[EXP_CASE_NAME]
+./begin_suite.sh
 ecflow_ui &
 ```
 
-9. Check the result and log files:
+8. Check the result and log files:
 - `com_dir`: symlink to the directory containing the result files
 - `log_dir`: symlink to the directory containing the log files
 - `tmp_dir`: symlink to the directory containing the working directories
