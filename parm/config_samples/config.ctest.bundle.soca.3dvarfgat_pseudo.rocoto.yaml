@@ -14,3 +14,4 @@ parm:
   JEDI_ALGORITHM: 3dfgat
   JEDI_CTEST_NAME: 3dvarfgat_pseudo
   NPROCS_ANALYSIS: 2
+  WORKFLOW_MANAGER: rocoto
