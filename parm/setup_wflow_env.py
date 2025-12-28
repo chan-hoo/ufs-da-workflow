@@ -597,7 +597,7 @@ def create_jobcard_envvar(home_dir,parm_dir,config_parm,config_parm_str):
         sys.exit(1)
 
     if workflow_manager == "ecflow":
-        ecf_suite_family_name = "cycle"
+        ecf_suite_family_name = "ecf_scripts"
         jcard_fp = os.path.join(exp_case_path,"ecf",ecf_suite_family_name)
         jcard_suffix = ".ecf"
     else:
