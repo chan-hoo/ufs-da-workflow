@@ -187,7 +187,7 @@ if [ "${BUILD_JEDI}" != "bundle-only" ] && [ "${BUILD_JEDI}" != "gdas-only" ]; t
   elif [ "${PLATFORM}" = "gaeac6" ]; then
     fix_orig="/gpfs/f6/epic/world-shared/UFS-DA-Workflow_${ver_fix_data}/inputs"
   elif [ "${PLATFORM}" = "derecho" ]; then
-    fix_orig=""
+    fix_orig="/glade/work/chanhooj/UFS-DA-Workflow_${ver_fix_data}/inputs"
   else
     printf "FATAL ERROR: path to the fix files is not defined !!!"
     exit 1
