@@ -770,8 +770,6 @@ def create_ecflow_files(home_dir,config_parm):
     logging.debug(f''' Data for ecFlow def file: {data_set_str}''')
     if do_free_forecast == "all" and date_cycle_freq_hr < 24:
         fn_ecf_template = "template.ufsda.def_1d2c"
-    elif coldstart == "YES":
-        fn_ecf_template = "template.ufsda.def_coldstart"
     else:
         fn_ecf_template = "template.ufsda.def"
     fp_ecf_template = os.path.join(home_dir,"ecf/defs",fn_ecf_template)

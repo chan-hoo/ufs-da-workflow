@@ -16,7 +16,7 @@ parm:
   DO_FREE_FORECAST: none
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: snowDA_3dvar_ecflow
+  envir: s2swa_snowDA_3dvar_ecflow
   EXP_CASE_NAME: s2swa_snowDA_3dvar_ecflow
   FCST_HRS: 24
   JEDI_ALGORITHM: 3dvar

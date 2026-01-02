@@ -1,30 +1,57 @@
 suite {{ exp_case_name }}
-    repeat date YMD {{ yyyymmdd_first }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
-    family cycle
-{%- if SCHED == "slurm" %}
+{%- if COLDSTART == "YES" or DO_FREE_FORECAST == "first" %}
+    family cold_cyc0
+  {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-{%- elif SCHED == "pbs" %}
+  {%- elif SCHED == "pbs" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
+  {%- endif %}
+        edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
+        edit ECF_DATE {{ yyyymmdd_first }}
+        edit CYC {{ hh_first }}
+        task jufsda_prep_data
+        task jufsda_forecast
+            trigger jufsda_prep_data == complete
+        task jufsda_plot_stats
+            trigger jufsda_forecast == complete
+    endfamily
 {%- endif %}
+
+{%- if ( COLDSTART == "YES" and yyyymmdd_second is not none ) or COLDSTART == "NO" or DO_FREE_FORECAST == "ctest" %}
+    family cycle
+  {%- if COLDSTART == "YES" %}
+        trigger cold_cyc0 == complete
+        repeat date YMD {{ yyyymmdd_second }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
+  {%- else %}
+        repeat date YMD {{ yyyymmdd_first }} {{ yyyymmdd_last }} {{ date_cycle_freq_day }}
+  {%- endif %}
+  {%- if SCHED == "slurm" %}
+        edit ECF_JOB_CMD "sbatch %ECF_JOB%"
+  {%- elif SCHED == "pbs" %}
+        edit ECF_JOB_CMD "qsub %ECF_JOB%"
+  {%- endif %}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
         edit ECF_DATE %YMD%
         edit CYC {{ hh_first }}
-{%- if DO_FREE_FORECAST != "ctest" %}
-        task jufsda_prep_data
-{%- endif %}
+  {%- if DO_FREE_FORECAST == "ctest" %}
         task jufsda_analysis
-{%- if DO_FREE_FORECAST != "ctest" %}
+        task jufsda_plot_stats
+            trigger jufsda_analysis == complete
+  {%- elif DO_FREE_FORECAST == "first" %}
+        task jufsda_prep_data
+        task jufsda_analysis
             trigger jufsda_prep_data == complete
-{%- endif %}
-{%- if DO_FREE_FORECAST != "ctest" %}
+        task jufsda_plot_stats
+            trigger jufsda_analysis == complete
+  {%- else %}
+        task jufsda_prep_data
+        task jufsda_analysis
+            trigger jufsda_prep_data == complete
         task jufsda_forecast
             trigger jufsda_analysis == complete
-{%- endif %}
         task jufsda_plot_stats
-{%- if DO_FREE_FORECAST == "ctest" %}
-            trigger jufsda_analysis == complete
-{%- else %}
             trigger jufsda_forecast == complete
-{%- endif %}
+  {%- endif %}
     endfamily
+{%- endif %}
 endsuite
