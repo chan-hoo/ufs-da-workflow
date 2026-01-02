@@ -12,13 +12,13 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. gaeac6 | hera | hercules | orion | ursa)
+      (e.g. gaeac6 | hercules | orion | ursa | derecho)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | cray | gccgfortran)
   -a, --app=APPLICATION
       weather model application to build; for example, S2SWA for GFS
-      (e.g. S2SWA | NG-GODAS | S2SWAL | LND )
+      (e.g. S2SWA | S2SWAL | NG-GODAS | LND )
   --ccpp="CCPP_SUITE1,CCPP_SUITE2..."
       CCPP suites (CCPP_SUITES) to include in build; delimited with ','
   --remove
@@ -93,7 +93,7 @@ COMPILER="intel"
 APPLICATION="S2SWA"
 CCPP_SUITES=""
 BUILD_TYPE="Release"
-BUILD_JOBS=8
+BUILD_JOBS=4
 REMOVE=false
 VERBOSE=false
 BUILD_JEDI="off"
@@ -186,6 +186,8 @@ if [ "${BUILD_JEDI}" != "bundle-only" ] && [ "${BUILD_JEDI}" != "gdas-only" ]; t
     fix_orig="/work2/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
   elif [ "${PLATFORM}" = "gaeac6" ]; then
     fix_orig="/gpfs/f6/epic/world-shared/UFS-DA-Workflow_${ver_fix_data}/inputs"
+  elif [ "${PLATFORM}" = "derecho" ]; then
+    fix_orig="/glade/work/chanhooj/UFS-DA-Workflow_${ver_fix_data}/inputs"
   else
     printf "FATAL ERROR: path to the fix files is not defined !!!"
     exit 1
