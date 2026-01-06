@@ -51,7 +51,7 @@ cd ..
 module use modulefiles
 module load wflow_[workflow_manager]_[machine] 
 ```
-where `[workflow_manager]` is `rocoto` or `ecflow`, and `[machine]` is `gaeac6`, `hercules`, `orion`, or `ursa`.
+where `[workflow_manager]` is `ecflow` or `rocoto`, and `[machine]` is `gaeac6`, `hercules`, `orion`, or `ursa`.
 
 5. Copy a sample configuration and modify it as needed:
 ```
