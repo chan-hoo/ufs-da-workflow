@@ -131,15 +131,6 @@ else
   use_saved_routehandles=".false."
 fi
 
-## Grid-dependent parameters
-if [ "${OUTPUT_GRID}" = "cubed_sphere_grid" ]; then
-  zstandard_level="0"
-elif [ "${OUTPUT_GRID}" = "gaussian_grid" ]; then
-  zstandard_level="5"
-else
-  zstandard_level="0"
-fi
-
 ########################################
 ## UFS weather model input: input.nml
 ########################################
@@ -255,11 +246,18 @@ settings="\
   'DT_ATMOS': ${DT_ATMOS}
   'FCST_HRS': ${FCST_HRS}
   'FHROT': ${FHROT}
+  'ICHUNK2D': ${ICHUNK2D}
+  'ICHUNK3D': ${ICHUNK3D}
+  'IMO': ${IMO}
+  'JCHUNK2D': ${JCHUNK2D}
+  'JCHUNK3D': ${JCHUNK3D}
+  'JMO': ${JMO}
+  'KCHUNK3D': ${KCHUNK3D}
   'OUTPUT_FH': ${OUTPUT_FH}
   'OUTPUT_GRID': ${OUTPUT_GRID}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'use_saved_routehandles': ${use_saved_routehandles}
-  'zstandard_level': ${zstandard_level}
+  'ZSTANDARD_LEVEL': ${ZSTANDARD_LEVEL}
   'WRITE_GROUPS': ${WRITE_GROUPS}
   'WRITE_TASKS_PER_GROUP': ${WRITE_TASKS_PER_GROUP}
 " # End of settings variable
