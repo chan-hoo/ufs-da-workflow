@@ -17,6 +17,7 @@ parm:
   DT_RUNSEQ: 3600
   FCST_HRS: 24
   FHROT: 0
+  HISTORY_FILE_ON_NATIVE_GRID: .false.
   ICHUNK2D: 0
   ICHUNK3D: 0
   IMO: 384
@@ -36,6 +37,7 @@ parm:
   OUTPUT_FH_MOM6: None
   OUTPUT_FH_WW3: None
   OUTPUT_GRID: cubed_sphere_grid
+  QUILTING_RESTART: .false.
   RES: 96
   RESTART_INTERVAL: "12 -1"
   WRITE_GROUPS: 1

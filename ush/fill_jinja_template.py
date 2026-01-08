@@ -78,8 +78,18 @@ def to_datetime(loader, node):
     return dt.datetime.strptime(value, date_format)
 
 
+def to_quote(loader, node):
+    """
+    Convert the input value to the literal string "''".
+    Intended for namelist / config values that must be empty quotes.
+    """
+    # We don't actually care about the value; presence of !quote is enough
+    return "''"
+
+
 yaml.add_constructor("!datetime", to_datetime, Loader=yaml.SafeLoader)
 yaml.add_constructor("!join", join, Loader=yaml.SafeLoader)
+yaml.add_constructor("!quote", to_quote, Loader=yaml.SafeLoader)
 
 
 def file_exists(arg):

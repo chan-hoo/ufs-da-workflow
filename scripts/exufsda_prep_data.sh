@@ -52,7 +52,6 @@ echo "========== PART I: Input Files =========="
 if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
   # input.nml
   external_ic=".true."
-  ignore_rst_cksum=".true."
   make_nh=".true."
   mom_input_filename="n"
   mountain=".false."
@@ -70,7 +69,6 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]
 else 
   # input.nml
   external_ic=".false."
-  ignore_rst_cksum=".true."
   make_nh=".false."
   mom_input_filename="r"
   mountain=".true." 
@@ -85,6 +83,19 @@ else
   # ice_in
   ice_runtype="continue"
   ice_use_restart_time=".true."
+fi
+
+## built-in increment option dependent variables in input.nml
+if [ "${HISTORY_FILE_ON_NATIVE_GRID}" == ".true." ]; then
+  ignore_rst_cksum=".false."
+  increment_file_on_native_grid=".true."
+  read_increment=".true."
+  res_latlon_dynamics="jedi_increment.atm" 
+else
+  ignore_rst_cksum=".true."
+  increment_file_on_native_grid=".false."
+  read_increment=".false."
+  res_latlon_dynamics="!quote"
 fi
 
 ## Application dependent variables
@@ -146,8 +157,15 @@ else
   if [ "${APP}" = "NG-GODAS" ]; then
     fn_template="template.${APP}.input.nml"
   else
-    fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
+    if [ "${APP}" = "ATM" ] && [ "${DO_FREE_FORECAST}" = "all" ]; then
+      fn_template="template.${APP}.input.nml.${CCPP_SUITE}_freefcst"
+    else
+      fn_template="template.${APP}.input.nml.${CCPP_SUITE}"
+    fi
   fi
+  ### To avoid error from "set -u" when input variable is none like ('res_latlon_dynamics:'),
+  ### set the safe parameter expansion like ${res_latlon_dynamics-}. This is because
+  ### with "set -u", bash treats it as res_latlon_dynamics: unbound variable.
   settings="\
   'ATM_IO_LAYOUT_X': ${ATM_IO_LAYOUT_X}
   'ATM_IO_LAYOUT_Y': ${ATM_IO_LAYOUT_Y}
@@ -156,6 +174,7 @@ else
   'CCPP_SUITE': ${CCPP_SUITE}
   'external_ic': '${external_ic}'
   'ignore_rst_cksum': '${ignore_rst_cksum}'
+  'increment_file_on_native_grid': '${increment_file_on_native_grid}'
   'make_nh': '${make_nh}'
   'mom_input_filename': ${mom_input_filename}
   'mountain': '${mountain}'
@@ -163,6 +182,8 @@ else
   'nggps_ic': '${nggps_ic}'
   'nstf_name': '${nstf_name}'
   'NPZ': ${NPZ}
+  'read_increment': '${read_increment}'
+  'res_latlon_dynamics': ${res_latlon_dynamics-}
   'res_p1': ${res_p1}
   'warm_start': '${warm_start}'
 " # End of settings variable
@@ -246,6 +267,7 @@ settings="\
   'DT_ATMOS': ${DT_ATMOS}
   'FCST_HRS': ${FCST_HRS}
   'FHROT': ${FHROT}
+  'HISTORY_FILE_ON_NATIVE_GRID': ${HISTORY_FILE_ON_NATIVE_GRID}
   'ICHUNK2D': ${ICHUNK2D}
   'ICHUNK3D': ${ICHUNK3D}
   'IMO': ${IMO}
@@ -255,6 +277,7 @@ settings="\
   'KCHUNK3D': ${KCHUNK3D}
   'OUTPUT_FH': ${OUTPUT_FH}
   'OUTPUT_GRID': ${OUTPUT_GRID}
+  'QUILTING_RESTART': ${QUILTING_RESTART}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'use_saved_routehandles': ${use_saved_routehandles}
   'ZSTANDARD_LEVEL': ${ZSTANDARD_LEVEL}
@@ -359,7 +382,7 @@ echo "========== PART II: JEDI Configuration =========="
 # JEDI configuration files
 #####################################################################
 #
-if [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
+if [ "${DO_FREE_FORECAST}" != "all" ] && [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
   ###################################
   ## Atmosphere: FV3-JEDI analysis
   ###################################
@@ -478,6 +501,9 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
       elif [ "${jedi_type}" = "soil_moisture" ]; then
         driver_save_posterior_mean="true"
         inc_fn_prefix="smcinc"
+      else
+        driver_save_posterior_mean="false"
+        inc_fn_prefix="inc"
       fi
     
       # update jcb-base yaml file

@@ -70,6 +70,10 @@ elif [ "${APP}" = "ATM" ]; then
   do_plot_fcst_restart_mom6="NO"
   do_plot_fcst_restart_cice="NO"
 fi
+# Trun off fcst out plot for other grid options
+if [ "${OUTPUT_GRID}" != "cubed_sphere_grid" ]; then
+  do_plot_fcst_out_fv3="NO"
+fi
 
 DO_PLOT_OBS="${DO_PLOT_OBS:-${do_plot_obs}}"
 DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"

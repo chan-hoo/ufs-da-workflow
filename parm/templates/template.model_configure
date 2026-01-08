@@ -14,12 +14,12 @@ restart_interval:        {{ RESTART_INTERVAL }}
 
 use_saved_routehandles:  {{ use_saved_routehandles }}
 quilting:                .true.
-quilting_restart:        .false.
+quilting_restart:        {{ QUILTING_RESTART }}
 write_groups:            {{ WRITE_GROUPS }}
 write_tasks_per_group:   {{ WRITE_TASKS_PER_GROUP }}
 itasks:                  1
 output_history:          .true.
-history_file_on_native_grid: .false.
+history_file_on_native_grid: {{ HISTORY_FILE_ON_NATIVE_GRID }}
 write_dopost:            .false.
 write_nsflip:            .true.
 num_files:               2

@@ -18,6 +18,18 @@ parm:
   envir: atm_atmDA_3dvar_ecf
   EXP_CASE_NAME: atm_atmDA_3dvar_ecf
   FCST_HRS: 24
+  HISTORY_FILE_ON_NATIVE_GRID: .true.
+  ICHUNK2D: 384
+  ICHUNK3D: 384
+  IMO: 384
+  JCHUNK2D: 192
+  JCHUNK3D: 192
   JEDI_ALGORITHM: 3dvar
+  JMO: 192
+  KCHUNK3D: 1
   OUTPUT_FH: '6 -1'
+  OUTPUT_GRID: gaussian_grid
+  QUILTING_RESTART: .true.
   WORKFLOW_MANAGER: ecflow
+  ZSTANDARD_LEVEL: 0
+
