@@ -356,27 +356,39 @@ echo "=========== Input Namelist Files COMPLETE !!! ================="
 # PART II.
 echo "========== PART II: JCB =========="
 #####################################################################
-# JCB: JEDI configuration
+# JEDI configuration files
 #####################################################################
 #
-if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
+if [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
   ###########################
   ## Marine: SOCA analysis
   ###########################
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
-
-  ### UNDER DEVELOPMENT ###
-    template_fp="${PARMufsda}/jedi/jcb-base_soca.yaml.j2"
-    jcb_base_fn="jcb-base_soca.yaml"
-    jcb_base_fp="${DATA}/${jcb_base_fn}"
-    jcb_out_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
-    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
-    # Run JCB
-    ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jcb_out_fn}" -a "${JEDI_ALGORITHM}" -t "soca" -g "NO" -l "${PY_LOG_LEVEL}"
-    if [ $? -ne 0 ]; then
-      err_exit "Generation of JEDI YAML file for SOCA by JCB failed !!!"
+    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
+    if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "TEMPLATE" ]; then
+      soca_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
+      soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+      settings="\
+  'cdate': !!str ${PDY}${cyc}
+  'soca_timewindow_begin_iso': !!str ${soca_timewindow_begin_iso}
+  'soca_background_date_iso': !!str ${soca_background_date_iso}
+" # End of settings variable
+      fn_template="template.jedi_3dvar_soca.yaml"
+      fp_template="${PARMufsda}/jedi/soca/${fn_template}"
+      ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
+    else
+    ### UNDER DEVELOPMENT ###
+      template_fp="${PARMufsda}/jedi/jcb-base_soca.yaml.j2"
+      jcb_base_fn="jcb-base_soca.yaml"
+      jcb_base_fp="${DATA}/${jcb_base_fn}"
+      ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${template_fp}" -o "${jcb_base_fp}"
+      # Run JCB
+      ${USHufsda}/jcb_setup.py -i "${jcb_base_fn}" -o "${jedi_nml_fn}" -a "${JEDI_ALGORITHM}" -t "soca" -g "NO" -l "${PY_LOG_LEVEL}"
+      if [ $? -ne 0 ]; then
+        err_exit "Generation of JEDI YAML file for SOCA by JCB failed !!!"
+      fi
     fi
-    cp -p ${jcb_out_fn} ${COMINOUT}
+    cp -p ${jedi_nml_fn} ${COMINOUT}
   fi
 
   #########################################
@@ -492,7 +504,7 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "NO" ]; then
     done
   fi
 fi
-echo "================== JCB COMPLETE !!! ==========================="
+echo "============= JEDI Coonfiguration COMPLETE !!! ======================"
 
 
 #

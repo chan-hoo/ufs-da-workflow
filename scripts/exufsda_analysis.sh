@@ -121,24 +121,6 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   jedi_nml_fn="jedi_${JEDI_ALGORITHM}_soca_${PDY}${cyc}.yaml"
   if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
     cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
-  elif [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "TEMPLATE" ]; then
-    cycle_freq_hr_half=$(( DATE_CYCLE_FREQ_HR / 2 ))
-    date_hf=$($NDATE -${cycle_freq_hr_half} $PDY$cyc)
-    yyyy_hf=${date_hf:0:4}
-    mm_hf=${date_hf:4:2}
-    dd_hf=${date_hf:6:2}
-    hh_hf=${date_hf:8:2}
-    soca_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
-    soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
-    settings="\
-  'cdate': !!str ${PDY}${cyc}
-  'soca_timewindow_begin_iso': !!str ${soca_timewindow_begin_iso}
-  'soca_background_date_iso': !!str ${soca_background_date_iso}
-" # End of settings variable
-    fn_template="template.jedi_3dvar_soca.yaml"
-    fp_template="${PARMufsda}/jedi/soca/${fn_template}"
-    fn_namelist="${jedi_nml_fn}"
-    ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
   else
     cp -p "${COMINOUT}/${jedi_nml_fn}" .
   fi
