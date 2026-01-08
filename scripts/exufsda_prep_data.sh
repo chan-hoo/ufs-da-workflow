@@ -354,12 +354,50 @@ echo "=========== Input Namelist Files COMPLETE !!! ================="
 #
 #####################################################################
 # PART II.
-echo "========== PART II: JCB =========="
+echo "========== PART II: JEDI Configuration =========="
 #####################################################################
 # JEDI configuration files
 #####################################################################
 #
 if [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
+  ###################################
+  ## Atmosphere: FV3-JEDI analysis
+  ###################################
+  if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
+    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_fv3_${PDY}${cyc}.yaml"
+    jedi_inc_nml_fn="jedi_${JEDI_ALGORITHM}_fv3inc_${PDY}${cyc}.yaml"
+    if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "TEMPLATE" ]; then
+      fv3_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
+      fv3_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+      settings="\
+  'cdate': !!str ${PDY}${cyc}
+  'fv3_background_date_iso': !!str ${fv3_background_date_iso}
+  'fv3_background_filenames_atm': cubed_sphere_grid_atm.nc  
+  'fv3_background_filenames_sfc': cubed_sphere_grid_sfc.nc
+  'fv3_geo_layout_x': 4
+  'fv3_geo_layout_y': 4
+  'fv3_geo_npx': ${res_p1}
+  'fv3_geo_npy': ${res_p1}
+  'fv3_geo_npz': ${NPZ}
+  'fv3_timewindow_begin_iso': !!str ${fv3_timewindow_begin_iso}
+  'fv3_timewindow_length': PT${DATE_CYCLE_FREQ_HR}H
+" # End of settings variable
+
+      ### For analysis
+      fn_template="template.jedi_3dvar_fv3.yaml"
+      fp_template="${PARMufsda}/jedi/fv3/${fn_template}"
+      ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
+
+      ### For increment
+      fn_template="template.jedi_3dvar_fv3inc.yaml"
+      fp_template="${PARMufsda}/jedi/fv3/${fn_template}"
+      ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_inc_nml_fn}"
+    else
+    ### JCB: UNDER DEVELOPMENT ###
+      err_exit "JCB for fv3-jedi is not available !!!"
+    fi
+  fi
+
   ###########################
   ## Marine: SOCA analysis
   ###########################
@@ -377,7 +415,9 @@ if [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
       fp_template="${PARMufsda}/jedi/soca/${fn_template}"
       ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
     else
-    ### UNDER DEVELOPMENT ###
+    ### JCB: UNDER DEVELOPMENT ###
+      err_exit "JCB for SOCA is not available !!!"
+
       template_fp="${PARMufsda}/jedi/jcb-base_soca.yaml.j2"
       jcb_base_fn="jcb-base_soca.yaml"
       jcb_base_fp="${DATA}/${jcb_base_fn}"
