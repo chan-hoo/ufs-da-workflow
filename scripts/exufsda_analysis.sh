@@ -9,11 +9,11 @@ YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
-PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
-YYYYp=${PTIME:0:4}
-MMp=${PTIME:4:2}
-DDp=${PTIME:6:2}
-HHp=${PTIME:8:2}
+pdate=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+YYYYp=${pdate:0:4}
+MMp=${pdate:4:2}
+DDp=${pdate:6:2}
+HHp=${pdate:8:2}
 
 filedate=${PDY}.${cyc}0000
 
@@ -37,6 +37,78 @@ if [ "${FRAC_GRID}" = "YES" ]; then
   snowdepth_vn="snodl"
 else
   snowdepth_vn="snwdph"
+fi
+
+###########################################################################
+# Atmospheric DA analysis (FV3-JEDI)
+###########################################################################
+if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
+  mkdir -p anl
+  mkdir -p bc
+  mkdir -p berror
+  mkdir -p bkg
+  mkdir -p crtm
+  mkdir -p diag
+  mkdir -p obs
+
+  # Background (restart) files
+  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_dir="${WARMSTART_DIR}"
+  else
+    data_dir="${DATA_RESTART}"
+  fi
+
+
+  # Copy static data files
+  cp -p ${FIXufsda}/DATA_jedi/fv3files/fmsmpp.nml ${DATA}/fv3jedi/.
+  cp -p ${FIXufsda}/DATA_jedi/fv3files/field_table_ufs ${DATA}/fv3jedi/field_table
+  cp -p ${FIXufsda}/DATA_jedi/fv3files/akbk${NPZ}.nc4 ${DATA}/fv3jedi/akbk.nc4
+
+  # CRTM files
+  ln -nsf ${FIXufsda}/DATA_crtm/* ${DATA}/crtm/.
+
+  # Observation files
+  ## ascatw_ascat_metop-b
+
+  ## ATMS N20
+
+  ## surface_ps
+
+  ## gnssrobndnbam_cosmic2
+
+  ## ompsnp_npp
+
+  ## ompstc_npp
+
+  ## satwind_goes-16
+
+  # Set JEDI executable
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+    jedi_exe_fn="fv3jedi_var.x"
+  else
+    jedi_exe_fn="fv3jedi_${JEDI_ALGORITHM}.x"
+  fi
+
+  # Copy JEDI input yaml file
+  jedi_nml_fn="jedi_${JEDI_ALGORITHM}_fv3_${PDY}${cyc}.yaml"
+  if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
+    cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_${PDY}${cyc}.yaml" ${jedi_nml_fn}
+  else
+    cp -p "${COMINOUT}/${jedi_nml_fn}" .
+  fi
+
+  # Run JEDI executable
+  export pgm="${jedi_exe_fn}"
+  . prep_step
+  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  export err=$?; err_chk
+  cp errfile errfile_fv3jedi_x
+  if [[ $err != 0 ]]; then
+    err_exit "JEDI DA failed"
+  fi
+
+
+
 fi
 
 
@@ -175,7 +247,7 @@ fi
 
 
 ###########################################################################
-# Snow / Soil-moisture analysis
+# Snow / Soil-moisture DA analysis
 ###########################################################################
 if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Copy sfc_data files from RESTART/WARMSTART into work directory

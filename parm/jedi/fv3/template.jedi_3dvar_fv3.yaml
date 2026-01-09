@@ -101,8 +101,8 @@ cost function:
           saber block name: gsi static covariance
           read:
             gsi akbk: ./fv3jedi/akbk.nc4
-            gsi error covariance file: /scratch3/NAGAPE/epic/Chan-hoo.Jeon/global_worklfow_test/STMP/RUNDIRS/C96C48_ufs_hybatmDA_test/gfs.2024022400/gfsatmanl_00/berror/gsi-coeffs-gfs-global.nc4
-            gsi berror namelist file: /scratch3/NAGAPE/epic/Chan-hoo.Jeon/global_worklfow_test/STMP/RUNDIRS/C96C48_ufs_hybatmDA_test/gfs.2024022400/gfsatmanl_00/berror/gfs_gsi_global.nml
+            gsi error covariance file: ./berror/gsi-coeffs-gfs-global.nc4
+            gsi berror namelist file: ./berror/gfs_gsi_global.nml
             processor layout x direction: 12
             processor layout y direction: 8
             debugging mode: false
@@ -399,7 +399,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/scatwnd.ascat_metop-b.nc
+            obsfile: ./obs/scatwnd.ascat_metop-b_{{ cdate }}.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -599,7 +599,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/atms_n20.nc
+            obsfile: ./obs/atms_n20_{{ cdate }}.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -636,8 +636,8 @@ cost function:
           - H2O
           - O3
       obs bias:
-        input file: ./obs/atms_n20.satbias.nc
-        output file: ./bc/atms_n20.satbias.nc
+        input file: ./obs/atms_n20.satbias_{{ pdate }}.nc
+        output file: ./bc/atms_n20.satbias_{{ cdate }}.nc
         variables without bc:
         - brightnessTemperature
         channels: 15
@@ -665,11 +665,11 @@ cost function:
           step size: 0.0001
           largest analysis variance: 10000.0
           prior:
-            input file: ./obs/atms_n20.satbias_cov.nc
+            input file: ./obs/atms_n20.satbias_cov_{{ pdate }}.nc
             inflation:
               ratio: 1.1
               ratio for small dataset: 2.0
-          output file: ./bc/atms_n20.satbias_cov.nc
+          output file: ./bc/atms_n20.satbias_cov_{{ cdate }}.nc
       obs pre filters:
       - filter: Domain Check
         filter variables:
@@ -1382,12 +1382,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/conventional_ps.nc
+            obsfile: ./obs/conventional_ps_{{ cdate }}.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_conventional_ps_2024022400.nc
+            obsfile: ./diags/diag_conventional_ps_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -1708,7 +1708,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/gnssro_cosmic2.nc
+            obsfile: ./obs/gnssro_cosmic2_{{ cdate }}.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -1784,7 +1784,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/ozone.ompsnp_npp.nc
+            obsfile: ./obs/ozone.ompsnp_npp_{{ cdate }}.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -2086,7 +2086,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/ozone.ompstc_npp.nc
+            obsfile: ./obs/ozone.ompstc_npp_{{ cdate }}.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -2173,7 +2173,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/satwnd.abi_goes-16.nc
+            obsfile: ./obs/satwnd.abi_goes-16_{{ cdate }}.nc
             missing file action: warn
         obsdataout:
           engine:

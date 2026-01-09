@@ -86,17 +86,17 @@ DO_PLOT_FCST_RESTART_MOM6="${DO_PLOT_FCST_RESTART_MOM6:-${do_plot_fcst_restart_m
 DO_PLOT_FCST_RESTART_CICE="${DO_PLOT_FCST_RESTART_CICE:-${do_plot_fcst_restart_cice}}"
 
 # Set other dates
-NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+next_date=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 
 YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
 
-nYYYY=${NTIME:0:4}
-nMM=${NTIME:4:2}
-nDD=${NTIME:6:2}
-nHH=${NTIME:8:2}
+nYYYY=${next_date:0:4}
+nMM=${next_date:4:2}
+nDD=${next_date:6:2}
+nHH=${next_date:8:2}
 
 # Global parameters
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"

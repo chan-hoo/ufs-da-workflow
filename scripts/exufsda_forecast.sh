@@ -26,18 +26,18 @@ else
 fi
 app_lower=$(echo ${APP} | tr '[A-Z]' '[a-z]')
 
-NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
-PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+next_date=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+pdate=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 
 YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
 HH=${cyc}
-nYYYY=${NTIME:0:4}
-nMM=${NTIME:4:2}
-nDD=${NTIME:6:2}
-nHH=${NTIME:8:2}
-PDYcm1=${PTIME:0:8}
+nYYYY=${next_date:0:4}
+nMM=${next_date:4:2}
+nDD=${next_date:6:2}
+nHH=${next_date:8:2}
+PDYcm1=${pdate:0:8}
 COMINOUTcm1="${COMINOUTcm1:-${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYcm1}}"
 
 HHsec=$(( HH * 3600 ))
@@ -202,7 +202,7 @@ elif [ "${atm_model}" = "datm" ]; then
   list_stream_data_files=()
   list_stream_fn=()
   cmonth=$(date -d "${PDY:0:6}01" +%Y%m)
-  while [ "${cmonth}" -le "${NTIME:0:6}" ]; do
+  while [ "${cmonth}" -le "${next_date:0:6}" ]; do
     list_stream_data_files+=("\"INPUT/${DATM_DATA_TYPE}.${cmonth}.nc\"")
     list_stream_fn+=("${DATM_DATA_TYPE}.${cmonth}.nc")
     cmonth=$(date -d "${cmonth}01 +1 month" +%Y%m)

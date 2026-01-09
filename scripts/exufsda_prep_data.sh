@@ -12,19 +12,19 @@ HH=${cyc}
 HHsec=$(( HH * 3600 ))
 HHsec_5d=$(printf "%05d" "${HHsec}")
 
-NTIME=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
-nYYYY=${NTIME:0:4}
-nMM=${NTIME:4:2}
-nDD=${NTIME:6:2}
-nHH=${NTIME:8:2}
+next_date=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+nYYYY=${next_date:0:4}
+nMM=${next_date:4:2}
+nDD=${next_date:6:2}
+nHH=${next_date:8:2}
 nHHsec=$(( nHH * 3600 ))
 nHHsec_5d=$(printf "%05d" "${nHHsec}")
 
-PTIME=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
-YYYYp=${PTIME:0:4}
-MMp=${PTIME:4:2}
-DDp=${PTIME:6:2}
-HHp=${PTIME:8:2}
+pdate=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
+YYYYp=${pdate:0:4}
+MMp=${pdate:4:2}
+DDp=${pdate:6:2}
+HHp=${pdate:8:2}
 
 # For JEDI time window
 cycle_freq_hr_half=$(( DATE_CYCLE_FREQ_HR / 2 ))
@@ -404,6 +404,7 @@ if [ "${DO_FREE_FORECAST}" != "all" ] && [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES"
   'fv3_geo_npz': ${NPZ}
   'fv3_timewindow_begin_iso': !!str ${fv3_timewindow_begin_iso}
   'fv3_timewindow_length': PT${DATE_CYCLE_FREQ_HR}H
+  'pdate': !!str ${pdate}
 " # End of settings variable
 
       ### For analysis
