@@ -7,7 +7,7 @@
 
 &diag_manager_nml
   prepend_date = .false.
-  max_output_fields = 310
+  max_output_fields = 300
 /
 
 &fms_nml
@@ -145,8 +145,8 @@
   do_ugwp_v0_orog_only = .false.
   do_ugwp_v0_nst_only  = .false.
   do_gsl_drag_ls_bl    = .true.
-  do_gsl_drag_ss       = .true.
-  do_gwd_opt_psl       = .false.
+  do_gsl_drag_ss       = .false.
+  do_gwd_opt_psl       = .true.
   psl_gwd_dx_factor    = 6.0
   do_gsl_drag_tofd     = .true.
   do_ugwp_v1_orog_only = .false.
@@ -388,12 +388,12 @@
   FSMCL(3) = 99999
   FSMCL(4) = 99999
   LANDICE  = .false.
-  FTSFS    = 90
+  FTSFS    = 10
   FAISL    = 99999
   FAISS    = 99999
   FSNOL    = 99999
   FSNOS    = 99999
-  FSICL    = 0
+  FSICL    = 99999
   FSICS    = 0
   FTSFL    = 99999
   FVETL    = 99999
