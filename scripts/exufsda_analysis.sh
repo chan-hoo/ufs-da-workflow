@@ -68,19 +68,24 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   ln -nsf ${FIXufsda}/DATA_crtm/* ${DATA}/crtm/.
 
   # Observation files
+  obs_prefix="obs.${PDY}.${cycle}"  
   ## ascatw_ascat_metop-b
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.scatwnd.ascat_metop-b.nc" "${DATA}/obs"
   ## ATMS N20
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias_cov.nc" "${DATA}/obs"
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
   ## surface_ps
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.conventional_ps.nc" "${DATA}/obs"
   ## gnssrobndnbam_cosmic2
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.gnssro_cosmic2.nc" "${DATA}/obs"
   ## ompsnp_npp
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompsnp_npp.nc" "${DATA}/obs"
   ## ompstc_npp
-
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompstc_npp.nc" "${DATA}/obs"
   ## satwind_goes-16
+  ln -nsf "${COMINOUTobs}/${obs_prefix}.satwnd.abi_goes-16.nc" "${DATA}/obs"
 
   # Set JEDI executable
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then

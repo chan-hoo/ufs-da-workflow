@@ -802,11 +802,40 @@ echo "========== PART IV: Observation Files =========="
 # Observation Data Files
 #####################################################################
 #
-if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+#################################
+# Atmospheric observation data
+#################################
+if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
+  list_fv3_obs=( "atms_n20" "conventional_ps" "gnssro_cosmic2" \
+	         "ozone.ompsnp_npp" "ozone.smpstc_npp" \
+		 "satwnd.abi_goes-16" "scatwnd.ascat_metop-b" )
+  for ifn in "${sfc_fns[@]}" ; do
+    obs_dp="${DCOMINobs}/fv3/${PDY}${cyc}"
+    obs_out_prefix="obs.${PDY}.${cycle}"
+    obs_out_fn="${obs_out_prefix}.${ifn}.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+      # extra files
+      if [ "${ifn}" = "atms_n20" ]; then
+        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias.nc" ${COMINOUTobs}
+        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias_conv.nc" ${COMINOUTobs}
+        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.tlapse.txt" ${COMINOUTobs}
+      fi
+    else
+      # ioda-converting
+      # Under development
+
+    fi
+  done
+fi
+
+##########################
+# Snow observation data
+##########################
+if [ "${JEDI_TYPE_SNOW}" = "YES" ]; then
   obs_out_fn_ghcn=""
   obs_out_fn_ims=""
-  obs_out_fn_smap=""
-  # GHCN snow depth data
+  ## GHCN snow depth data
   if [ "${OBS_GHCN_SNOW}" = "YES" ]; then
     obs_fn="ghcn_snwd_ioda_${PDY}${cyc}.nc"
     obs_dp="${DCOMINobs}/ghcn/${YYYY}"
@@ -839,7 +868,7 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
     fi
   fi
 
-  # IMS snow data
+  ## IMS snow data
   if [ "${OBS_IMS_SNOW}" = "YES" ]; then  
     # Check if pre-generated IMS obs file exists
     obs_fn="obs.${PDY}.${cycle}.ims_snow.tm00.nc"
@@ -935,13 +964,19 @@ EOF
     fi
   fi
 
-  # SFCSNO data
+  ## SFCSNO data
   if [ "${OBS_SFCSNO}" = "YES" ]; then
     sfcsno_fn_suffix="sfcsno.tm00.bufr_d"
     cp -p "${COMINgdas}/${PDY}/gdas.${cycle}.${sfcsno_fn_suffix}" "${COMINOUTobs}/obs.${PDY}.${cycle}.${sfcsno_fn_suffix}"
   fi
+fi
 
+###################################
+# Soil-moisture observation data
+###################################
+if [ "${JEDI_TYPE_SOIL_MOISTURE}" = "YES" ]; then
   # SMAP data
+  obs_out_fn_smap=""
   if [ "${OBS_SMAP}" = "YES" ]; then
     obs_fn="obs.${PDY}.${cycle}.smap_combined.nc"
     obs_dp="${DCOMINobs}/SMAP/${YYYY}${MM}"
