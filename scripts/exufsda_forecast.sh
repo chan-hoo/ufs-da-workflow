@@ -81,9 +81,9 @@ if [ "${atm_model}" = "fv3" ]; then
   for ifn in "${sfc_fns[@]}" ; do
     for itile in {1..6};
     do
-      ifp="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc"
+      ifp="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}.${ifn}.tile${itile}.nc"
       if [ -e "${ifp}" ]; then
-        ln -nsf ${ifp} .
+        ln -nsf ${ifp} "C${RES}.${ifn}.tile${itile}.nc"
       else
         err_exit "Symlink failed: ${ifp} does not exist."
       fi
@@ -95,10 +95,10 @@ if [ "${atm_model}" = "fv3" ]; then
   ## Grid/orography/mosaic files
   for itile in {1..6}
   do
-    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc" oro_data.tile${itile}.nc
     ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid.tile${itile}.nc" .
-    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data_ls.tile${itile}.nc" oro_data_ls.tile${itile}.nc
-    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data_ss.tile${itile}.nc" oro_data_ss.tile${itile}.nc
+    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}_oro_data.tile${itile}.nc" oro_data.tile${itile}.nc
+    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}_oro_data_ls.tile${itile}.nc" oro_data_ls.tile${itile}.nc
+    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}_oro_data_ss.tile${itile}.nc" oro_data_ss.tile${itile}.nc
   done
   ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_mosaic.nc" .
   if [ "${APP}" = "ATM" ]; then
@@ -286,8 +286,9 @@ if [ "${ocn_model}" = "mom6" ]; then
   mkdir -p MOM6_OUTPUT
 
   ## Mesh file
-  if [ ! -e "${OCN_MESH_FN}" ]; then
-    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${OCN_MESH_FN}" .
+  ocn_mesh_fn="mesh.${OCN_MESH_RES}.nc"
+  if [ ! -e "${ocn_mesh_fn}" ]; then
+    ln -nsf "${FIXufsda}/DATA_fix/MOM6/${ocn_mesh_fn}" .
   fi
 
   # INPUT directory

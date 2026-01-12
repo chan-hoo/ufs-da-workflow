@@ -228,7 +228,7 @@ settings="\
   'chm_petlist_bounds_n2': ${nprocs_med_m1}
   'cmeps_coupling_mode': ${cmeps_coupling_mode}
   'cmeps_mapuv_with_cart3d': ${cmeps_mapuv_with_cart3d}
-  'ice_mesh_ice': ${OCN_MESH_FN}
+  'ice_mesh_ice': mesh.${OCN_MESH_RES}.nc
   'ice_model': ${ice_model}
   'ice_petlist_bounds_n1': ${nprocs_atm_ocn}
   'ice_petlist_bounds_n2': ${nprocs_atm_ocn_ice_m1}
@@ -240,7 +240,7 @@ settings="\
   'lnd_petlist_bounds_n2': ${nprocs_forecast_m1}
   'med_petlist_bounds_n1': 0
   'med_petlist_bounds_n2': ${nprocs_med_m1}
-  'ocn_mesh_ocn': ${OCN_MESH_FN}
+  'ocn_mesh_ocn': mesh.${OCN_MESH_RES}.nc
   'ocn_model': ${ocn_model}
   'ocn_petlist_bounds_n1': ${nprocs_forecast_atm}
   'ocn_petlist_bounds_n2': ${nprocs_atm_ocn_m1}

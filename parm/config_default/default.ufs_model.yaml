@@ -30,7 +30,7 @@ parm:
   MOM6_NJGLOBAL: 320
   MOM6_NK: 75
   NPZ: 127
-  OCN_MESH_FN: mesh.mx100.nc
+  OCN_MESH_RES: mx100
   OUTPUT_FH: "6 -1"
   OUTPUT_FH_CICE: None
   OUTPUT_FH_LND: None
