@@ -113,7 +113,7 @@ elif [ "${APP}" = "S2SWAL" ]; then
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
   cmeps_mapuv_with_cart3d="true"
-  wav_mesh_wav="mesh.mx100.nc"
+  wav_mesh_wav="mesh.${OCN_MESH_RES}.nc"
   ### model_configure
   use_saved_routehandles=".false."
 elif [ "${APP}" = "NG-GODAS" ]; then
@@ -551,6 +551,7 @@ if [ "${DO_FREE_FORECAST}" != "all" ] && [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES"
   'land_obsdataout_prefix': "diag."
   'land_obsdataout_suffix': "_${PDY}${cyc}.nc"
   'land_orog_files_path': "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
+  'land_orog_prefix': "C${RES}.${OCN_MESH_RES}"
   'snowdepth_vn': ${snowdepth_vn}
   'OBS_GHCN_SNOW': '${OBS_GHCN_SNOW}'
   'OBS_IMS_SNOW': '${OBS_IMS_SNOW}'
@@ -854,7 +855,7 @@ if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}"
       # Set up input namelist for calcfIMS
       julian_day=$(date -d "${YYYY}-${MM}-${DD}" +%j)
       jdate="${YYYY}${julian_day}"
-      orog_fn_base="C${RES}_oro_data"
+      orog_fn_base="C${RES}.${OCN_MESH_RES}_oro_data"
       if [ "${PDY}${cyc}" -lt "20141203" ]; then
         imsversion="1.2"
       else

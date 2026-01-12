@@ -62,7 +62,7 @@ sfc_fns=( "facsf" "maximum_snow_albedo" "slope_type" "snowfree_albedo" "soil_col
 for ifn in "${sfc_fns[@]}" ; do
   for itile in {1..6}
   do
-    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${ifn}.tile${itile}.nc" "fix_sfc/C${RES}.${ifn}.tile${itile}.nc"
+    ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}.${ifn}.tile${itile}.nc" "fix_sfc/C${RES}.${ifn}.tile${itile}.nc"
   done
 done
 
@@ -71,7 +71,7 @@ ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_mosaic.nc" fix_oro/.
 for itile in {1..6}
 do
   ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_grid.tile${itile}.nc" fix_oro/.
-  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}_oro_data.tile${itile}.nc" fix_oro/.
+  ln -nsf "${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}/C${RES}.${OCN_MESH_RES}_oro_data.tile${itile}.nc" fix_oro/C${RES}_oro_data.tile${itile}.nc
 done
 
 settings="

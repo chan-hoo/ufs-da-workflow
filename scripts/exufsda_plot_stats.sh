@@ -100,7 +100,7 @@ nHH=${next_date:8:2}
 
 # Global parameters
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
-orog_fn_base="C${RES}_oro_data"
+orog_fn_base="C${RES}.${OCN_MESH_RES}_oro_data"
 if [ "${FRAC_GRID}" = "YES" ]; then
   snowdepth_vn="snodl"
 else
