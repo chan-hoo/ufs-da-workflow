@@ -34,7 +34,7 @@ mm_hf=${date_hf:4:2}
 dd_hf=${date_hf:6:2}
 hh_hf=${date_hf:8:2}
 
-machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
+machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
   run_cmd="srun"
 else

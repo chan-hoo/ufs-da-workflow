@@ -929,12 +929,6 @@ def set_machine_parm(machine):
             PARTITION_QUEUE = "batch"
             QOS = "normal"
             SCHED = "slurm"
-        case "hera":
-            MAX_CORES_PER_NODE = 40
-            NATIVE = None
-            PARTITION_QUEUE = "hera"
-            QOS = "batch"
-            SCHED = "slurm"
         case "hercules":
             MAX_CORES_PER_NODE = 80
             NATIVE = None
@@ -1007,11 +1001,7 @@ def parse_args(argv):
 # Detect platform (machine) ========================================= CHJ =====
 def detect_platform():
     if os.path.isdir("/scratch3/NAGAPE"):
-        host_str = socket.gethostname()[0:3]
-        if host_str == "ufe" or host_str == "uec":
-            machine = "ursa"
-        elif host_str == "hfe" or host_str == "hec":
-            machine = "hera"
+        machine = "ursa"
     elif os.path.isdir("/work/noaa"):
         machine = socket.gethostname().split('-')[0]  # orion/hercules
     elif os.path.isdir("/ncrc"):

@@ -180,7 +180,7 @@ printf "PLATFORM(MACHINE)=${PLATFORM}\n" >&2
 # === Soft-link static input files to FIX directory ===
 if [ "${BUILD_JEDI}" != "bundle-only" ] && [ "${BUILD_JEDI}" != "gdas-only" ]; then
   ver_fix_data="v1.0"
-  if [ "${PLATFORM}" = "ursa" ] || [ "${PLATFORM}" = "hera" ]; then
+  if [ "${PLATFORM}" = "ursa" ]; then
     fix_orig="/scratch3/NAGAPE/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
   elif [ "${PLATFORM}" = "orion" ] || [ "${PLATFORM}" = "hercules" ]; then
     fix_orig="/work2/noaa/epic/UFS-DA-Workflow_${ver_fix_data}/inputs"
@@ -279,11 +279,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
       module use ${SORC_DIR}/jedi-bundle/modulefiles
       module load ${PLATFORM}.${COMPILER}
-      if [ "${PLATFORM}" = "hera" ]; then
-        git lfs install --skip-repo
-      else
-        module load git-lfs
-      fi
+      module load git-lfs
       module list
       mkdir -p ${JEDI_BUILD_DIR}
       cd "${JEDI_BUILD_DIR}"

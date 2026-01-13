@@ -18,7 +18,7 @@ if [ "${APP}" = "S2SWAL" ]; then
   export PSM_SHAREDCONTEXTS=1
 fi
 
-machines_srun=( "gaeac6" "hera" "hercules" "orion" "ursa" )
+machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
 if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
   run_cmd="srun"
 else

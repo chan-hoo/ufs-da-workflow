@@ -3,12 +3,7 @@
 # Detect HPC platforms
 #
 if [[ -d /scratch3/NAGAPE ]] ; then
-  hoststr=$(hostname)
-  if [[ "$hoststr" == "ufe"* || "$hoststr" == "uecflow"* ]]; then
-    PLATFORM="ursa"
-  elif [[ "$hoststr" == "hfe"* || "$hoststr" == "hecflow"* ]]; then
-    PLATFORM="hera"
-  fi
+  PLATFORM="ursa"
 elif [[ -d /work/noaa ]]; then
   hoststr=$(hostname)
   if [[ "$hoststr" == "hercules"* ]]; then

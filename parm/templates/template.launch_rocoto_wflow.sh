@@ -9,22 +9,22 @@ source ${PARMdir}/detect_platform.sh
 workdir="{{ exp_case_path }}"
 
 # Load rocoto
-if [ "${MACHINE}" == "gaeac6" ]; then
+if [ "${MACHINE}" = "gaeac6" ]; then
   module reset
 else
   module purge
 fi
 
-if [ "${MACHINE}" == "hera" ] || [ "${MACHINE}" == "ursa" ]; then
+if [ "${MACHINE}" = "ursa" ]; then
   module load rocoto
-elif [ "${MACHINE}" == "orion" ]; then
+elif [ "${MACHINE}" = "orion" ]; then
   module load contrib
   module load ruby/3.2.3
   module load rocoto/1.3.7
-elif [ "${MACHINE}" == "hercules" ]; then
+elif [ "${MACHINE}" = "hercules" ]; then
   module load contrib
   module load rocoto
-elif [ "${MACHINE}" == "gaeac6" ]; then
+elif [ "${MACHINE}" = "gaeac6" ]; then
   module use /ncrc/proj/epic/rocoto/modulefiles/
   module load rocoto
 else
