@@ -29,7 +29,7 @@ OPTIONS
       build only in BUILD_DIR
   --move
       move binaries to final location.
-  --fix_only
+  --fix-only
       soft-link static (fix) files to FIX dir and exit.
   --build-dir=BUILD_DIR
       build directory
@@ -127,7 +127,7 @@ while :; do
     --clean) CLEAN=true ;;
     --build) BUILD=true ;;
     --move) MOVE=true ;;
-    --fix_only) FIX_ONLY=true ;;
+    --fix-only) FIX_ONLY=true ;;
     --build-dir=?*) BUILD_DIR=${1#*=} ;;
     --build-dir|--build-dir=) usage_error "$1 requires argument." ;;
     --install-dir=?*) INSTALL_DIR=${1#*=} ;;
