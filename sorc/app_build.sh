@@ -276,14 +276,14 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     else
       module purge
     fi
-    if [ "${PLATFORM}" = "hera" ]; then
-      git lfs install --skip-repo
-    else
-      module load git-lfs
-    fi
     if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
       module use ${SORC_DIR}/jedi-bundle/modulefiles
       module load ${PLATFORM}.${COMPILER}
+      if [ "${PLATFORM}" = "hera" ]; then
+        git lfs install --skip-repo
+      else
+        module load git-lfs
+      fi
       module list
       mkdir -p ${JEDI_BUILD_DIR}
       cd "${JEDI_BUILD_DIR}"
