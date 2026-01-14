@@ -824,7 +824,7 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
     else
       # ioda-converting
       # Under development
-
+      err_exit "under development"
     fi
   done
 fi
