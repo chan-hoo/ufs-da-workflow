@@ -34,12 +34,6 @@ mm_hf=${date_hf:4:2}
 dd_hf=${date_hf:6:2}
 hh_hf=${date_hf:8:2}
 
-machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
-if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
-  run_cmd="srun"
-else
-  run_cmd=`which mpiexec`
-fi
 #
 #####################################################################
 # PART I.
@@ -689,7 +683,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     fi
     export pgm="${jedi_exe_fn}"
     . prep_step
-    ${run_cmd} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${RUN_CMD} -n 2 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_gridgen
     if [[ $err != 0 ]]; then
@@ -730,7 +724,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
     fi
     export pgm="${jedi_exe_fn}"
     . prep_step
-    ${run_cmd} -n 12 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${RUN_CMD} -n 12 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_setcorscales
     if [[ $err != 0 ]]; then
@@ -778,7 +772,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
   fi
   export pgm="${jedi_exe_fn}"
   . prep_step
-  ${run_cmd} -n ${NPROCS_PREP_DATA} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  ${RUN_CMD} -n ${NPROCS_PREP_DATA} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
   export err=$?; err_chk
   cp errfile errfile_parameters_diffusion
   if [[ $err != 0 ]]; then

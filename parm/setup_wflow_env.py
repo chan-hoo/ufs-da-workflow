@@ -922,30 +922,35 @@ def set_machine_parm(machine):
             NATIVE = None
             PARTITION_QUEUE = "main"
             QOS = None
+            RUN_CMD = "aprun"
             SCHED = "pbs"
         case "gaeac6":
             MAX_CORES_PER_NODE = 192
             NATIVE = '-M c6'
             PARTITION_QUEUE = "batch"
             QOS = "normal"
+            RUN_CMD = "srun"
             SCHED = "slurm"
         case "hercules":
             MAX_CORES_PER_NODE = 80
             NATIVE = None
             PARTITION_QUEUE = "hercules"
             QOS = "batch"
+            RUN_CMD = "srun"
             SCHED = "slurm"
         case "orion":
             MAX_CORES_PER_NODE = 40
             NATIVE = None
             PARTITION_QUEUE = "orion"
             QOS = "batch"
+            RUN_CMD = "srun"
             SCHED = "slurm"
         case "ursa":
             MAX_CORES_PER_NODE = 192
             NATIVE = None
             PARTITION_QUEUE = "u1-compute"
             QOS = "batch"
+            RUN_CMD = "srun"
             SCHED = "slurm"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")
@@ -956,6 +961,7 @@ def set_machine_parm(machine):
             "NATIVE": NATIVE,
             "PARTITION_QUEUE": PARTITION_QUEUE,
             "QOS": QOS,
+            "RUN_CMD": RUN_CMD,
             "SCHED": SCHED,
         }
     }

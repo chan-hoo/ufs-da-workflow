@@ -9,13 +9,6 @@ export KMP_AFFINITY="scatter"
 export OMP_NUM_THREADS="1"
 export OMP_STACKSIZE="1024m"
 
-machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
-if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
-  run_cmd="srun"
-else
-  run_cmd=`which mpiexec`
-fi
-
 YYYY=${PDY:0:4}
 MM=${PDY:4:2}
 DD=${PDY:6:2}
@@ -103,7 +96,7 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 export pgm="chgres_cube"
 
 . prep_step
-eval ${run_cmd} -n ${NPROCS_FCST_IC} ${EXECufsda}/$pgm >>$pgmout 2>errfile
+${RUN_CMD} -n ${NPROCS_FCST_IC} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 
 cp -p ${DATA}/gfs_ctrl.nc ${COMINOUT}

@@ -18,12 +18,6 @@ if [ "${APP}" = "S2SWAL" ]; then
   export PSM_SHAREDCONTEXTS=1
 fi
 
-machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
-if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
-  run_cmd="srun"
-else
-  run_cmd=`which mpiexec`
-fi
 app_lower=$(echo ${APP} | tr '[A-Z]' '[a-z]')
 
 next_date=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
@@ -569,7 +563,7 @@ cp -p "${COMINOUT}/diag_table_${PDY}${cyc}" diag_table
 ##########################
 export pgm="ufs_model_${app_lower}"
 . prep_step
-${run_cmd} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
+${RUN_CMD} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then

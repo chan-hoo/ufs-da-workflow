@@ -17,13 +17,6 @@ HHp=${pdate:8:2}
 
 filedate=${PDY}.${cyc}0000
 
-machines_srun=( "gaeac6" "hercules" "orion" "ursa" )
-if [[ ${machines_srun[@]} =~ "${MACHINE}" ]]; then
-  run_cmd="srun"
-else
-  run_cmd=`which mpiexec`
-fi
-
 # Global parameters
 orog_path="${FIXufsda}/DATA_fix/FV3/Tiled/C${RES}"
 orog_fn_base="C${RES}.${OCN_MESH_RES}_oro_data"
@@ -105,7 +98,7 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Run JEDI executable
   export pgm="${jedi_exe_fn}"
   . prep_step
-  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
   export err=$?; err_chk
   cp errfile errfile_fv3jedi_x
   if [[ $err != 0 ]]; then
@@ -205,7 +198,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   # Run JEDI executable
   export pgm="${jedi_exe_fn}"
   . prep_step
-  ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
   export err=$?; err_chk
   cp errfile errfile_fv3jedi_x
   if [[ $err != 0 ]]; then
@@ -392,7 +385,7 @@ if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
   
     export pgm="${jedi_exe_fn}"
     . prep_step
-    ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
     export err=$?; err_chk
     cp errfile errfile_fv3jedi_x
     if [[ $err != 0 ]]; then
@@ -442,7 +435,7 @@ EOF
       export pgm="apply_incr.exe"
       . prep_step
       ## (n=6): this is fixed, at one task per tile (with minor code change). 
-      ${run_cmd} -n 6 ${EXECufsda}/$pgm >>$pgmout 2>errfile
+      ${RUN_CMD} -n 6 ${EXECufsda}/$pgm >>$pgmout 2>errfile
       export err=$?; err_chk
       cp errfile errfile_apply_incr
       if [[ $err != 0 ]]; then
@@ -576,7 +569,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       ### Run JEDI executable
       if [ "${isoca}" = "forecast_mom6" ]; then
         export BIN_DIR="${JEDI_BIN_PATH}"
-        export MPIEXE="${run_cmd}"
+        export MPIEXE="${RUUN_CMD}"
         # To avoid file replacement
         [[ -e "input.nml" ]] && rm input.nml
         py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"
@@ -595,7 +588,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
         fi
         export pgm="${jedi_exe_fn}"
         . prep_step
-        ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+        ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
         export err=$?; err_chk
         cp errfile errfile_ctest_${isoca}
         if [[ $err != 0 ]]; then
@@ -717,7 +710,7 @@ if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
       fi
       export pgm="${jedi_exe_fn}"
       . prep_step
-      ${run_cmd} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+      ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
       export err=$?; err_chk
       cp errfile errfile_ctest_${itest}
       if [[ $err != 0 ]]; then
