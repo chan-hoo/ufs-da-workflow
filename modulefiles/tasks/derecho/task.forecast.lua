@@ -28,4 +28,5 @@ load(pathJoin("py-netcdf4", py_netcdf4_ver))
 load(pathJoin("py-numpy", py_numpy_ver))
 load(pathJoin("py-pyyaml", py_pyyaml_ver))
 
+load("mkl/2024.2.2")
 load("ecflow/5.11.4")
