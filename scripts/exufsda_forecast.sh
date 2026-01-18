@@ -563,7 +563,7 @@ cp -p "${COMINOUT}/diag_table_${PDY}${cyc}" diag_table
 ##########################
 export pgm="ufs_model_${app_lower}"
 . prep_step
-${RUN_CMD} --label -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
+${RUN_CMD} -n ${nprocs_forecast} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 cp errfile errfile_ufs_model
 if [[ $err != 0 ]]; then
