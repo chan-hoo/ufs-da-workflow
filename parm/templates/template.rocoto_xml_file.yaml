@@ -100,7 +100,7 @@ workflow:
               value: "&DATADEP_SFC2;"
   {%- endif %}
 {%- endif %}
-{%- if (date_second_cycle is not none and TYPE_ANAL_FCST != "fcst-only") or (date_second_cycle is none and TYPE_ANAL_FCST == "none" ) or TYPE_ANAL_FCST == "anal-only" or TYPE_ANAL_FCST == "ctest" %}
+{%- if (date_second_cycle is not none and TYPE_ANAL_FCST != "fcst-only") or (date_second_cycle is none and TYPE_ANAL_FCST == "both" ) or TYPE_ANAL_FCST == "anal-only" or TYPE_ANAL_FCST == "ctest" %}
     task_analysis:
       attrs:
   {%- if COLDSTART == "YES" %}
