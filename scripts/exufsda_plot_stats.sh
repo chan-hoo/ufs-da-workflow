@@ -12,7 +12,7 @@ do_plot_fcst_out_cice="NO"
 do_plot_fcst_restart_fv3="NO"
 do_plot_fcst_restart_mom6="NO"
 do_plot_fcst_restart_cice="NO"
-if [ "${DO_FREE_FORECAST}" = "first" ]; then
+if [ "${TYPE_ANAL_FCST}" = "fcst-1st" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_fcst_out_fv3="YES"
     do_plot_fcst_out_mom6="YES"
@@ -25,14 +25,14 @@ if [ "${DO_FREE_FORECAST}" = "first" ]; then
     do_plot_stats="YES"
     do_plot_time_history="YES"
   fi
-elif [ "${DO_FREE_FORECAST}" = "all" ]; then
+elif [ "${TYPE_ANAL_FCST}" = "both" ]; then
   do_plot_fcst_out_fv3="YES"
   do_plot_fcst_out_mom6="YES"
   do_plot_fcst_out_cice="YES"
   do_plot_fcst_restart_fv3="YES"
   do_plot_fcst_restart_mom6="YES"
   do_plot_fcst_restart_cice="YES"
-elif [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+elif [ "${TYPE_ANAL_FCST}" = "ctest" ]; then
   if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
     do_plot_obs="YES"
     do_plot_stats="YES"
@@ -116,7 +116,6 @@ if [ "${DO_PLOT_OBS}" = "YES" ]; then
 
   cat > plot_obs_file.yaml << EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
-DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 JEDI_TYPE_FV3: '${JEDI_TYPE_FV3}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 OBS_GHCN_SNOW: '${OBS_GHCN_SNOW}'
@@ -126,6 +125,7 @@ OBS_SMOPS: '${OBS_SMOPS}'
 obs_prefix: 'obs.${PDY}.${cycle}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+TYPE_ANAL_FCST: '${TYPE_ANAL_FCST}'
 work_dir: '${DATA}'
 EOF
 
@@ -151,7 +151,6 @@ if [ "${DO_PLOT_STATS}" = "YES" ]; then
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
 cyc: '${cyc}'
-DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 hofx_data_path: '${DATA_HOFX}'
 JEDI_ALGORITHM: '${JEDI_ALGORITHM}'
 JEDI_TYPE_FV3: '${JEDI_TYPE_FV3}'
@@ -164,6 +163,7 @@ OBS_SMAP: '${OBS_SMAP}'
 OBS_SMOPS: '${OBS_SMOPS}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+TYPE_ANAL_FCST: '${TYPE_ANAL_FCST}'
 work_dir: '${DATA}'
 EOF
   
@@ -189,7 +189,6 @@ if [ "${DO_PLOT_TIME_HISTORY}" = "YES" ]; then
   out_fn_base="ufsda_timehistory"
 
   cat > plot_timehistory.yaml <<EOF
-DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 fn_data_anal_prefix: '${fn_data_anal_prefix}'
 fn_data_anal_suffix: '${fn_data_anal_suffix}'
 hofx_data_path: '${DATA_HOFX}'
@@ -204,6 +203,7 @@ OBS_SMAP: '${OBS_SMAP}'
 OBS_SMOPS: '${OBS_SMOPS}'
 path_data: '${LOGDIR}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+TYPE_ANAL_FCST: '${TYPE_ANAL_FCST}'
 work_dir: '${DATA}'
 EOF
 

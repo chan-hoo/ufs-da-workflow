@@ -378,7 +378,8 @@ echo "========== PART II: JEDI Configuration =========="
 # JEDI configuration files
 #####################################################################
 #
-if [ "${DO_FREE_FORECAST}" != "all" ] && [ "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]; then
+if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
+       	"${TYPE_ANAL_FCST}" == "fcst-1st" )  && "${CUSTOM_JEDI_CONFIG_FLAG}" != "YES" ]]; then
   ###################################
   ## Atmosphere: FV3-JEDI analysis
   ###################################
@@ -586,9 +587,9 @@ else
   do_soca_prep="YES"
 fi
 
-if [ "${JEDI_TYPE_SOCA}" = "YES" ] && \
-   [ "${DO_FREE_FORECAST}" != "ctest" ] && \
-   [ "${do_soca_prep}" = "YES" ]; then
+if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
+    ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
+      "${TYPE_ANAL_FCST}" == "fcst-1st" ) ]]; then
   mkdir -p soca_prep
   cd soca_prep
   mkdir -p INPUT

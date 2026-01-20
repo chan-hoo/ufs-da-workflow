@@ -32,7 +32,7 @@ def main():
 
     work_dir = yaml_data['work_dir']
     cartopy_ne_path = yaml_data['cartopy_ne_path']
-    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     OBS_GHCN_SNOW = yaml_data['OBS_GHCN_SNOW']
@@ -73,7 +73,7 @@ def main():
         obs_plot("smops",PDY,work_dir,obs_prefix,"smops")
     # Plot SOCA
     if JEDI_TYPE_SOCA == "YES":
-        if DO_FREE_FORECAST == "ctest":
+        if TYPE_ANAL_FCST == "ctest":
             obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
             obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss")
             obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt")
@@ -88,7 +88,7 @@ def main():
             obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof_insitu")
     # Plot FV3-JEDI
     if JEDI_TYPE_FV3 == "YES":
-        if DO_FREE_FORECAST == "ctest":
+        if TYPE_ANAL_FCST == "ctest":
             obs_plot("fv3_geos",PDY,work_dir,obs_prefix,"tropomi_no2")
 
 

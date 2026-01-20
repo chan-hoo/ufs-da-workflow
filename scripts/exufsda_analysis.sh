@@ -35,7 +35,7 @@ fi
 ###########################################################################
 # Atmospheric DA analysis (FV3-JEDI)
 ###########################################################################
-if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
+if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   mkdir -p anl
   mkdir -p bc
   mkdir -p berror
@@ -113,7 +113,7 @@ fi
 ###########################################################################
 # SOCA analysis
 ###########################################################################
-if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
+if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   mkdir -p INPUT
   mkdir -p MOM6_OUTPUT
@@ -247,7 +247,7 @@ fi
 ###########################################################################
 # Snow / Soil-moisture DA analysis
 ###########################################################################
-if [ -n "${list_jedi_land}" ] && [ "${DO_FREE_FORECAST}" != "ctest" ]; then
+if [ -n "${list_jedi_land}" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   # Copy sfc_data files from RESTART/WARMSTART into work directory
   for itile in {1..6}
   do
@@ -521,7 +521,7 @@ fi
 ###########################################################################
 # C-test of JEDI model component
 ###########################################################################
-if [ "${DO_FREE_FORECAST}" = "ctest" ]; then
+if [ "${TYPE_ANAL_FCST}" = "ctest" ]; then
   #########
   # SOCA
   #########
@@ -745,7 +745,6 @@ if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
 
   cat > plot_analysis_comp_increment.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
-DO_FREE_FORECAST: '${DO_FREE_FORECAST}'
 fn_ice_data: '${fn_ice_data}'
 fn_ice_incr: '${fn_ice_incr}'
 fn_ocn_data: '${fn_ocn_data}'
@@ -762,6 +761,7 @@ out_fn_base_prefix: '${out_fn_base_prefix}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 snowdepth_vn: '${snowdepth_vn}'
+TYPE_ANAL_FCST: '${TYPE_ANAL_FCST}'
 work_dir: '${DATA}'
 zlevel_number: '${zlevel_number}'
 EOF

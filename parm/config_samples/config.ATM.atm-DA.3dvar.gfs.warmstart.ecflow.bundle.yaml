@@ -13,7 +13,6 @@ parm:
   DATE_CYCLE_FREQ_HR: 24
   DATE_FIRST_CYCLE: 2024022318
   DATE_LAST_CYCLE: 2024022418
-  DO_FREE_FORECAST: none
   DT_ATMOS: 600
   envir: atm_atmDA_3dvar_ecf
   EXP_CASE_NAME: atm_atmDA_3dvar_ecf

@@ -41,7 +41,7 @@ def main():
     f.close()
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
-    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     fn_ice_data = yaml_data['fn_ice_data']
     fn_ice_incr = yaml_data['fn_ice_incr']
     fn_ocn_data = yaml_data['fn_ocn_data']
@@ -87,7 +87,7 @@ def main():
     if JEDI_TYPE_SOIL_MOISTURE == "YES":
         list_jedi_type.append("soil_moisture")
     if JEDI_TYPE_SOCA == "YES":
-        if DO_FREE_FORECAST == "ctest":
+        if TYPE_ANAL_FCST == "ctest":
             list_jedi_type.append("soca_ctest")
         else:
             list_jedi_type.append("soca")

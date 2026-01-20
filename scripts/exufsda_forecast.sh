@@ -147,7 +147,7 @@ if [ "${atm_model}" = "fv3" ]; then
     fi
   
     ### Files updated by ANALYSIS (JEDI)
-    if [ "${DO_FREE_FORECAST}" = "none" ]; then
+    if [ "${TYPE_ANAL_FCST}" = "both" ]; then
       data_dir="${COMINOUT}"
     else
       if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -334,7 +334,7 @@ if [ "${ocn_model}" = "mom6" ]; then
   ## Restart files
   if [ "${COLDSTART}" = "NO" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
     ### Files updated by ANALYSIS (JEDI)
-    if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${DO_FREE_FORECAST}" = "none" ]; then
+    if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" = "both" ]; then
       data_dir="${COMINOUT}"
     else
       if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -749,7 +749,7 @@ rsync -av --update --no-links ${DATA}/RESTART/ ${COMINOUTrestart}
 ###################################################################
 # sfc_data
 if [ "${atm_model}" = "fv3" ]; then
-  if [ "${DO_FREE_FORECAST}" = "first" ]; then
+  if [ "${TYPE_ANAL_FCST}" = "fcst-1st" ]; then
     ln -nsf ${COMINOUTrestart}/*.sfc_data.tile*.nc ${DATA_RESTART}
   else
     for itile in {1..6};
@@ -759,7 +759,7 @@ if [ "${atm_model}" = "fv3" ]; then
   fi
 fi
 if [ "${ocn_model}" = "mom6" ]; then
-  if [ "${DO_FREE_FORECAST}" = "first" ]; then
+  if [ "${TYPE_ANAL_FCST}" = "fcst-1st" ]; then
     ln -nsf ${COMINOUTrestart}/*.MOM.res.nc ${DATA_RESTART}
   else
     ln -nsf "${COMINOUTrestart}/${nYYYY}${nMM}${nDD}.${nHH}0000.MOM.res.nc" ${DATA_RESTART}/.

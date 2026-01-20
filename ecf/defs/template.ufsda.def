@@ -1,5 +1,5 @@
 suite {{ exp_case_name }}
-{%- if COLDSTART == "YES" or DO_FREE_FORECAST == "first" %}
+{%- if COLDSTART == "YES" or TYPE_ANAL_FCST == "fcst-1st" %}
     family cold_cyc0
   {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
@@ -24,7 +24,7 @@ suite {{ exp_case_name }}
     endfamily
 {%- endif %}
 
-{%- if ( COLDSTART == "YES" and yyyymmdd_second is not none ) or COLDSTART == "NO" or DO_FREE_FORECAST == "ctest" %}
+{%- if ( COLDSTART == "YES" and yyyymmdd_second is not none ) or COLDSTART == "NO" or TYPE_ANAL_FCST == "ctest" %}
     family cycle
   {%- if COLDSTART == "YES" %}
         trigger cold_cyc0 == complete
@@ -40,11 +40,11 @@ suite {{ exp_case_name }}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
         edit ECF_DATE %YMD%
         edit CYC {{ hh_first }}
-  {%- if DO_FREE_FORECAST == "ctest" %}
+  {%- if TYPE_ANAL_FCST == "ctest" %}
         task jufsda_analysis
         task jufsda_plot_stats
             trigger jufsda_analysis == complete
-  {%- elif DO_FREE_FORECAST == "first" %}
+  {%- elif TYPE_ANAL_FCST == "fcst-1st" %}
         task jufsda_prep_data
         task jufsda_analysis
             trigger jufsda_prep_data == complete

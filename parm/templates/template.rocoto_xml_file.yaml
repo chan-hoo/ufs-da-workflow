@@ -54,7 +54,7 @@ workflow:
   log:
     value: "&LOGDIR;/workflow.log"
   tasks:
-{%- if DO_FREE_FORECAST != "ctest" %}
+{%- if TYPE_ANAL_FCST != "ctest" %}
     task_prep_data:
       attrs:
         cycledefs: cycled
@@ -88,7 +88,7 @@ workflow:
               cycle_offset: '-{{ DATE_CYCLE_FREQ_HR }}:00:00'
           datadep_first:
             value: "&DATADEP_FIRSTCYC;"
-  {%- if DO_FREE_FORECAST == "first" %}
+  {%- if TYPE_ANAL_FCST == "fcst-1st" %}
           or:
             datadep_sfc1:
               attrs:
@@ -100,7 +100,7 @@ workflow:
               value: "&DATADEP_SFC2;"
   {%- endif %}
 {%- endif %}
-{%- if (date_second_cycle is not none and DO_FREE_FORECAST != "all") or (date_second_cycle is none and DO_FREE_FORECAST == "none" ) or DO_FREE_FORECAST == "ctest" %}
+{%- if (date_second_cycle is not none and TYPE_ANAL_FCST != "fcst-only") or (date_second_cycle is none and TYPE_ANAL_FCST == "none" ) or TYPE_ANAL_FCST == "anal-only" or TYPE_ANAL_FCST == "ctest" %}
     task_analysis:
       attrs:
   {%- if COLDSTART == "YES" %}
@@ -130,7 +130,7 @@ workflow:
   {%- if MACHINE == "ursa" %}
       memory: 64G
   {%- endif %}
-  {%- if DO_FREE_FORECAST != "ctest" %}
+  {%- if TYPE_ANAL_FCST != "ctest" %}
       dependency:
         and:
           taskdep_prep_data:
@@ -165,10 +165,10 @@ workflow:
       memory: 128G
   {%- endif %}
 {%- endif %}
-{%- if DO_FREE_FORECAST != "ctest" %}
+{%- if TYPE_ANAL_FCST != "ctest" %}
     task_forecast:
       attrs:
-  {%- if DO_FREE_FORECAST == "first" %}
+  {%- if TYPE_ANAL_FCST == "fcst-1st" %}
         cycledefs: first_cycle
   {%- else %}
         cycledefs: cycled
@@ -208,7 +208,7 @@ workflow:
               attrs:
                 task: fcst_ic
   {%- endif %}
-  {%- if DO_FREE_FORECAST == "none" %}
+  {%- if TYPE_ANAL_FCST == "both" %}
             taskdep_analysis:
               attrs:
                 task: analysis
@@ -257,7 +257,7 @@ workflow:
   {%- endif %}
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
       dependency:
-{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}
+{%- if ( COLDSTART == "YES" and date_second_cycle is none ) or TYPE_ANAL_FCST == "both" %}
         taskdep_forecast:
           attrs:
             task: forecast

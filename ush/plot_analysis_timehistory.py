@@ -31,7 +31,7 @@ def main():
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    DO_FREE_FORECAST = yaml_data['DO_FREE_FORECAST']
+    TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     fn_data_anal_prefix = yaml_data['fn_data_anal_prefix']
     fn_data_anal_suffix = yaml_data['fn_data_anal_suffix']
     hofx_data_path = yaml_data['hofx_data_path']
@@ -63,7 +63,7 @@ def main():
 
     svar_list = []
     if JEDI_TYPE_SOCA == "YES":
-        if DO_FREE_FORECAST == "ctest":
+        if TYPE_ANAL_FCST == "ctest":
             svar_list += ["ADT","InsituSalinity","InsituTemperature","SeaSurfaceSalinity","SeaSurfaceTemp"]
             if JEDI_ALGORITHM == "3dvar":
                 svar_list += ["CoolSkin","SeaIceFraction"]

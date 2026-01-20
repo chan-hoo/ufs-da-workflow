@@ -488,20 +488,20 @@ def check_valid_parm(home_dir,config_parm):
     datm_data_type = datm_data_type_orig.lower()
     config_parm["parm"]["DATM_DATA_TYPE"] = datm_data_type
 
-    do_free_forecast_orig = config_parm["parm"]["DO_FREE_FORECAST"]
-    do_free_forecast_options = ["first", "all", "none", "ctest"]
-    err_msg = f''' FATAL ERROR: NOT available 'DO_FREE_FORECAST': {do_free_forecast_orig}, options = {do_free_forecast_options} !!!'''
-    if isinstance(do_free_forecast_orig, bool):
+    type_anal_fcst_orig = config_parm["parm"]["TYPE_ANAL_FCST"]
+    type_anal_fcst_options = ["both", "anal-only", "fcst-only", "fcst-1st", "ctest"]
+    err_msg = f''' FATAL ERROR: NOT available 'TYPE_ANAL_FCST': {type_anal_fcst_orig}, options = {type_anal_fcst_options} !!!'''
+    if isinstance(type_anal_fcst_orig, bool):
         logging.error(err_msg)
         sys.exit(1)
-    elif not do_free_forecast_orig.islower():
-        do_free_forecast = do_free_forecast_orig.lower()
-        logging.info(f''' 'DO_FREE_FORECAST: {do_free_forecast_orig}': converted to lowercase! ''')
+    elif not type_anal_fcst_orig.islower():
+        type_anal_fcst = type_anal_fcst_orig.lower()
+        logging.info(f''' 'TYPE_ANAL_FCST: {type_anal_fcst_orig}': converted to lowercase! ''')
     else:
-        do_free_forecast = do_free_forecast_orig
-    config_parm["parm"]["DO_FREE_FORECAST"] = do_free_forecast
+        type_anal_fcst = type_anal_fcst_orig
+    config_parm["parm"]["TYPE_ANAL_FCST"] = type_anal_fcst
 
-    if do_free_forecast not in do_free_forecast_options:
+    if type_anal_fcst not in type_anal_fcst_options:
         logging.error(err_msg)
         sys.exit(1)
 
@@ -521,7 +521,7 @@ def check_valid_parm(home_dir,config_parm):
         logging.error("FATAL ERROR: Both OBS_SMAP and OBS_SMOPS are selected, but this is not supported!!!", exc_info=True)
         sys.exit(1)
 
-    if do_free_forecast == "none":
+    if type_anal_fcst == "both" or type_anal_fcst == "anal-only":
         if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca == "NO":
             logging.error(f'''FATAL ERROR: All JEDI_TYPE flags are off. Please check the flags for JEDI_TYPE.''')
             sys.exit(1)
@@ -702,8 +702,8 @@ def create_ecflow_files(home_dir,config_parm):
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
     date_last_cycle = config_parm["parm"]["DATE_LAST_CYCLE"]
     date_second_cycle = config_parm["parm"]["date_second_cycle"]
-    do_free_forecast = config_parm["parm"]["DO_FREE_FORECAST"]
     sched = config_parm["parm"]["SCHED"]
+    type_anal_fcst = config_parm["parm"]["TYPE_ANAL_FCST"]
 
     date_cycle_freq_day = date_cycle_freq_hr // 24
     yyyymmdd_first = str(date_first_cycle)[:8]
@@ -766,20 +766,20 @@ def create_ecflow_files(home_dir,config_parm):
         "COLDSTART": coldstart,
         "date_cycle_freq_day": date_cycle_freq_day,
         "date_second_cycle": date_second_cycle,
-        "DO_FREE_FORECAST": do_free_forecast,
         "exp_case_name": exp_case_name,
         "exp_case_path": exp_case_path,
         "hh_first": hh_first,
         "hh_last": hh_last,
         "IC_FROM_FIX_DIR": ic_from_fix_dir,
         "SCHED": sched,
+        "TYPE_ANAL_FCST": type_anal_fcst,
         "yyyymmdd_first": yyyymmdd_first,
         "yyyymmdd_second": yyyymmdd_second,
         "yyyymmdd_last": yyyymmdd_last,
     }
     data_set_str = yaml.dump(data_set, sort_keys=True)
     logging.debug(f''' Data for ecFlow def file: {data_set_str}''')
-    if do_free_forecast == "all" and date_cycle_freq_hr < 24:
+    if type_anal_fcst == "fcst-only" and date_cycle_freq_hr < 24:
         fn_ecf_template = "template.ufsda.def_1d2c"
     else:
         fn_ecf_template = "template.ufsda.def"
