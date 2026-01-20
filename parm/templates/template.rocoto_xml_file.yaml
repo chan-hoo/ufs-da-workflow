@@ -1,7 +1,7 @@
 workflow:
   attrs:
     realtime: false
-    scheduler: slurm
+    scheduler: {{ SCHED }}
     cyclethrottle: 24
     taskthrottle: 24
   cycledef:
@@ -70,8 +70,12 @@ workflow:
   {%- if NATIVE is not none %}
       native: "&NATIVE;"
   {%- endif %}
+  {%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
+  {%- elif SCHED == "pbspro" %}
+      queue: "&PARTITION_QUEUE;"
+  {%- endif %}
       join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
   {%- if memory_flag %}
       memory: 128G
@@ -116,8 +120,12 @@ workflow:
       native: "&NATIVE;"
   {%- endif %}
       walltime: {{ WALLTIME_ANALYSIS }}
+  {%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
+  {%- elif SCHED == "pbspro" %}
+      queue: "&PARTITION_QUEUE;"
+  {%- endif %}
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
   {%- if MACHINE == "ursa" %}
       memory: 64G
@@ -146,8 +154,12 @@ workflow:
   {%- if NATIVE is not none %}
       native: "&NATIVE;"
   {%- endif %}
+  {%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
+  {%- elif SCHED == "pbspro" %}
+      queue: "&PARTITION_QUEUE;"
+  {%- endif %}
       join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
   {%- if memory_flag %}
       memory: 128G
@@ -173,8 +185,12 @@ workflow:
   {%- if NATIVE is not none %}
       native: "&NATIVE;"
   {%- endif %}
+  {%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
+  {%- elif SCHED == "pbspro" %}
+      queue: "&PARTITION_QUEUE;"
+  {%- endif %}
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
       dependency:
         and:
@@ -233,8 +249,12 @@ workflow:
 {%- if NATIVE is not none %}
       native: "&NATIVE;"
 {%- endif %}
+  {%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
+  {%- elif SCHED == "pbspro" %}
+      queue: "&PARTITION_QUEUE;"
+  {%- endif %}
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
       dependency:
 {%- if ( COLDSTART == "YES" and date_second_cycle is none ) or DO_FREE_FORECAST == "none" %}

@@ -15,7 +15,7 @@
     {%- if NATIVE is not none %}
 #SBATCH {{ NATIVE }}
     {%- endif %}
-  {%- elif SCHED == "pbs" %}
+  {%- elif SCHED == "pbspro" %}
 #PBS -S /bin/bash
 #PBS -A {{ ACCOUNT }}
 #PBS -N {{ task_name }}
@@ -59,7 +59,7 @@ export cyc="${cyc:-{{ cyc_cdate }}}"
 {%- if SCHED == "slurm" %}
 export job="{{ task_name }}.${PDY}${cyc}"
 export jobid="${job}.${SLURM_JOB_ID}"
-{%- elif SCHED == "pbs" %}
+{%- elif SCHED == "pbspro" %}
 export job="{{ task_name }}.${PDY}${cyc}"
 export jobid="${job}.${PBS_JOBID}"
 {%- endif %}

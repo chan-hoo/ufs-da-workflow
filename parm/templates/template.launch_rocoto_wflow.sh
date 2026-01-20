@@ -27,8 +27,11 @@ elif [ "${MACHINE}" = "hercules" ]; then
 elif [ "${MACHINE}" = "gaeac6" ]; then
   module use /ncrc/proj/epic/rocoto/modulefiles/
   module load rocoto
+elif [ "${MACHINE}" = "derecho" ]; then
+  module use /glade/work/epicufsrt/contrib/derecho/modulefiles
+  module load rocoto/1.3.7
 else
-  echo "FATAL ERROR: modules are not loaded"
+  echo "FATAL ERROR: Rocoto module is not loaded."
   exit 31
 fi
 

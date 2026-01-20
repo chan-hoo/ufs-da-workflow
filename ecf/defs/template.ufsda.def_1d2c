@@ -2,7 +2,7 @@ suite {{ exp_case_name }}
     family {{ hh_first }}
 {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-{%- elif SCHED == "pbs" %}
+{%- elif SCHED == "pbspro" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
 {%- endif %}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
@@ -18,7 +18,7 @@ suite {{ exp_case_name }}
         trigger {{ hh_first }} == complete
 {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-{%- elif SCHED == "pbs" %}
+{%- elif SCHED == "pbspro" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
 {%- endif %}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"

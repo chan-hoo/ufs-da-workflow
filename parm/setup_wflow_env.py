@@ -923,7 +923,7 @@ def set_machine_parm(machine):
             PARTITION_QUEUE = "main"
             QOS = None
             RUN_CMD = "aprun"
-            SCHED = "pbs"
+            SCHED = "pbspro"
         case "gaeac6":
             MAX_CORES_PER_NODE = 192
             NATIVE = '-M c6'

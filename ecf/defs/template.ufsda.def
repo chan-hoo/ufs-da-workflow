@@ -3,7 +3,7 @@ suite {{ exp_case_name }}
     family cold_cyc0
   {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-  {%- elif SCHED == "pbs" %}
+  {%- elif SCHED == "pbspro" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
   {%- endif %}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
@@ -34,7 +34,7 @@ suite {{ exp_case_name }}
   {%- endif %}
   {%- if SCHED == "slurm" %}
         edit ECF_JOB_CMD "sbatch %ECF_JOB%"
-  {%- elif SCHED == "pbs" %}
+  {%- elif SCHED == "pbspro" %}
         edit ECF_JOB_CMD "qsub %ECF_JOB%"
   {%- endif %}
         edit ECF_FILES "{{ exp_case_path }}/ecf/ecf_scripts"
