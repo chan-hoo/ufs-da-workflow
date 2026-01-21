@@ -29,6 +29,8 @@ OPTIONS
       build only in BUILD_DIR
   --move
       move binaries to final location.
+  --da-utils-only
+      install DA utilities only.
   --fix-only
       soft-link static (fix) files to FIX dir and exit.
   --build-dir=BUILD_DIR
@@ -67,6 +69,7 @@ Settings:
   CLEAN=${CLEAN}
   BUILD=${BUILD}
   MOVE=${MOVE}
+  DA_UTILS_ONLY=${DA_UTILS_ONLY}
   FIX_ONLY=${FIX_ONLY}
   BUILD_TYPE=${BUILD_TYPE}
   BUILD_JOBS=${BUILD_JOBS}
@@ -102,6 +105,7 @@ BUILD_JEDI="off"
 CLEAN=false
 BUILD=false
 MOVE=false
+DA_UTILS_ONLY=false
 FIX_ONLY=false
 
 # process required arguments
@@ -127,6 +131,7 @@ while :; do
     --clean) CLEAN=true ;;
     --build) BUILD=true ;;
     --move) MOVE=true ;;
+    --da-utils-only) DA_UTILS_ONLY=true ;;
     --fix-only) FIX_ONLY=true ;;
     --build-dir=?*) BUILD_DIR=${1#*=} ;;
     --build-dir|--build-dir=) usage_error "$1 requires argument." ;;
@@ -338,6 +343,9 @@ if [ ! -z "${APPLICATION}" ]; then
 fi
 if [ ! -z "${CCPP_SUITES}" ]; then
   CMAKE_SETTINGS="${CMAKE_SETTINGS} -DCCPP_SUITES=${CCPP_SUITES}"
+fi
+if [ ! -z "${DA_UTILS_ONLY}" ]; then
+  CMAKE_SETTINGS="${CMAKE_SETTINGS} -DDA_UTILS_ONLY=${DA_UTILS_ONLY}"
 fi
 
 if [ "${PLATFORM}" = "gaeac6" ]; then
