@@ -1,0 +1,15 @@
+flag:
+  JEDI_TYPE_FV3: 'YES'
+  JEDI_TYPE_SNOW: 'NO'
+  JEDI_TYPE_SOCA: 'NO'
+path:
+parm:
+  ACCOUNT: epic
+  DATE_CYCLE_FREQ_HR: 24
+  DATE_FIRST_CYCLE: 2024022318
+  DATE_LAST_CYCLE: 2024022418
+  envir: anal_atmDA_3dvar_ecf
+  EXP_CASE_NAME: anal_atmDA_3dvar_ecf
+  JEDI_ALGORITHM: 3dvar
+  TYPE_ANAL_FCST: anal-only  
+  WORKFLOW_MANAGER: ecflow
