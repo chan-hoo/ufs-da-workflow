@@ -70,23 +70,37 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   # Observation files
   obs_prefix="obs.${PDY}.${cycle}"  
-  ## ascatw_ascat_metop-b
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.scatwnd.ascat_metop-b.nc" "${DATA}/obs"
-  ## ATMS N20
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.nc" "${DATA}/obs"
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias_cov.nc" "${DATA}/obs"
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
-  ## surface_ps
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.conventional_ps.nc" "${DATA}/obs"
-  ## gnssrobndnbam_cosmic2
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.gnssro_cosmic2.nc" "${DATA}/obs"
-  ## ompsnp_npp
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompsnp_npp.nc" "${DATA}/obs"
-  ## ompstc_npp
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompstc_npp.nc" "${DATA}/obs"
-  ## satwind_goes-16
-  ln -nsf "${COMINOUTobs}/${obs_prefix}.satwnd.abi_goes-16.nc" "${DATA}/obs"
+  ## ASCAT wind datae
+  if [ "${OBS_ATM_ASCAT_W}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.scatwnd.ascat_metop-b.nc" "${DATA}/obs"
+  fi
+  ## Microwave radiance from ATMS on NOAA-20
+  if [ "${OBS_ATM_ATMS_N20}" = "YES" ]; then  
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.nc" "${DATA}/obs"
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias_cov.nc" "${DATA}/obs"
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
+  fi
+  ## Conventional surface pressure
+  if [ "${OBS_ATM_CONVENTIONAL_PS}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.conventional_ps.nc" "${DATA}/obs"
+  fi
+  ## GNSSRO from COSMIC-2
+  if [ "${OBS_ATM_GNSSRO_COSMIC2}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.gnssro_cosmic2.nc" "${DATA}/obs"
+  fi
+  ## OMPS Total Column Ozone from Suomi-NPP
+  if [ "${OBS_ATM_OZONE_OMPSNP_NPP}" = "YES" ]; then       
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompsnp_npp.nc" "${DATA}/obs"
+  fi
+  ## Ozone vertical profile from OMPS Nadir Profiler on Suomi-NPP
+  if [ "${OBS_ATM_OZONE_OMPSTC_NPP}" = "YES" ]; then       
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.ozone.ompstc_npp.nc" "${DATA}/obs"
+  fi
+  ## Atomospheric Motion Vectors from ABI on GOES-16
+  if [ "${OBS_ATM_AMV_ABI_GOES_16}" = "YES" ]; then
+    ln -nsf "${COMINOUTobs}/${obs_prefix}.satwnd.abi_goes-16.nc" "${DATA}/obs"
+  fi
 
   # Set JEDI executable
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then

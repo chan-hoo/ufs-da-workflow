@@ -805,28 +805,97 @@ echo "========== PART IV: Observation Files =========="
 # Atmospheric observation data
 #################################
 if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
-  list_fv3_obs=( "atms_n20" "conventional_ps" "gnssro_cosmic2" \
-	         "ozone.ompsnp_npp" "ozone.smpstc_npp" \
-		 "satwnd.abi_goes-16" "scatwnd.ascat_metop-b" )
-  for ifn in "${sfc_fns[@]}" ; do
-    obs_dp="${DCOMINobs}/fv3/${PDY}${cyc}"
-    obs_out_prefix="obs.${PDY}.${cycle}"
-    obs_out_fn="${obs_out_prefix}.${ifn}.nc"
+  obs_dp="${DCOMINobs}/fv3/${PDY}${cyc}"
+  obs_out_prefix="obs.${PDY}.${cycle}"
+
+  ## ASCAT wind data from MetOp-B satellite
+  if [ "${OBS_ATM_ASCAT_W}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.scatwnd.ascat_metop-b.nc"
     if [ -e "${obs_dp}/${obs_out_fn}" ]; then
       cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
-      # extra files
-      if [ "${ifn}" = "atms_n20" ]; then
-        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias.nc" ${COMINOUTobs}
-        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias_conv.nc" ${COMINOUTobs}
-        cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.tlapse.txt" ${COMINOUTobs}
-      fi
     else
       # ioda-converting
       # Under development
       err_exit "under development"
     fi
-  done
+  fi
+  ## Microwave radiance observations from ATMS instrument on NOAA-20
+  if [ "${OBS_ATM_ATMS_N20}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.atm_n20.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+      ### extra files
+      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias.nc" ${COMINOUTobs}
+      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias_conv.nc" ${COMINOUTobs}
+      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.tlapse.txt" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
+  ## Conventional surface pressure observations
+  if [ "${OBS_ATM_CONVENTIONAL_PS}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.conventional_ps.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
+  ## GNSS Radio Occultation observations from COSMIC-2 mission
+  if [ "${OBS_ATM_GNSSRO_COSMIC2}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.gnssro_cosmic2.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
+  ## Ozone Mapping and Profiler Suite Total Column Ozone from Suomi-NPP
+  if [ "${OBS_ATM_OZONE_OMPSNP_NPP}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.ozone.ompsnp_npp.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
+  ## Ozone vertical profile observation from OMPS Nadir Profiler on Suomi-NPP
+  if [ "${OBS_ATM_OZONE_OMPSTC_NPP}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.ozone.smpstc_npp.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
+  ## Atomospheric Motion Vectors from ABI on GOES-16
+  if [ "${OBS_ATM_AMV_ABI_GOES_16}" = "YES" ]; then
+    obs_out_fn="${obs_out_prefix}.satwnd.abi_goes-16.nc"
+    if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+      cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+    else
+      # ioda-converting
+      # Under development
+      err_exit "under development"
+    fi
+  fi
 fi
+
+##########################
+# SOCA observation data
+##########################
+
+
 
 ##########################
 # Snow observation data

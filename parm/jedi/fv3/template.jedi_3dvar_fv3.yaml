@@ -195,8 +195,8 @@ cost function:
             datapath: ./ens/mem%mem%
             filename is datetime templated: true
             filenames:
-            - enkfgdas.t18z.cubed_sphere_grid_atmf006.nc
-            - enkfgdas.t18z.cubed_sphere_grid_sfcf006.nc
+            - {{ fv3_bkg_error_cov_ens_filenames_atm }}
+            - {{ fv3_bkg_error_cov_ens_filenames_sfc }}
             max allowable geometry difference: 1e-4
           pattern: '%mem%'
           nmembers: 2
@@ -394,6 +394,7 @@ cost function:
   observations:
     obs perturbations: false
     observers:
+{%- if OBS_ATM_ASCAT_W == "YES" %}
     - obs space:
         name: ascatw_ascat_metop-b
         obsdatain:
@@ -594,6 +595,8 @@ cost function:
             variable: windNorthward
         action:
           name: reject
+{%- endif %}
+{%- OBS_ATM_ATMS_N20 %}
     - obs space:
         name: ATMS N20
         obsdatain:
@@ -1377,6 +1380,8 @@ cost function:
           minvalue: 0.99
         action:
           name: reject
+{%- endif %}
+{%- if OBS_ATM_CONVENTIONAL_PS == "YES" %}
     - obs space:
         name: surface_ps
         obsdatain:
@@ -1703,6 +1708,8 @@ cost function:
           is_not_in: 0, 1
         action:
           name: reject
+{%- endif %}
+{%- if OBS_ATM_GNSSRO_COSMIC2 == "YES" %}
     - obs space:
         name: gnssrobndnbam_cosmic2
         obsdatain:
@@ -1779,6 +1786,8 @@ cost function:
         action:
           name: RONBAMErrInflate
         defer to post: true
+{%- endif %}
+{%- if OBS_ATM_OZONE_OMPSNP_NPP == "YES" %}
     - obs space:
         name: ompsnp_npp
         obsdatain:
@@ -2081,6 +2090,8 @@ cost function:
         - variable:
             name: MetaData/pressure
           maxvalue: 30.0
+{%- endif %}
+{%- if OBS_ATM_OZONE_OMPSTC_NPP == "YES" %}
     - obs space:
         name: ompstc_npp
         obsdatain:
@@ -2168,6 +2179,8 @@ cost function:
         absolute threshold: 300.0
         action:
           name: reject
+{%- endif %}
+{%- if OBS_ATM_AMV_ABI_GOES_16 == "YES" %}
     - obs space:
         name: satwind_goes-16
         obsdatain:
@@ -2941,6 +2954,7 @@ cost function:
             variable: windNorthward
         action:
           name: reject
+{%- endif %}
 variational:
   minimizer:
     algorithm: DRPCG
