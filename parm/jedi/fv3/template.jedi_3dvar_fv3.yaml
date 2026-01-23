@@ -195,8 +195,8 @@ cost function:
             datapath: ./ens/mem%mem%
             filename is datetime templated: true
             filenames:
-            - {{ fv3_bkg_error_cov_ens_filenames_atm }}
-            - {{ fv3_bkg_error_cov_ens_filenames_sfc }}
+            - {{ fv3_bkg_error_cov_enkf_filenames_atm }}
+            - {{ fv3_bkg_error_cov_enkf_filenames_sfc }}
             max allowable geometry difference: 1e-4
           pattern: '%mem%'
           nmembers: 2
@@ -400,12 +400,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/scatwnd.ascat_metop-b_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.scatwnd.ascat_metop-b.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_scatwnd.ascat_metop-b_{{ cdate }}.nc
+            obsfile: ./diags/diag.scatwnd.ascat_metop-b_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -602,12 +602,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/atms_n20_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.atms_n20.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_atms_n20_{{ cdate }}.nc
+            obsfile: ./diags/diag.atms_n20_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -639,8 +639,8 @@ cost function:
           - H2O
           - O3
       obs bias:
-        input file: ./obs/atms_n20.satbias_{{ pdate }}.nc
-        output file: ./bc/atms_n20.satbias_{{ cdate }}.nc
+        input file: ./obs/obs.{PDY}.{cycle}.atms_n20.satbias.nc
+        output file: ./bc/obs.{PDYpc1}.t{nHH}z.atms_n20.satbias.nc
         variables without bc:
         - brightnessTemperature
         channels: 15
@@ -649,9 +649,9 @@ cost function:
           - name: constant
           - name: lapseRate
             order: 2
-            tlapse: ./obs/atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{PDY}.{cycle}.atms_n20.tlapse.txt
           - name: lapseRate
-            tlapse: ./obs/atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{PDY}.{cycle}.atms_n20.tlapse.txt
           - name: emissivityJacobian
           - name: sensorScanAngle
             order: 4
@@ -668,11 +668,11 @@ cost function:
           step size: 0.0001
           largest analysis variance: 10000.0
           prior:
-            input file: ./obs/atms_n20.satbias_cov_{{ pdate }}.nc
+            input file: ./obs/obs.{PDY}.{cycle}.atms_n20.satbias_cov.nc
             inflation:
               ratio: 1.1
               ratio for small dataset: 2.0
-          output file: ./bc/atms_n20.satbias_cov_{{ cdate }}.nc
+          output file: ./bc/obs.{PDYpc1}.t{nHH}z.atms_n20.satbias_cov.nc
       obs pre filters:
       - filter: Domain Check
         filter variables:
@@ -1387,12 +1387,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/conventional_ps_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.conventional_ps.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_conventional_ps_{{ cdate }}.nc
+            obsfile: ./diags/diag.conventional_ps_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -1715,7 +1715,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/gnssro_cosmic2_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.gnssro_cosmic2.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -1725,7 +1725,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_gnssro_cosmic2_{{ cdate }}.nc
+            obsfile: ./diags/diag.gnssro_cosmic2_{{ cdate }}.nc
         simulated variables:
         - bendingAngle
       obs operator:
@@ -1793,7 +1793,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/ozone.ompsnp_npp_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.ozone.ompsnp_npp.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -1803,7 +1803,7 @@ cost function:
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_ozone.ompsnp_npp_{{ cdate }}.nc
+            obsfile: ./diags/diag.ozone.ompsnp_npp_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -2097,12 +2097,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/ozone.ompstc_npp_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.ozone.ompstc_npp.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_ozone.ompstc_npp_{{ cdate }}.nc
+            obsfile: ./diags/diag.ozone.ompstc_npp_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:
@@ -2186,12 +2186,12 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/satwnd.abi_goes-16_{{ cdate }}.nc
+            obsfile: ./obs/obs.{PDY}.{cycle}.satwnd.abi_goes-16.nc
             missing file action: warn
         obsdataout:
           engine:
             type: H5File
-            obsfile: ./diags/diag_satwnd.abi_goes-16_{{ cdate }}.nc
+            obsfile: ./diags/diag.satwnd.abi_goes-16_{{ cdate }}.nc
         io pool:
           max pool size: 1
         simulated variables:

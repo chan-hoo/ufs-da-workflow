@@ -19,6 +19,7 @@ nDD=${next_date:6:2}
 nHH=${next_date:8:2}
 nHHsec=$(( nHH * 3600 ))
 nHHsec_5d=$(printf "%05d" "${nHHsec}")
+PDYpc1=${next_date:0:8}
 
 pdate=$($NDATE -${DATE_CYCLE_FREQ_HR} $PDY$cyc)
 YYYYp=${pdate:0:4}
@@ -394,10 +395,13 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
       fv3_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
       fv3_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
       settings="\
-  'cdate': !!str ${PDY}${cyc}
+  'cdate': !!str ${cdate}
+  'cycle': ${cycle}
   'fv3_background_date_iso': !!str ${fv3_background_date_iso}
   'fv3_background_filenames_atm': cubed_sphere_grid_atm.nc  
   'fv3_background_filenames_sfc': cubed_sphere_grid_sfc.nc
+  'fv3_bkg_error_cov_enkf_filenames_atm': enkf.cubed_sphere_grid_atm.nc 
+  'fv3_bkg_error_cov_enkf_filenames_sfc': enkf.cubed_sphere_grid_sfc.nc
   'fv3_geo_layout_x': 4
   'fv3_geo_layout_y': 4
   'fv3_geo_npx': ${res_p1}
@@ -405,7 +409,9 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_geo_npz': ${NPZ}
   'fv3_timewindow_begin_iso': !!str ${fv3_timewindow_begin_iso}
   'fv3_timewindow_length': PT${DATE_CYCLE_FREQ_HR}H
-  'pdate': !!str ${pdate}
+  'nHH': !!str ${nHH}
+  'PDY': !!str ${PDY}
+  'PDYpc1': !!str ${PDYpc1}
 " # End of settings variable
 
       ### For analysis
@@ -824,10 +830,6 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
     obs_out_fn="${obs_out_prefix}.atm_n20.nc"
     if [ -e "${obs_dp}/${obs_out_fn}" ]; then
       cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
-      ### extra files
-      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias.nc" ${COMINOUTobs}
-      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.satbias_conv.nc" ${COMINOUTobs}
-      cp -p "${obs_dp}/${obs_out_prefix}.atms_n20.tlapse.txt" ${COMINOUTobs}
     else
       # ioda-converting
       # Under development

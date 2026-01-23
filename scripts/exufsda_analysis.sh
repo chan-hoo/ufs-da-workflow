@@ -77,9 +77,10 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   ## Microwave radiance from ATMS on NOAA-20
   if [ "${OBS_ATM_ATMS_N20}" = "YES" ]; then  
     ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.nc" "${DATA}/obs"
-    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
-    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.satbias_cov.nc" "${DATA}/obs"
-    ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
+    ### extra files: obs bias, time lapse, and covariance
+    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
+    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.satbias_conv.nc" "${DATA}/obs"
+    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
   fi
   ## Conventional surface pressure
   if [ "${OBS_ATM_CONVENTIONAL_PS}" = "YES" ]; then
