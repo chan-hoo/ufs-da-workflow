@@ -135,6 +135,20 @@ if( NOT APP STREQUAL "NG-GODAS" OR DA_UTILS_ONLY )
     BUILD_ALWAYS TRUE
     STEP_TARGETS build
   )
+
+  # tile2tile_converter for Noah-MP
+  list(APPEND TILE2TILE_CONVERTER_ARGS
+  "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
+  )
+  list(APPEND TARGET LIST tile2tile_converter.fd)
+  ExternalProject_Add(tile2tile_converter.fd
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/tile2tile_converter.fd
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tile2tile_converter.fd
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+    CMAKE_ARGS ${TILE2TILE_CONVERTER_ARGS}
+    BUILD_ALWAYS TRUE
+    STEP_TARGETS build
+  )
 endif()
 
 # C-Test
