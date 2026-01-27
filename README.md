@@ -4,7 +4,8 @@ UFS DA (Data Assimilation) Workflow
  1. S2SWA: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3)
  2. S2SWAL: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + CHM (GOCART) + LND (Noah-MP)
  3. NG-GODAS: ATM (DATM) + OCN (MOM6) + ICE (CICE)
- 4. ATM: ATM (FV3+CCPP) stand-alone
+ 4. ATML: ATM (FV3+CCPP) + LND (Noah-MP)
+ 5. ATM: ATM (FV3+CCPP) stand-alone
 
 ## Quick Start Guide
 
@@ -23,7 +24,7 @@ cd ufs-da-workflow/sorc
 ```
 ./app_build.sh -a=[APP]
 ```
-where `[APP]` is `S2SWA`, `S2SWAL`, `NG-GODAS`, or `ATM`.
+where `[APP]` is `S2SWA`, `S2SWAL`, `NG-GODAS`, `ATML`, or `ATM`.
 
 - Workflow components: YES, JEDI-bundle: YES
 ```
