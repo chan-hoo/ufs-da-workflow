@@ -596,7 +596,7 @@ cost function:
         action:
           name: reject
 {%- endif %}
-{%- OBS_ATM_ATMS_N20 %}
+{%- if OBS_ATM_ATMS_N20 == "YES" %}
     - obs space:
         name: ATMS N20
         obsdatain:

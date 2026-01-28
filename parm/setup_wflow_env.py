@@ -517,6 +517,7 @@ def check_valid_parm(home_dir,config_parm):
         sys.exit(1)
 
     # Check for unsupported conditions
+    jedi_type_fv3 = config_parm["flag"]["JEDI_TYPE_FV3"]
     jedi_type_snow = config_parm["flag"]["JEDI_TYPE_SNOW"]
     jedi_type_soca = config_parm["flag"]["JEDI_TYPE_SOCA"]
     jedi_type_soil_moisture = config_parm["flag"]["JEDI_TYPE_SOIL_MOISTURE"]
@@ -533,7 +534,8 @@ def check_valid_parm(home_dir,config_parm):
         sys.exit(1)
 
     if type_anal_fcst == "both" or type_anal_fcst == "anal-only":
-        if jedi_type_snow == "NO" and jedi_type_soil_moisture == "NO" and jedi_type_soca == "NO":
+        if jedi_type_fv3 == "NO" and jedi_type_snow == "NO" and \
+           jedi_type_soil_moisture == "NO" and jedi_type_soca == "NO":
             logging.error(f'''FATAL ERROR: All JEDI_TYPE flags are off. Please check the flags for JEDI_TYPE.''')
             sys.exit(1)
 
