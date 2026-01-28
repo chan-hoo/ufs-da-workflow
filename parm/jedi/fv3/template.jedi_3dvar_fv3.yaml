@@ -34,8 +34,8 @@ cost function:
     provider: ufs
     datetime: '{{ fv3_background_date_iso }}'
     filenames:
-    - {{ fv3_background_filenames_atm.nc }}
-    - {{ fv3_background_filenames_sfc.nc }}
+    - {{ fv3_background_filenames_atm }}
+    - {{ fv3_background_filenames_sfc }}
     max allowable geometry difference: 1e-4
     state variables:
     - eastward_wind
@@ -400,7 +400,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.scatwnd.ascat_metop-b.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.scatwnd.ascat_metop-b.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -602,7 +602,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.atms_n20.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -639,8 +639,8 @@ cost function:
           - H2O
           - O3
       obs bias:
-        input file: ./obs/obs.{PDY}.{cycle}.atms_n20.satbias.nc
-        output file: ./bc/obs.{PDYpc1}.t{nHH}z.atms_n20.satbias.nc
+        input file: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias.nc
+        output file: ./bc/obs.{{ PDYpc1 }}.t{{ nHH }}z.atms_n20.satbias.nc
         variables without bc:
         - brightnessTemperature
         channels: 15
@@ -649,9 +649,9 @@ cost function:
           - name: constant
           - name: lapseRate
             order: 2
-            tlapse: ./obs/obs.{PDY}.{cycle}.atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.tlapse.txt
           - name: lapseRate
-            tlapse: ./obs/obs.{PDY}.{cycle}.atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.tlapse.txt
           - name: emissivityJacobian
           - name: sensorScanAngle
             order: 4
@@ -668,11 +668,11 @@ cost function:
           step size: 0.0001
           largest analysis variance: 10000.0
           prior:
-            input file: ./obs/obs.{PDY}.{cycle}.atms_n20.satbias_cov.nc
+            input file: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias_cov.nc
             inflation:
               ratio: 1.1
               ratio for small dataset: 2.0
-          output file: ./bc/obs.{PDYpc1}.t{nHH}z.atms_n20.satbias_cov.nc
+          output file: ./bc/obs.{{ PDYpc1 }}.t{{ nHH }}z.atms_n20.satbias_cov.nc
       obs pre filters:
       - filter: Domain Check
         filter variables:
@@ -1387,7 +1387,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.conventional_ps.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.conventional_ps.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -1715,7 +1715,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.gnssro_cosmic2.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.gnssro_cosmic2.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -1793,7 +1793,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.ozone.ompsnp_npp.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.ozone.ompsnp_npp.nc
             missing file action: warn
           obsgrouping:
             group variables:
@@ -2097,7 +2097,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.ozone.ompstc_npp.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.ozone.ompstc_npp.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -2186,7 +2186,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/obs.{PDY}.{cycle}.satwnd.abi_goes-16.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.satwnd.abi_goes-16.nc
             missing file action: warn
         obsdataout:
           engine:
@@ -2970,9 +2970,9 @@ variational:
       layout:
       - {{ fv3_geo_layout_x }}
       - {{ fv3_geo_layout_y }}
-      npx: {{ fv3_geo_npx }}
-      npy: {{ fv3_geo_npy }}
-      npz: {{ fv3_geo_npz }}
+      npx: {{ fv3_variational_geo_npx }}
+      npy: {{ fv3_variational_geo_npy }}
+      npz: {{ fv3_variational_geo_npz }}
       vert coordinate: logp
     diagnostics:
       departures: bkgmob
@@ -2987,9 +2987,9 @@ variational:
       layout:
       - {{ fv3_geo_layout_x }}
       - {{ fv3_geo_layout_y }}
-      npx: {{ fv3_geo_npx }}
-      npy: {{ fv3_geo_npy }}
-      npz: {{ fv3_geo_npz }}
+      npx: {{ fv3_variational_geo_npx }}
+      npy: {{ fv3_variational_geo_npy }}
+      npz: {{ fv3_variational_geo_npz }}
       vert coordinate: logp
     diagnostics:
       departures: bkgmob1
@@ -2997,7 +2997,7 @@ final:
   diagnostics:
     departures: anlmob
   prints:
-    frequency: PT12H
+    frequency: {{ fv3_final_print_freq }}
   increment:
     output:
       state component:

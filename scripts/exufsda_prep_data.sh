@@ -417,6 +417,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_background_filenames_sfc': cubed_sphere_grid_sfc.nc
   'fv3_bkg_error_cov_enkf_filenames_atm': enkf.cubed_sphere_grid_atm.nc 
   'fv3_bkg_error_cov_enkf_filenames_sfc': enkf.cubed_sphere_grid_sfc.nc
+  'fv3_final_print_freq': PT${cycle_freq_hr_half}H
   'fv3_geo_layout_x': 4
   'fv3_geo_layout_y': 4
   'fv3_geo_npx': ${res_p1}
@@ -424,14 +425,17 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_geo_npz': ${NPZ}
   'fv3_timewindow_begin_iso': !!str ${fv3_timewindow_begin_iso}
   'fv3_timewindow_length': PT${DATE_CYCLE_FREQ_HR}H
+  'fv3_variational_geo_npx': 49
+  'fv3_variational_geo_npy': 49
+  'fv3_variational_geo_npz': ${NPZ}
   'nHH': !!str ${nHH}
-  'OBS_ATM_AMV_ABI_GOES_16': ${OBS_ATM_AMV_ABI_GOES_16}
-  'OBS_ATM_ASCAT_W': ${OBS_ATM_ASCAT_W}
-  'OBS_ATM_ATMS_N20': ${OBS_ATM_ATMS_N20}
-  'OBS_ATM_CONVENTIONAL_PS': ${OBS_ATM_CONVENTIONAL_PS}
-  'OBS_ATM_GNSSRO_COSMIC2': ${OBS_ATM_GNSSRO_COSMIC2}
-  'OBS_ATM_OZONE_OMPSNP_NPP': ${OBS_ATM_OZONE_OMPSNP_NPP}
-  'OBS_ATM_OZONE_OMPSTC_NPP': ${OBS_ATM_OZONE_OMPSTC_NPP}
+  'OBS_ATM_AMV_ABI_GOES_16': '${OBS_ATM_AMV_ABI_GOES_16}'
+  'OBS_ATM_ASCAT_W': '${OBS_ATM_ASCAT_W}'
+  'OBS_ATM_ATMS_N20': '${OBS_ATM_ATMS_N20}'
+  'OBS_ATM_CONVENTIONAL_PS': '${OBS_ATM_CONVENTIONAL_PS}'
+  'OBS_ATM_GNSSRO_COSMIC2': '${OBS_ATM_GNSSRO_COSMIC2}'
+  'OBS_ATM_OZONE_OMPSNP_NPP': '${OBS_ATM_OZONE_OMPSNP_NPP}'
+  'OBS_ATM_OZONE_OMPSTC_NPP': '${OBS_ATM_OZONE_OMPSTC_NPP}'
   'PDY': !!str ${PDY}
   'PDYpc1': !!str ${PDYpc1}
 " # End of settings variable
@@ -440,6 +444,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
       fn_template="template.jedi_3dvar_fv3.yaml"
       fp_template="${PARMufsda}/jedi/fv3/${fn_template}"
       ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
+      cp -p ${jedi_nml_fn} ${COMINOUT}
 
       ### For increment
       fn_template="template.jedi_3dvar_fv3inc.yaml"
