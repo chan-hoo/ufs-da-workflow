@@ -49,8 +49,9 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   mkdir -p berror
   mkdir -p bkg
   mkdir -p crtm
-  mkdir -p diag
+  mkdir -p diags
   mkdir -p ens
+  mkdir -p fv3jedi
   mkdir -p obs
 
   # Copy static data files
@@ -63,7 +64,7 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   # Static GSI files
   ln -nsf ${FIXufsda}/DATA_fix/GSI/gfs_gsi_global.nml ${DATA}/berror/.
-  ln -nsf ${FIXufsda}/DATA_fix/GSI/gsi-coeffs-gfs-global ${DATA}/berror/.
+  ln -nsf ${FIXufsda}/DATA_fix/GSI/gsi-coeffs-gfs-global.nc4 ${DATA}/berror/.
 
   # Background/observation file paths
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
@@ -83,12 +84,12 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   # Backgound ensemble files
   if [ "${ENSEMBLE_NUM_MEMBERS}" -gt 0 ]; then
     atm_fn="${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc"
-    sfc_fn="${NET}.t${HHp}z.enfk.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+    sfc_fn="${NET}.t${HHp}z.enkf.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
     for imem in $(seq 1 ${ENSEMBLE_NUM_MEMBERS}); do
       imem_3d=$(printf "%03d" "${imem}")	
       mkdir -p ${DATA}/ens/mem${imem_3d}
       cp -p "${data_restart}/mem${imem_3d}/${atm_fn}" ${DATA}/ens/mem${imem_3d}/.
-      cp -p "${data_restart}/mem${ieme_3d}/${sfc_fn}" ${DATA}/ens/mem${imem_3d}/.
+      cp -p "${data_restart}/mem${imem_3d}/${sfc_fn}" ${DATA}/ens/mem${imem_3d}/.
     done
   fi
 
@@ -104,7 +105,7 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
     ### extra files: obs bias, time lapse, and covariance
     obs_prefix_prev="obs.${PDYmc1}.t${HHp}z"
     ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.satbias.nc" "${DATA}/obs"
-    ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.satbias_conv.nc" "${DATA}/obs"
+    ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.satbias_cov.nc" "${DATA}/obs"
     ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.tlapse.txt" "${DATA}/obs"
   fi
   ## Conventional surface pressure

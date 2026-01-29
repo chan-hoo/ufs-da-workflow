@@ -641,8 +641,8 @@ cost function:
           - H2O
           - O3
       obs bias:
-        input file: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias.nc
-        output file: ./bc/obs.{{ PDYpc1 }}.t{{ nHH }}z.atms_n20.satbias.nc
+        input file: ./obs/obs.{{ PDYmc1 }}.t{{ HHp }}z.atms_n20.satbias.nc
+        output file: ./bc/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias.nc
         variables without bc:
         - brightnessTemperature
         channels: 15
@@ -651,9 +651,9 @@ cost function:
           - name: constant
           - name: lapseRate
             order: 2
-            tlapse: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{{ PDYmc1 }}.t{{ HHp }}z.atms_n20.tlapse.txt
           - name: lapseRate
-            tlapse: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.tlapse.txt
+            tlapse: ./obs/obs.{{ PDYmc1 }}.t{{ HHp }}z.atms_n20.tlapse.txt
           - name: emissivityJacobian
           - name: sensorScanAngle
             order: 4
@@ -670,11 +670,11 @@ cost function:
           step size: 0.0001
           largest analysis variance: 10000.0
           prior:
-            input file: ./obs/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias_cov.nc
+            input file: ./obs/obs.{{ PDYmc1 }}.t{{ HHp }}z.atms_n20.satbias_cov.nc
             inflation:
               ratio: 1.1
               ratio for small dataset: 2.0
-          output file: ./bc/obs.{{ PDYpc1 }}.t{{ nHH }}z.atms_n20.satbias_cov.nc
+          output file: ./bc/obs.{{ PDY }}.{{ cycle }}.atms_n20.satbias_cov.nc
       obs pre filters:
       - filter: Domain Check
         filter variables:

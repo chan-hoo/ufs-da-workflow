@@ -20,5 +20,7 @@ parm:
   envir: anal_atmDA_3dvar_ecf
   EXP_CASE_NAME: anal_atmDA_3dvar_ecf
   JEDI_ALGORITHM: 3dvar
+  JEDI_BUNDLE_GDAS: gdas
+  NPROCS_ANALYSIS: 96
   TYPE_ANAL_FCST: anal-only  
-  WORKFLOW_MANAGER: none
+  WORKFLOW_MANAGER: ecflow

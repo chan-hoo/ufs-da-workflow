@@ -430,8 +430,8 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_variational_geo_npx': 49
   'fv3_variational_geo_npy': 49
   'fv3_variational_geo_npz': ${NPZ}
+  'HHp': !!str ${HHp}
   'JEDI_BKG_ERR_COV_MODEL': ${JEDI_BKG_ERR_COV_MODEL}
-  'nHH': !!str ${nHH}
   'OBS_ATM_AMV_ABI_GOES_16': '${OBS_ATM_AMV_ABI_GOES_16}'
   'OBS_ATM_ASCAT_W': '${OBS_ATM_ASCAT_W}'
   'OBS_ATM_ATMS_N20': '${OBS_ATM_ATMS_N20}'
@@ -440,7 +440,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'OBS_ATM_OZONE_OMPSNP_NPP': '${OBS_ATM_OZONE_OMPSNP_NPP}'
   'OBS_ATM_OZONE_OMPSTC_NPP': '${OBS_ATM_OZONE_OMPSTC_NPP}'
   'PDY': !!str ${PDY}
-  'PDYpc1': !!str ${PDYpc1}
+  'PDYmc1': !!str ${PDYmc1}
 " # End of settings variable
 
       ### For analysis
