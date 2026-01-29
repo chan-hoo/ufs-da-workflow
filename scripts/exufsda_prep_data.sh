@@ -425,6 +425,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_geo_npx': ${res_p1}
   'fv3_geo_npy': ${res_p1}
   'fv3_geo_npz': ${NPZ}
+  'fv3_inc_output_fn_nonrestart': ${NET}.${cycle}.atminc.cubed_sphere_grid.nc
   'fv3_timewindow_begin_iso': !!str ${fv3_timewindow_begin_iso}
   'fv3_timewindow_length': PT${DATE_CYCLE_FREQ_HR}H
   'fv3_variational_geo_npx': 49
@@ -453,6 +454,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
       fn_template="template.jedi_3dvar_fv3inc.yaml"
       fp_template="${PARMufsda}/jedi/fv3/${fn_template}"
       ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_inc_nml_fn}"
+      cp -p ${jedi_inc_nml_fn} ${COMINOUT}
     else
     ### JCB: UNDER DEVELOPMENT ###
       err_exit "JCB for fv3-jedi is not available !!!"

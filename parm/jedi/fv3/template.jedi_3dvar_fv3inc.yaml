@@ -45,42 +45,42 @@ background geometry:
     field table filename: ./fv3jedi/field_table
   akbk: ./fv3jedi/akbk.nc4
   layout:
-  - 4
-  - 4
-  npx: 97
-  npy: 97
-  npz: 127
+  - {{ fv3_geo_layout_x }}
+  - {{ fv3_geo_layout_y }}
+  npx: {{ fv3_geo_npx }}
+  npy: {{ fv3_geo_npy }}
+  npz: {{ fv3_geo_npz }}
 jedi increment geometry:
   fms initialization:
     namelist filename: ./fv3jedi/fmsmpp.nml
     field table filename: ./fv3jedi/field_table
   akbk: ./fv3jedi/akbk.nc4
   layout:
-  - 4
-  - 4
-  npx: 97
-  npy: 97
-  npz: 127
+  - {{ fv3_geo_layout_x }}
+  - {{ fv3_geo_layout_y }}
+  npx: {{ fv3_geo_npx }}
+  npy: {{ fv3_geo_npy }}
+  npz: {{ fv3_geo_npz }}
 fv3 increment geometry:
   fms initialization:
     namelist filename: ./fv3jedi/fmsmpp.nml
     field table filename: ./fv3jedi/field_table
   akbk: ./fv3jedi/akbk.nc4
   layout:
-  - 4
-  - 4
-  npx: 97
-  npy: 97
-  npz: 127
+  - {{ fv3_geo_layout_x }}
+  - {{ fv3_geo_layout_y }}
+  npx: {{ fv3_geo_npx }}
+  npy: {{ fv3_geo_npy }}
+  npz: {{ fv3_geo_npz }}
 members:
 - background input:
     datapath: ./bkg
     filetype: cube sphere history
     provider: ufs
-    datetime: '2024-02-24T00:00:00Z'
+    datetime: '{{ fv3_background_date_iso }}'
     filenames:
-    - gdas.t18z.cubed_sphere_grid_atmf006.nc
-    - gdas.t18z.cubed_sphere_grid_sfcf006.nc
+    - {{ fv3_background_filenames_atm }}
+    - {{ fv3_background_filenames_sfc }}
     max allowable geometry difference: 1e-4
     state variables: *id002
     field io names: &id003
@@ -108,7 +108,7 @@ members:
     filetype: fms restart
     is restart: false
     datapath: ./anl
-    filename_nonrestart: gfs.t00z.cubed_sphere_grid_atminc.nc
+    filename_nonrestart: {{ fv3_inc_output_fn_nonrestart }}
     field io names:
       eastward_wind: u_inc
       northward_wind: v_inc
