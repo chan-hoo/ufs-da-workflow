@@ -22,7 +22,9 @@ path:
   JEDI_IODACONV_PATH: None
 parm:
   CUSTOM_JEDI_CONFIG_PREFIX: /prefix/of/custom/JEDI/config/file/name
+  ENSEMBLE_NUM_MEMBERS: 0
   JEDI_ALGORITHM: letkf-oi
+  JEDI_BKG_ERR_COV_MODEL: hybrid
   JEDI_BUNDLE_GDAS: bundle
   JEDI_CTEST_NAME: None
   JEDI_PY_VER: python3.11

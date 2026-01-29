@@ -20,7 +20,7 @@ MMp=${pdate:4:2}
 DDp=${pdate:6:2}
 HHp=${pdate:8:2}
 PDYmc1=${pdate:0:8}
-COMINrestart_mc1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYmc1}/RESTART"
+COMINOUTmc1="${COMROOT}/${NET}/${model_ver}/${RUN}.${PDYmc1}"
 
 filedate="${PDY}.${cyc}0000"
 filedate_next="${PDYpc1}.${nHH}0000"
@@ -50,15 +50,8 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   mkdir -p bkg
   mkdir -p crtm
   mkdir -p diag
+  mkdir -p ens
   mkdir -p obs
-
-  # Background (restart) files
-  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
-    data_dir="${WARMSTART_DIR}"
-  else
-    data_dir="${COMINrestart_mc1}"
-  fi
-
 
   # Copy static data files
   cp -p ${FIXufsda}/DATA_jedi/fv3files/fmsmpp.nml ${DATA}/fv3jedi/.
@@ -67,6 +60,37 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   # CRTM files
   ln -nsf ${FIXufsda}/DATA_crtm/* ${DATA}/crtm/.
+
+  # Static GSI files
+  ln -nsf ${FIXufsda}/DATA_fix/GSI/gfs_gsi_global.nml ${DATA}/berror/.
+  ln -nsf ${FIXufsda}/DATA_fix/GSI/gsi-coeffs-gfs-global ${DATA}/berror/.
+
+  # Background/observation file paths
+  if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
+    data_restart="${WARMSTART_DIR}/${PDY}"
+    data_obs="${WARMSTART_DIR}/${PDY}"
+  else
+    data_restart="${COMINOUTmc1}/RESTART"
+    data_obs="${COMINOUTmc1}/obs"
+  fi
+  hhh_3d=$(printf "%03d" "${DATE_CYCLE_FREQ_HR}")
+
+  # Background files
+  atm_fn="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
+  cp -p "${data_restart}/${atm_fn}" ${DATA}/bkg/.
+  sfc_fn="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+  cp -p "${data_restart}/${sfc_fn}" ${DATA}/bkg/.
+  # Backgound ensemble files
+  if [ "${ENSEMBLE_NUM_MEMBERS}" -gt 0 ]; then
+    atm_fn="${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc"
+    sfc_fn="${NET}.t${HHp}z.enfk.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+    for imem in $(seq 1 ${ENSEMBLE_NUM_MEMBERS}); do
+      imem_3d=$(printf "%03d" "${imem}")	
+      mkdir -p ${DATA}/ens/mem${imem_3d}
+      cp -p "${data_restart}/mem${imem_3d}/${atm_fn}" ${DATA}/ens/mem${imem_3d}/.
+      cp -p "${data_restart}/mem${ieme_3d}/${sfc_fn}" ${DATA}/ens/mem${imem_3d}/.
+    done
+  fi
 
   # Observation files
   obs_prefix="obs.${PDY}.${cycle}"  
@@ -78,9 +102,10 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   if [ "${OBS_ATM_ATMS_N20}" = "YES" ]; then  
     ln -nsf "${COMINOUTobs}/${obs_prefix}.atms_n20.nc" "${DATA}/obs"
     ### extra files: obs bias, time lapse, and covariance
-    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.satbias.nc" "${DATA}/obs"
-    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.satbias_conv.nc" "${DATA}/obs"
-    ln -nsf "${data_dir}/${obs_prefix}.atms_n20.tlapse.txt" "${DATA}/obs"
+    obs_prefix_prev="obs.${PDYmc1}.t${HHp}z"
+    ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.satbias.nc" "${DATA}/obs"
+    ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.satbias_conv.nc" "${DATA}/obs"
+    ln -nsf "${data_obs}/${obs_prefix_prev}.atms_n20.tlapse.txt" "${DATA}/obs"
   fi
   ## Conventional surface pressure
   if [ "${OBS_ATM_CONVENTIONAL_PS}" = "YES" ]; then
@@ -150,7 +175,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     data_dir="${WARMSTART_DIR}"
   else
-    data_dir="${COMINrestart_mc1}"
+    data_dir="${COMINOUTmc1}/RESTART"
   fi
   r_fp="${data_dir}/${filedate}.MOM.res.nc"
   if [ -e "${r_fp}" ]; then
@@ -282,8 +307,8 @@ if [ -n "${list_jedi_land}" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   for itile in {1..6}
   do
     sfc_fn="${filedate}.sfc_data.tile${itile}.nc"
-    if [ -f ${COMINrestart_mc1}/${sfc_fn} ]; then
-      cp -p ${COMINrestart_mc1}/${sfc_fn} .
+    if [ -f ${COMINOUTmc1}/RESTART/${sfc_fn} ]; then
+      cp -p ${COMINOUTmc1}/RESTART/${sfc_fn} .
     elif [ -f ${WARMSTART_DIR}/${sfc_fn} ]; then
       cp -p ${WARMSTART_DIR}/${sfc_fn} .
     else

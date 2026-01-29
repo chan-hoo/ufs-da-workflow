@@ -93,6 +93,7 @@ cost function:
       soilm: soilw1
       soilt: soilt1
   background error:
+{%- if JEDI_BKG_ERR_COV_MODEL == "hybrid" %}
     covariance model: hybrid
     components:
     - covariance:
@@ -199,7 +200,7 @@ cost function:
             - {{ fv3_bkg_error_cov_enkf_filenames_sfc }}
             max allowable geometry difference: 1e-4
           pattern: '%mem%'
-          nmembers: 2
+          nmembers: {{ ENSEMBLE_NUM_MEMBERS }}
           zero padding: 3
         localization:
           localization method: SABER
@@ -391,6 +392,7 @@ cost function:
           - ozone_mass_mixing_ratio
       weight:
         value: 0.875
+{%- endif %}
   observations:
     obs perturbations: false
     observers:

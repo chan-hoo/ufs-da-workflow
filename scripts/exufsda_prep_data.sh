@@ -409,14 +409,16 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
     if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "TEMPLATE" ]; then
       fv3_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
       fv3_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+      hhh_3d=$(printf "%03d" "${DATE_CYCLE_FREQ_HR}")
       settings="\
   'cdate': !!str ${PDY}${cyc}
   'cycle': ${cycle}
+  'ENSEMBLE_NUM_MEMBERS': ${ENSEMBLE_NUM_MEMBERS}
   'fv3_background_date_iso': !!str ${fv3_background_date_iso}
-  'fv3_background_filenames_atm': cubed_sphere_grid_atm.nc  
-  'fv3_background_filenames_sfc': cubed_sphere_grid_sfc.nc
-  'fv3_bkg_error_cov_enkf_filenames_atm': enkf.cubed_sphere_grid_atm.nc 
-  'fv3_bkg_error_cov_enkf_filenames_sfc': enkf.cubed_sphere_grid_sfc.nc
+  'fv3_background_filenames_atm': ${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc
+  'fv3_background_filenames_sfc': ${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc
+  'fv3_bkg_error_cov_enkf_filenames_atm': ${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc
+  'fv3_bkg_error_cov_enkf_filenames_sfc': ${NET}.t${HHp}z.enkf.sfc.f${hhh_3d}.cubed_sphere_grid.nc
   'fv3_final_print_freq': PT${cycle_freq_hr_half}H
   'fv3_geo_layout_x': 4
   'fv3_geo_layout_y': 4
@@ -428,6 +430,7 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
   'fv3_variational_geo_npx': 49
   'fv3_variational_geo_npy': 49
   'fv3_variational_geo_npz': ${NPZ}
+  'JEDI_BKG_ERR_COV_MODEL': ${JEDI_BKG_ERR_COV_MODEL}
   'nHH': !!str ${nHH}
   'OBS_ATM_AMV_ABI_GOES_16': '${OBS_ATM_AMV_ABI_GOES_16}'
   'OBS_ATM_ASCAT_W': '${OBS_ATM_ASCAT_W}'
