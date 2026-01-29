@@ -131,7 +131,11 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   # Set JEDI executable
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-    jedi_exe_fn="fv3jedi_var.x"
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      jedi_exe_fn="gdas.x fv3jedi variational"
+    else
+      jedi_exe_fn="fv3jedi_var.x"
+    fi
   else
     jedi_exe_fn="fv3jedi_${JEDI_ALGORITHM}.x"
   fi
