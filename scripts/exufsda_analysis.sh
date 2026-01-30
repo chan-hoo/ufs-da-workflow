@@ -161,26 +161,24 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   ##############
   # Increment
   ##############
-  if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
-    # Set JEDI executable for increment
-    jedi_exe_fn="gdas_fv3jedi_fv3inc.x"
-    # Copy JEDI input yaml file for increment
-    jedi_nml_fn="jedi_${JEDI_ALGORITHM}_fv3inc_${PDY}${cyc}.yaml"
-    if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
-      cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_inc_${PDY}${cyc}.yaml" ${jedi_nml_fn}
-    else
-      cp -p "${COMINOUT}/${jedi_nml_fn}" .
-    fi
-  
-    # Run JEDI executable for increment
-    export pgm="${jedi_exe_fn}"
-    . prep_step
-    ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-    export err=$?; err_chk
-    cp errfile errfile_fv3jedi_inc
-    if [[ $err != 0 ]]; then
-      err_exit "JEDI DA increment failed"
-    fi
+  # Set JEDI executable for increment
+  jedi_exe_fn="gdas_fv3jedi_fv3inc.x"
+  # Copy JEDI input yaml file for increment
+  jedi_nml_fn="jedi_${JEDI_ALGORITHM}_fv3inc_${PDY}${cyc}.yaml"
+  if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "YES" ]; then
+    cp -p "${CUSTOM_JEDI_CONFIG_PATH}/${CUSTOM_JEDI_CONFIG_PREFIX}_inc_${PDY}${cyc}.yaml" ${jedi_nml_fn}
+  else
+    cp -p "${COMINOUT}/${jedi_nml_fn}" .
+  fi
+
+  # Run JEDI executable for increment
+  export pgm="${jedi_exe_fn}"
+  . prep_step
+  ${RUN_CMD} -n ${NPROCS_ANALYSIS} ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+  export err=$?; err_chk
+  cp errfile errfile_fv3jedi_inc
+  if [[ $err != 0 ]]; then
+    err_exit "JEDI DA increment failed"
   fi
 fi
 
