@@ -99,6 +99,39 @@ export pgm="chgres_cube"
 ${RUN_CMD} -n ${NPROCS_FCST_IC} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 
+# Add missing old variables necessary for snow DA (temporary solution)
+if [ "${FRAC_GRID}" = "YES" ]; then
+  sfc_data_fn_prefix="out.sfc.tile"
+  sfc_data_fn_suffix=".nc"
+  for itile in {1..6}
+  do
+    cp -p "${DATA}/${sfc_data_fn_prefix}${itile}${sfc_data_fn_suffix}" ${DATA}/out.sfc.tile${itile}.nc_orig
+  done
+
+  cat > add_old_vars.yaml << EOF
+file_type: 'fcst_ic'
+num_tiles: 6
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+sfc_data_fn_prefix: '${sfc_data_fn_prefix}'
+sfc_data_fn_suffix: '${sfc_data_fn_suffix}'
+work_dir: '${DATA}'
+EOF
+
+  ${USHufsda}/add_old_vars.py
+  if [ $? -ne 0 ]; then
+    err_exit "Old variables failed to be copied"
+  fi
+  
+  # Compare original and copied variables bit-to-bit
+  for itile in {1..6}
+  do
+    nc_fn="${sfc_data_fn_prefix}${itile}${sfc_data_fn_suffix}"
+    ${USHufsda}/compare_nc_vars.py "${nc_fn}" "snodl" "snwdph" "${itile}"
+    ${USHufsda}/compare_nc_vars.py "${nc_fn}" "weasdl" "sheleg" "${itile}"
+  done
+fi
+
+# Copy final output files to COMINOUT
 cp -p ${DATA}/gfs_ctrl.nc ${COMINOUT}
 for itile in {1..6}
 do
