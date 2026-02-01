@@ -100,7 +100,7 @@ ${RUN_CMD} -n ${NPROCS_FCST_IC} ${EXECufsda}/$pgm >>$pgmout 2>errfile
 export err=$?; err_chk
 
 # Add missing old variables necessary for snow DA (temporary solution)
-if [ "${FRAC_GRID}" = "YES" ]; then
+if [ "${FRAC_GRID}" = "NO" ]; then
   sfc_data_fn_prefix="out.sfc.tile"
   sfc_data_fn_suffix=".nc"
   for itile in {1..6}
@@ -128,6 +128,7 @@ EOF
     nc_fn="${sfc_data_fn_prefix}${itile}${sfc_data_fn_suffix}"
     ${USHufsda}/compare_nc_vars.py "${nc_fn}" "snodl" "snwdph" "${itile}"
     ${USHufsda}/compare_nc_vars.py "${nc_fn}" "weasdl" "sheleg" "${itile}"
+    ${USHufsda}/compare_nc_vars.py "${nc_fn}" "zorli" "zorl" "${itile}"
   done
 fi
 

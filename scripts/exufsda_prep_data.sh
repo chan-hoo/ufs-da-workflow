@@ -97,6 +97,13 @@ else
   res_latlon_dynamics="!quote"
 fi
 
+## Application independent variables
+if [ "${FRAC_GRID}" = "YES" ]; then
+  frac_grid=".true."
+else
+  frac_grid=".false."
+fi
+
 ## Application dependent variables
 datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
 if [ "${APP}" = "S2SWA" ]; then
@@ -182,6 +189,7 @@ else
   'ATM_LAYOUT_Y': ${ATM_LAYOUT_Y}
   'CCPP_SUITE': ${CCPP_SUITE}
   'external_ic': '${external_ic}'
+  'frac_grid': '${frac_grid}'
   'ignore_rst_cksum': '${ignore_rst_cksum}'
   'increment_file_on_native_grid': '${increment_file_on_native_grid}'
   'make_nh': '${make_nh}'
@@ -993,12 +1001,6 @@ if [ "${JEDI_TYPE_SNOW}" = "YES" ]; then
         imsversion="1.3"
       fi
       imsres="4km"
-
-      if [ "${FRAC_GRID}" = "YES" ]; then
-        frac_grid=".true."
-      else
-        frac_grid=".false."
-      fi
 
 cat > fims.nml << EOF
 &fIMS_nml

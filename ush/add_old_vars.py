@@ -52,7 +52,8 @@ def main():
         with Dataset(sfc_data_fp, mode="r+") as ds:
             copy_map = {
                 "weasdl": ("sheleg", "sheleg"),
-                "snodl": ("snwdph", "snwdph")
+                "snodl": ("snwdph", "snwdph"),
+                "zorli": ("zorl", "zorl")
             }
             for src_name, (dst_name, new_long_name) in copy_map.items():
                 if src_name not in ds.variables:
