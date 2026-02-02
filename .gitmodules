@@ -30,3 +30,7 @@
 	url = https://github.com/NOAA-EPIC/land-SCF_proc.git
 	branch = land-DA
 	ignore = dirty
+[submodule "sorc/UFS_UTILS_nofrac.fd"]
+	path = sorc/UFS_UTILS_nofrac.fd
+	url = https://github.com/ufs-community/UFS_UTILS.git
+        ignore = dirty

@@ -396,6 +396,10 @@ else
     printf "... Moving pre-compiled executables to designated location ...\n"
     mkdir -p "${HOME_DIR}/exec"
     cd "${INSTALL_DIR}/bin"
+    # change executable name of chgres_cube for ATML (no frac_grid)
+    if [ "${APPLICATION}" = ATML ] && [ -f "${INSTALL_DIR}/bin/chgres_cube" ]; then
+      mv "${INSTALL_DIR}/bin/chgres_cube" "${INSTALL_DIR}/bin/chgres_cube_nofrac"
+    fi
     # copy executables in build/bin to HOME_DIR/exec
     for file in *; do
       [ -x "${file}" ] && cp "${file}" "${HOME_DIR}/exec"

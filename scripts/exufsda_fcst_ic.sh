@@ -93,7 +93,11 @@ ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn
 #
 #-----------------------------------------------------------------------
 #
-export pgm="chgres_cube"
+if [ "${APP}" = "ATML" ]; then
+  export pgm="chgres_cube_nofrac"
+else
+  export pgm="chgres_cube"
+fi
 
 . prep_step
 ${RUN_CMD} -n ${NPROCS_FCST_IC} ${EXECufsda}/$pgm >>$pgmout 2>errfile

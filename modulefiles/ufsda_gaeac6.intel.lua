@@ -38,6 +38,9 @@ load(pathJoin("sigio", sigio_ver))
 zlib_ver=os.getenv("zlib_ver") or "1.2.13"
 load(pathJoin("zlib", zlib_ver))
 
+sfcio_ver=os.getenv("sfcio_ver") or "1.4.2"
+load(pathJoin("sfcio", sfcio_ver))
+
 unload("darshan-runtime")
 unload("cray-libsci")
 
