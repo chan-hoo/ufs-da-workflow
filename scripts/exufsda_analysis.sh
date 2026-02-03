@@ -248,10 +248,22 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   cp -p "${PARMufsda}/jedi/soca/obsop_name_map.yaml" .
 
   # Observation files
-  ln -nsf "${FIXufsda}/DATA_obs/soca/adt_ssh_${PDY}${cyc}.nc" obs/adt_ssh.nc
-  ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/prof_insitu.nc
-  ln -nsf "${FIXufsda}/DATA_obs/soca/sss_salinity_${PDY}${cyc}.nc" obs/sss_salinity.nc
-  ln -nsf "${FIXufsda}/DATA_obs/soca/sst_satellite_${PDY}${cyc}.nc" obs/sst_satellite.nc
+  obs_prefix="obs.${PDY}.${cycle}"
+  # NOAA RTOFS in-situ profiles
+  if [ "${OBS_SOCA_RTOFS}" = "YES" ]; then
+    vars_list=( "waterTemperature" "salinity" )
+#    for ivar in "${vars_list[@]}" ; do
+#      ln -nsf "${COMINOUTobs}/${obs_prefix}.rtofs_prof_${ivar}.nc" "${DATA}/obs"
+#    done
+  fi
+  # temporary link for 3d-var
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
+    ln -nsf "${FIXufsda}/DATA_obs/soca/adt_ssh_${PDY}${cyc}.nc" obs/adt_ssh.nc
+    ln -nsf "${FIXufsda}/DATA_obs/soca/sss_salinity_${PDY}${cyc}.nc" obs/sss_salinity.nc
+    ln -nsf "${FIXufsda}/DATA_obs/soca/sst_satellite_${PDY}${cyc}.nc" obs/sst_satellite.nc
+    ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/${obs_prefix}.rtofs_prof_waterTemperature.nc
+    ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/${obs_prefix}.rtofs_prof_salinity.nc
+  fi
 
   # Set JEDI executable
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then

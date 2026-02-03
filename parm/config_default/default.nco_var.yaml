@@ -6,6 +6,7 @@ path:
   COMINgfs: ""
   DCOMINghcn: ""
   DCOMINobs: ""
+  DCOMINrtofs: ""
   DCOMINsmap: ""
   DCOMINsmops: ""
 parm:

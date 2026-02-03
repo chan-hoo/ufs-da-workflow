@@ -84,8 +84,8 @@ def main():
             obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt_ssh")
             obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst_satellite")
             obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss_salinity")
-            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof_insitu")
-            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof_insitu")
+            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"rtofs_prof_waterTemperature")
+            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"rtofs_prof_salinity")
     # Plot FV3-JEDI
     if JEDI_TYPE_FV3 == "YES":
         if TYPE_ANAL_FCST == "ctest":

@@ -479,6 +479,9 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
       soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
       settings="\
   'cdate': !!str ${PDY}${cyc}
+  'cycle': ${cycle}
+  'OBS_SOCA_RTOFS': '${OBS_SOCA_RTOFS}'
+  'PDY': !!str ${PDY}
   'soca_timewindow_begin_iso': !!str ${soca_timewindow_begin_iso}
   'soca_background_date_iso': !!str ${soca_background_date_iso}
 " # End of settings variable
@@ -936,8 +939,31 @@ fi
 ##########################
 # SOCA observation data
 ##########################
+if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
+  obs_dp="${DCOMINobs}/soca/${YYYY}"
+  obs_out_prefix="obs.${PDY}.${cycle}"
 
-
+  ## NOAA RTOFS in-situ profiles
+  if [ "${OBS_SOCA_RTOFS}" = "YES" ]; then
+    # water temperature / salinity
+    vars_list=( "waterTemperature" "salinity" )
+    for ivar in "${vars_list[@]}" ; do
+      obs_out_fn="${obs_out_prefix}.rtofs_prof_${ivar}.nc"
+      if [ -e "${obs_dp}/${obs_out_fn}" ]; then
+        cp -p "${obs_dp}/${obs_out_fn}" ${COMINOUTobs}
+      else
+        # ioda-converting
+        input_raw_fn="${PDY}00.profile"
+        cp -p "${DCOMINrtofs}/${YYYY}/${input_raw_fn}" .
+        ${USHufsda}/rtofs_bin2ioda.py -i ${input_raw_fn} -v ${ivar} -d ${PDY}${cyc} -o ${obs_out_fn}
+        if [ $? -ne 0 ]; then
+          err_exit "Converting RTOFS insitu profile for ${ivar} failed !!!"
+        fi
+        cp -p ${obs_out_fn} "${COMINOUTobs}/${obs_out_fn}"
+      fi
+    done
+  fi
+fi
 
 ##########################
 # Snow observation data

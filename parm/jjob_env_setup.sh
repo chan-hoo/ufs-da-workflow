@@ -65,6 +65,8 @@ export COMINgfs="${COMINgfs:-${FIXufsda}/DATA_gfs}"
 export DCOMINobs="${DCOMINobs:-${FIXufsda}/DATA_obs}"
 # Path to GHCN raw data files
 export DCOMINghcn="${DCOMINghcn:-${FIXufsda}/DATA_ghcn}"
+# Path to RTOFS raw data files
+export DCOMINrtofs="${DCOMINrtofs:-${FIXufsda}/DATA_rtofs}"
 # Path to SMAP raw data files
 export DCOMINsmap="${DCOMINsmap:-${FIXufsda}/DATA_smap}"
 # Path to SMOPS raw data files

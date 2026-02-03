@@ -88,6 +88,7 @@ cost function:
 
   observations:
     observers:
+{%- if OBS_SOCA_RTOFS == "YES" %}
     - obs space:
         name: InsituTemperature
         obsdataout:
@@ -97,7 +98,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/prof_insitu.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.rtofs_prof_waterTemperature.nc
         simulated variables: [waterTemperature]
       obs operator:
         name: InsituTemperature
@@ -117,7 +118,7 @@ cost function:
         obsdatain:
           engine:
             type: H5File
-            obsfile: ./obs/prof_insitu.nc
+            obsfile: ./obs/obs.{{ PDY }}.{{ cycle }}.rtofs_prof_salinity.nc
         simulated variables: [salinity]
       obs operator:
         name: VertInterp
@@ -129,7 +130,8 @@ cost function:
         covariance model: diagonal
       obs filters:
       - *land_mask
-    
+{%- endif %}
+
     - obs space:
         name: SeaSurfaceTemp
         obsdataout:

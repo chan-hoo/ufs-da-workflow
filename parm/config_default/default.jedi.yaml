@@ -14,6 +14,7 @@ flag:
   OBS_SNOW_GHCN: 'NO'
   OBS_SNOW_IMS: 'NO'
   OBS_SNOW_SFCSNO: 'NO'
+  OBS_SOCA_RTOFS: 'NO'
   OBS_SWC_SMAP: 'NO'
   OBS_SWC_SMOPS: 'NO'
 path:
