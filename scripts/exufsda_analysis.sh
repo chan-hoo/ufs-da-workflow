@@ -266,8 +266,12 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   fi
 
   # Set JEDI executable
-  if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
-    jedi_exe_fn="soca_var.x"
+  if [ "${JEDI_ALGORITHM}" = "3dvar" ] || [ "${JEDI_ALGORITHM}" = "3dvarfgat_pseudo" ]; then
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      jedi_exe_fn="gdas.x soca variational"
+    else
+      jedi_exe_fn="soca_var.x"
+    fi
   else
     jedi_exe_fn="soca_${JEDI_ALGORITHM}.x"
   fi

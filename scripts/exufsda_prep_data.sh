@@ -639,7 +639,7 @@ if [ "${COLDSTART}" = "YES" ] && [ "${PDY}${cyc}" == "${DATE_FIRST_CYCLE:0:10}" 
 else
   do_soca_prep="YES"
 fi
-
+do_soca_prep="NO"
 if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
     ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
       "${TYPE_ANAL_FCST}" == "fcst-1st" ) ]]; then
