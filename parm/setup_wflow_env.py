@@ -328,7 +328,8 @@ def add_new_parm_jedi(home_dir,config_parm):
 
     if jedi_iodaconv_path is None or jedi_iodaconv_path == "None":
         if jedi_bundle_gdas == "gdas":
-            jedi_iodaconv_path = os.path.join(jedi_bin_path, "../sorc/da-utils/ush")
+            jedi_iodaconv_path = os.path.join(jedi_bin_path, "../../sorc/da-utils/ush")
+            jedi_gdas_pyioda_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
         else:
             jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
 
@@ -338,6 +339,7 @@ def add_new_parm_jedi(home_dir,config_parm):
     config_parm["parm"]["list_jedi_land"] = list_jedi_land
     config_parm["path"]["CUSTOM_JEDI_CONFIG_PATH"] = custom_jedi_config_path
     config_parm["path"]["JEDI_BIN_PATH"] = jedi_bin_path
+    config_parm["path"]["JEDI_GDAS_PYIODA_PATH"] = jedi_gdas_pyioda_path
     config_parm["path"]["JEDI_IODACONV_PATH"] = jedi_iodaconv_path
 
     return config_parm

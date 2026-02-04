@@ -13,8 +13,12 @@ import re
 from datetime import datetime
 import os, sys
 
+jedi_bundle_gdas = os.environ.get('JEDI_BUNDLE_GDAS')
+if jedi_bundle_gdas == "gdas":
+    jedi_gdas_pyioda_path = os.environ.get('JEDI_GDAS_PYIODA_PATH')
+    sys.path.append(jedi_gdas_pyioda_path)
+
 jedi_iodaconv_path = os.environ.get('JEDI_IODACONV_PATH')
-print(f'''jedi_iodaconv_path: {jedi_iodaconv_path}''')
 sys.path.append(jedi_iodaconv_path)
 print(f'''sys.path: {sys.path}''')
 
