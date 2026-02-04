@@ -332,6 +332,7 @@ def add_new_parm_jedi(home_dir,config_parm):
             jedi_gdas_pyioda_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
         else:
             jedi_iodaconv_path = os.path.join(jedi_bin_path, "../lib", jedi_py_ver)
+            jedi_gdas_pyioda_path = "None"
 
     if custom_jedi_config_path is None or custom_jedi_config_path == "None":
         custom_jedi_config_path = os.path.join(fix_dir, "DATA_jedi", "custom_yaml")
