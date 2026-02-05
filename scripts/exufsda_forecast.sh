@@ -16,6 +16,8 @@ if [ "${APP}" = "S2SWAL" ]; then
   export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
   export PSM_RANKS_PER_CONTEXT=4
   export PSM_SHAREDCONTEXTS=1
+  # at least for Gaea-C6
+  export MPIR_CVAR_CH4_OFI_ENABLE_RMA=0
 fi
 
 app_lower=$(echo ${APP} | tr '[A-Z]' '[a-z]')
