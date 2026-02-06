@@ -20,9 +20,16 @@ def get_obs_stats(fname, svar_long):
 
     logging.info(f''' === File Name: {fname}''')
     f=netCDF4.Dataset(fname)
-    obs=f.groups['ObsValue'].variables[svar_long][:]
+    if svar_long == "brightnessTemperature":
+        # Channel number
+        ich = 1
+        ichm1 = ich - 1
+        obs=f.groups['ObsValue'].variables[svar_long][:,ichm1]
+        omb=f.groups['ombg'].variables[svar_long][:,ichm1]
+    else:
+        obs=f.groups['ObsValue'].variables[svar_long][:]
+        omb=f.groups['ombg'].variables[svar_long][:]
     logging.debug("ObsValue:",obs)
-    omb=f.groups['ombg'].variables[svar_long][:]
     logging.debug("OMBG:",omb)
     lat=f.groups['MetaData'].variables['latitude'][:]
     lon=f.groups['MetaData'].variables['longitude'][:]
@@ -206,6 +213,20 @@ if __name__ == '__main__':
     if JEDI_TYPE_FV3 == "YES":
         if TYPE_ANAL_FCST == "ctest":
             svar_list = ["NO2"]
+    if OBS_ATM_AMV_ABI_GOES_16 == "YES":
+        svar_list.append("satwnd.abi_goes-16")
+    if OBS_ATM_ASCAT_W == "YES":
+        svar_list.append("scatwnd.ascat_metop-b")
+    if OBS_ATM_ATMS_N20 == "YES":
+        svar_list.append("atms_n20")
+    if OBS_ATM_CONVENTIONAL_PS == "YES":
+        svar_list.append("conventional_ps")
+    if OBS_ATM_GNSSRO_COSMIC2 == "YES":
+        svar_list.append("gnssro_cosmic2")
+    if OBS_ATM_OZONE_OMPSNP_NPP == "YES":
+        svar_list.append("ozone.ompsnp_npp")
+#    if OBS_ATM_OZONE_OMPSTC_NPP == "YES":
+#        svar_list.append("ozone.ompstc_npp")
     if OBS_SNOW_GHCN == "YES":
         svar_list.append("ghcn_snow")
     if OBS_SNOW_IMS == "YES":
@@ -219,6 +240,7 @@ if __name__ == '__main__':
 
     logging.info(f''' svar_list: {svar_list}''')
 
+    # svar: netcdf file name, svar_long: variable name in nc file
     for svar in svar_list:
         fn_input = f'''diag.{svar}_{PDY}{cyc}.nc'''
         logging.info(f''' Input file: {fn_input}''')
@@ -244,6 +266,20 @@ if __name__ == '__main__':
             svar_long = "seaSurfaceTemperature"
         elif svar == "NO2":
             svar_long = "nitrogendioxideColumn"
+        elif svar == "atms_n20":
+            svar_long = "brightnessTemperature"
+        elif svar == "conventional_ps":
+            svar_long = "stationPressure"
+        elif svar == "gnssro_cosmic2":
+            svar_long = "bendingAngle"
+        elif svar == "ozone.ompsnp_npp":
+            svar_long = "ozoneLayer"
+        elif svar == "ozone.ompstc_npp":
+            svar_long = "ozoneTotal"
+        elif svar == "satwnd.abi_goes-16":
+            svar_long = "windEastward"
+        elif svar == "scatwnd.ascat_metop-b":
+            svar_long = "windEastward"
         else:
             svar_long = svar
 
