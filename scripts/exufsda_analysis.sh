@@ -180,6 +180,15 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   if [[ $err != 0 ]]; then
     err_exit "JEDI DA increment failed"
   fi
+
+  # Copy H(x) output to COMINOUThofx
+  if [ "$(ls -A "${DATA}/diags")" ]; then
+    cp -p ${DATA}/diags/* ${COMINOUThofx}
+    ln -nsf ${COMINOUThofx}/*.nc ${DATA_HOFX}
+  fi
+
+  # turn off plotting; need to be removed later
+  DO_PLOT_COMP_JEDI_INCR="NO"
 fi
 
 

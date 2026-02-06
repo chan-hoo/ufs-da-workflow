@@ -2,12 +2,13 @@
 
 ###################################################################### CHJ #####
 ## Name		  : plot_obs_file.py
-## Usage	  : Plot observation data file of land-DA workflow
+## Usage	  : Plot observation data files
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2024/12/03: Chan-Hoo Jeon : Preliminary version
 ## V001: 2025/04/17: Chan-Hoo Jeon : Add IMS option
 ## V002: 2025/11/13: Chan-Hoo Jeon : Add SOCA option
+## V003: 2026/02/06: Chan-Hoo Jeon : Add ATM option
 ###################################################################### CHJ #####
 
 import os, sys
@@ -35,6 +36,13 @@ def main():
     TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
+    OBS_ATM_AMV_ABI_GOES_16 = yaml_data['OBS_ATM_AMV_ABI_GOES_16']
+    OBS_ATM_ASCAT_W = yaml_data['OBS_ATM_ASCAT_W']
+    OBS_ATM_ATMS_N20= yaml_data['OBS_ATM_ATMS_N20']
+    OBS_ATM_CONVENTIONAL_PS = yaml_data['OBS_ATM_CONVENTIONAL_PS']
+    OBS_ATM_GNSSRO_COSMIC2 = yaml_data['OBS_ATM_GNSSRO_COSMIC2']
+    OBS_ATM_OZONE_OMPSNP_NPP = yaml_data['OBS_ATM_OZONE_OMPSNP_NPP']
+    OBS_ATM_OZONE_OMPSTC_NPP = yaml_data['OBS_ATM_OZONE_OMPSTC_NPP']
     OBS_SNOW_GHCN = yaml_data['OBS_SNOW_GHCN']
     OBS_SNOW_IMS = yaml_data['OBS_SNOW_IMS']
     OBS_SWC_SMAP = yaml_data['OBS_SWC_SMAP']
@@ -42,7 +50,7 @@ def main():
     obs_prefix = yaml_data['obs_prefix']
     PDY = yaml_data['PDY']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
-    
+ 
     # Set logging config
     log_level_str = PY_LOG_LEVEL.upper()
     try:
@@ -59,6 +67,29 @@ def main():
     # Set the path to Natural Earth dataset
     cartopy.config['data_dir']=cartopy_ne_path
 
+    # Plot AMV_ABI_GOES16
+    if OBS_ATM_AMV_ABI_GOES_16 == "YES":
+        obs_plot("goes16_e",PDY,work_dir,obs_prefix,"satwnd.abi_goes-16")
+        obs_plot("goes16_n",PDY,work_dir,obs_prefix,"satwnd.abi_goes-16")
+    # Plot ASCAT_W
+    if OBS_ATM_ASCAT_W == "YES":
+        obs_plot("ascat_e",PDY,work_dir,obs_prefix,"scatwnd.ascat_metop-b")
+        obs_plot("ascat_n",PDY,work_dir,obs_prefix,"scatwnd.ascat_metop-b")
+    # Plot ATMS_N20
+    if OBS_ATM_ATMS_N20 == "YES":
+        obs_plot("atms_n20",PDY,work_dir,obs_prefix,"atms_n20")
+    # Plot CONVENTIONAL_PS
+    if OBS_ATM_CONVENTIONAL_PS == "YES":
+        obs_plot("conventional_ps",PDY,work_dir,obs_prefix,"conventional_ps")
+    # Plot GNSSRO_COSMIC2
+    if OBS_ATM_GNSSRO_COSMIC2== "YES":
+        obs_plot("gnssro_cosmic2",PDY,work_dir,obs_prefix,"gnssro_cosmic2")
+    # Plot OZONE_OMPSNP_NPP
+    if OBS_ATM_OZONE_OMPSNP_NPP== "YES":
+        obs_plot("ompsnp_npp",PDY,work_dir,obs_prefix,"ozone.ompsnp_npp")
+    # Plot OZONE_OMPSTC_NPP
+    if OBS_ATM_OZONE_OMPSTC_NPP== "YES":
+        obs_plot("ompstc_npp",PDY,work_dir,obs_prefix,"ozone.ompstc_npp")
     # Plot GHCN
     if OBS_SNOW_GHCN == "YES":
         obs_plot("ghcn",PDY,work_dir,obs_prefix,"ghcn_snow")
@@ -149,7 +180,7 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     tlb_sz=3
     n_rnd=2
     cmap_range='fixed'
-    scat_sz=1.0
+    scat_sz=0.2
 
     # Extract data array
     if obs_type == "smap" or obs_type == "smops":
@@ -179,15 +210,49 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     elif obs_type == "fv3_geos":
         gvar = "nitrogendioxideColumn"
         pvar = "Nitrogen dioxide (NO2)"
+    elif obs_type == "goes16_e":
+        gvar = "windEastward"
+        pvar = "Eastward wind component (m/s)"
+    elif obs_type == "goes16_n":
+        gvar = "windNorthward"
+        pvar = "Northward wind component (m/s)"
+    elif obs_type == "ascat_e":
+        gvar = "windEastward"
+        pvar = "Eastward wind component at 10m (m/s)"
+    elif obs_type == "ascat_n":
+        gvar = "windNorthward"
+        pvar = "Northward wind component at 10m (m/s)"
+    elif obs_type == "atms_n20":
+        gvar = "brightnessTemperature"
+        pvar = "3x3 averaged brightness temperature (K)"
+    elif obs_type == "conventional_ps":
+        gvar = "stationPressure"
+        pvar = "Station Pressue Quality Marker"
+    elif obs_type == "gnssro_cosmic2":
+        gvar = "bendingAngle"
+        pvar = "Bending angle (radians)"
+    elif obs_type == "ompsnp_npp":
+        gvar = "ozoneLayer"
+        pvar = "Layer Ozone (DU)"
+    elif obs_type == "ompstc_npp":
+        gvar = "ozoneTotal"
+        pvar = "Total column ozone (DU)"
     else:
         gvar = svar
         pvar = svar
 
-    sfld = mdat.groups[svar].variables[gvar][:]
-
     obs_type_upper = obs_type.upper()
-    out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
-    out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}'''
+    if obs_type == "atms_n20":
+        # channel number (total=22)
+        ich = 1
+        logging.info(f''' ATMS_N20: Channel number = {ich}''')
+        sfld = mdat.groups[svar].variables[gvar][:,ich-1]
+        out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}::CH{ich}'''
+        out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}_ch{ich}'''
+    else:
+        sfld = mdat.groups[svar].variables[gvar][:]
+        out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
+        out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}'''
 
     # Check array size
     lon_len = len(lon)
@@ -242,6 +307,32 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         elif obs_type == 'fv3_geos':
             cs_max = 3e-05
             cs_min = 0
+        elif obs_type == 'goes16_e' or obs_type == 'goes16_n':
+            cs_max = 60
+            cs_min = -60
+            cs_cmap = 'turbo'
+        elif obs_type == 'ascat_e' or obs_type == 'ascat_n':
+            cs_max = 20
+            cs_min = -20
+            cs_cmap = 'turbo'
+        elif obs_type == 'atms_n20':
+            cs_max = 300.0
+            cs_min = 100.0
+        elif obs_type == 'conventional_ps':
+            cs_max = 105000.0
+            cs_min = 75000.0
+            cs_cmap = 'turbo'
+        elif obs_type == 'gnssro_cosmic2':
+            cs_max = 0.03
+            cs_min = 0.0
+        elif obs_type == 'ompsnp_npp':
+            cs_max = 600.0
+            cs_min = 200.0
+            cs_cmap = 'turbo'
+        elif obs_type == 'ompstc_npp':
+            cs_max = 600.0
+            cs_min = 200.0
+            cs_cmap = 'turbo'
         else:
             cs_max=300.0
     else:
