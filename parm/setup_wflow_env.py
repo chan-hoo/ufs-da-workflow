@@ -21,7 +21,6 @@ dirpath = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(dirpath, '../ush'))
 
 from fill_jinja_template import fill_jinja_template
-from uwtools.api.rocoto import realize
 
 
 # Main part (will be called at the end) ============================= CHJ ======
@@ -851,6 +850,8 @@ def create_ecflow_files(home_dir,config_parm):
 
 # ==================================================================== CHJ =====
 def create_xml_extra(parm_dir,config_parm,config_parm_str):
+    from uwtools.api.rocoto import realize
+
     coldstart = config_parm["flag"]["COLDSTART"]
     exp_case_path = config_parm["path"]["exp_case_path"]
     date_first_cycle = config_parm["parm"]["DATE_FIRST_CYCLE"]
