@@ -679,7 +679,7 @@ if [ "${TYPE_ANAL_FCST}" = "ctest" ]; then
       ### Run JEDI executable
       if [ "${isoca}" = "forecast_mom6" ]; then
         export BIN_DIR="${JEDI_BIN_PATH}"
-        export MPIEXE="${RUUN_CMD}"
+        export MPIEXE="${RUN_CMD}"
         # To avoid file replacement
         [[ -e "input.nml" ]] && rm input.nml
         py_exe_path="${JEDI_BIN_PATH}/../../jedi-bundle/soca/test"

@@ -1,7 +1,5 @@
 flag:
-  JEDI_TYPE_SNOW: 'NO'
   JEDI_TYPE_SOCA: 'YES'
-  JEDI_TYPE_SOIL_MOISTURE: 'NO'
 path:
 parm:
   ACCOUNT: epic
@@ -14,4 +12,4 @@ parm:
   JEDI_CTEST_NAME: 3dvarfgat_pseudo
   NPROCS_ANALYSIS: 2
   TYPE_ANAL_FCST: ctest
-  WORKFLOW_MANAGER: rocoto
+  WORKFLOW_MANAGER: ecflow
