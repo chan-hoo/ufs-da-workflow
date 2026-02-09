@@ -265,13 +265,11 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
       ln -nsf "${COMINOUTobs}/${obs_prefix}.rtofs_prof_${ivar}.nc" "${DATA}/obs"
     done
   fi
-  # temporary link for 3d-var
+  ##### temporary link for 3d-var #####
   if [ "${JEDI_ALGORITHM}" = "3dvar" ]; then
     ln -nsf "${FIXufsda}/DATA_obs/soca/adt_ssh_${PDY}${cyc}.nc" obs/adt_ssh.nc
     ln -nsf "${FIXufsda}/DATA_obs/soca/sss_salinity_${PDY}${cyc}.nc" obs/sss_salinity.nc
     ln -nsf "${FIXufsda}/DATA_obs/soca/sst_satellite_${PDY}${cyc}.nc" obs/sst_satellite.nc
-#    ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/${obs_prefix}.rtofs_prof_waterTemperature.nc
-#    ln -nsf "${FIXufsda}/DATA_obs/soca/prof_insitu_${PDY}${cyc}.nc" obs/${obs_prefix}.rtofs_prof_salinity.nc
   fi
 
   # Set JEDI executable

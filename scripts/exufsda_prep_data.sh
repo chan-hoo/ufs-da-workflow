@@ -955,7 +955,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ]; then
         # ioda-converting
         input_raw_fn="${PDY}00.profile"
         cp -p "${DCOMINrtofs}/${YYYY}/${input_raw_fn}" .
-        ${USHufsda}/rtofs_bin2ioda.py -i ${input_raw_fn} -v ${ivar} -d ${PDY}${cyc} -o ${obs_out_fn}
+	# copy MOM6 layer depth file
+	cp -p "${PARMufsda}/jedi/rtofs_mom6_layerz.txt" "layerz.txt"
+        ${USHufsda}/rtofs_bin2ioda.py -i ${input_raw_fn} -v ${ivar} -o ${obs_out_fn} --layerz layerz.txt
         if [ $? -ne 0 ]; then
           err_exit "Converting RTOFS insitu profile for ${ivar} failed !!!"
         fi
