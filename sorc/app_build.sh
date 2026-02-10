@@ -295,10 +295,10 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
       cd "${JEDI_PDIR}"
-      git clone --recursive https://github.com/NOAA-EMC/GDASApp.git
+      git clone https://github.com/NOAA-EMC/GDASApp.git
       cd GDASApp
       # For specific hash
-      git checkout 54dbb71
+      git checkout eba447f
       git submodule update --init --recursive
       # Run build script
       ./build.sh -f -a -d -t ${PLATFORM}
