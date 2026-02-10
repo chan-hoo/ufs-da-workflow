@@ -6,5 +6,5 @@ with Rocoto on the MSU machine Hercules
 load("contrib")
 load("rocoto")
 
-prepend_path("MODULEPATH","/work/noaa/epic/UFS-conda/modulefiles")
+prepend_path("MODULEPATH","/work/noaa/epic/UFS-conda-v2/modulefiles")
 load("python-ufs-land-da-wflow")

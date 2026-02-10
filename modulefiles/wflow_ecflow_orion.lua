@@ -8,6 +8,6 @@ load("stack-oneapi/2024.2.1")
 load("stack-intel-oneapi-mpi/2021.13")
 load("ecflow/5.11.4")
 
-prepend_path("MODULEPATH","/work/noaa/epic/UFS-conda/modulefiles")
+prepend_path("MODULEPATH","/work/noaa/epic/UFS-conda-v2/modulefiles")
 load("python-ufs-land-da-wflow")
 
