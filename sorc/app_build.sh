@@ -294,6 +294,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
       make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
+      module load git-lfs
       cd "${JEDI_PDIR}"
       git clone https://github.com/NOAA-EMC/GDASApp.git
       cd GDASApp
