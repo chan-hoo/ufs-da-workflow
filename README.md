@@ -1,7 +1,7 @@
 # ufs-da-workflow
 UFS DA (Data Assimilation) Workflow
 - Available coupling configurations in UFS Weather Model:
- 1. S2SWA: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3)
+ 1. S2SWA: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + CHM (GOCART)
  2. S2SWAL: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + CHM (GOCART) + LND (Noah-MP)
  3. NG-GODAS: ATM (DATM) + OCN (MOM6) + ICE (CICE)
  4. ATML: ATM (FV3+CCPP) + LND (Noah-MP)
@@ -52,7 +52,7 @@ cd ..
 module use modulefiles
 module load wflow_[workflow_manager]_[machine] 
 ```
-where `[workflow_manager]` is `ecflow` or `rocoto`, and `[machine]` is `gaeac6`, `hercules`, `orion`, `ursa`, or `derecho`.
+where `[workflow_manager]` is `ecflow`, `rocoto`, or `none`, and `[machine]` is `gaeac6`, `hercules`, `orion`, `ursa`, or `derecho`.
 
 5. Copy a sample configuration and modify it as needed:
 ```
