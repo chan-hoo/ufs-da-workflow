@@ -22,6 +22,11 @@ workflow:
     exp_case_path: "{{ exp_case_path }}"
     MACHINE: "{{ MACHINE }}"
     NATIVE: "{{ NATIVE }}"
+    MEMORY_PER_NODE_ANALYSIS: "{{ MEMORY_PER_NODE_ANALYSIS }}"
+    MEMORY_PER_NODE_FCST_IC: "{{ MEMORY_PER_NODE_FCST_IC }}"
+    MEMORY_PER_NODE_FORECAST: "{{ MEMORY_PER_NODE_FORECAST }}"
+    MEMORY_PER_NODE_PLOT_STATS: "{{ MEMORY_PER_NODE_PLOT_STATS }}"
+    MEMORY_PER_NODE_PREP_DATA: "{{ MEMORY_PER_NODE_PREP_DATA }}"
     NPROCS_ANALYSIS: "{{ NPROCS_ANALYSIS }}"
     NPROCS_PLOT_STATS: "{{ NPROCS_PLOT_STATS }}"
     NPROCS_PREP_DATA: "{{ NPROCS_PREP_DATA }}"
@@ -78,7 +83,7 @@ workflow:
   {%- endif %}
       join: "&LOGDIR;/prep_data&LOGFN_SUFFIX;"
   {%- if memory_flag %}
-      memory: 128G
+      memory: "&MEMORY_PER_NODE_PREP_DATA;"
   {%- endif %}
       dependency:
         or:
@@ -128,7 +133,7 @@ workflow:
   {%- endif %}
       join: "&LOGDIR;/analysis&LOGFN_SUFFIX;"
   {%- if MACHINE == "ursa" %}
-      memory: 64G
+      memory: "&MEMORY_PER_NODE_ANALYSIS;"
   {%- endif %}
   {%- if TYPE_ANAL_FCST != "ctest" %}
       dependency:
@@ -162,10 +167,10 @@ workflow:
   {%- endif %}
       join: "&LOGDIR;/fcst_ic&LOGFN_SUFFIX;"
   {%- if memory_flag %}
-      memory: 128G
+      memory: "&MEMORY_PER_NODE_FCST_IC;"
   {%- endif %}
 {%- endif %}
-{%- if TYPE_ANAL_FCST != "ctest" %}
+{%- if TYPE_ANAL_FCST != "ctest" and TYPE_ANAL_FCST != "anal-only" %}
     task_forecast:
       attrs:
   {%- if TYPE_ANAL_FCST == "fcst-1st" %}
@@ -192,6 +197,9 @@ workflow:
       queue: "&PARTITION_QUEUE;"
   {%- endif %}
       join: "&LOGDIR;/forecast&LOGFN_SUFFIX;"
+  {%- if memory_flag %}
+      memory: "&MEMORY_PER_NODE_FORECAST;"
+  {%- endif %}
       dependency:
         and:
           taskdep_prep_data:
@@ -249,13 +257,16 @@ workflow:
 {%- if NATIVE is not none %}
       native: "&NATIVE;"
 {%- endif %}
-  {%- if SCHED == "slurm" %}
+{%- if SCHED == "slurm" %}
       partition: "&PARTITION_QUEUE;"
       queue: "&QOS;"
-  {%- elif SCHED == "pbspro" %}
+{%- elif SCHED == "pbspro" %}
       queue: "&PARTITION_QUEUE;"
-  {%- endif %}
+{%- endif %}
       join: "&LOGDIR;/plot_stats&LOGFN_SUFFIX;"
+{%- if memory_flag %}
+      memory: "&MEMORY_PER_NODE_PLOT_STATS;"
+{%- endif %}
       dependency:
 {%- if ( COLDSTART == "YES" and date_second_cycle is none ) or TYPE_ANAL_FCST == "both" %}
         taskdep_forecast:
