@@ -79,10 +79,8 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   # Background files
   atm_fn="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
   cp -p "${data_restart}/${atm_fn}" ${DATA}/bkg/.
-  cp -p "${DATA}/bkg/${atm_fn}" "${DATA}/${atm_fn}_before_inc"
   sfc_fn="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
   cp -p "${data_restart}/${sfc_fn}" ${DATA}/bkg/.
-  cp -p "${DATA}/bkg/${sfc_fn}" "${DATA}/${sfc_fn}_before_inc"
 
   # Backgound ensemble files
   if [ "${ENSEMBLE_NUM_MEMBERS}" -gt 0 ]; then
@@ -196,8 +194,6 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   if [ "$(ls -A "${DATA}/anl")" ]; then
     cp -p ${DATA}/anl/* ${COMINOUT}
   fi
-  # Copy background files to COMINOUTrestart
-  cp -p ${DATA}/bkg/* ${COMINOUTrestart}
 
 fi
 
@@ -863,6 +859,8 @@ if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
   if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
     fn_data_atm="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
     fn_data_sfc="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+    fn_data_inc_atm="cubed_sphere_grid_atminc.jedi.nc"
+    fn_data_inc_sfc="cubed_sphere_grid_sfcinc.jedi.nc"
     out_title_base="UFS-DA::CubedSphere::${YYYY}-${MM}-${DD}-${HH}::"
     out_fn_base_prefix="ufsda_cubed_sphere_${YYYY}${MM}${DD}${HH}_"
     # zlevel_number is valid only for 3-D fields
@@ -874,9 +872,14 @@ cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 colorbar_option: 'fixed'
 fn_data_atm: '${fn_data_atm}'
 fn_data_sfc: '${fn_data_sfc}'
+fn_data_inc_atm: '${fn_data_inc_atm}'
+fn_data_inc_sfc: '${fn_data_inc_sfc}'
 out_title_base: '${out_title_base}'
 out_fn_base: '${out_fn_base_prefix}'
 path_data: '${DATA}/bkg'
+path_data_inc: '${DATA}/anl'
+plot_increment_atm: 'YES'
+plot_increment_sfc: 'NO'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 var_list_atm:
   - o3mr
