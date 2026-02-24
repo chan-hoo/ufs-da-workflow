@@ -6,6 +6,7 @@
 ## NOAA/EPIC
 ## History ===============================
 ## V000: 2026/02/23: Chan-Hoo Jeon : Preliminary version
+## V001: 2026/02/24: Chan-Hoo Jeon : Add increment plot
 ###################################################################### CHJ #####
 
 import os, sys
@@ -95,8 +96,11 @@ def main():
                 plot_data(path_data_inc,fn_data_inc_atm,var_nm,zlvlm1_atm,out_title_base,
                           out_fn_base,glon_atm,glat_atm,work_dir,"real","inc")
     # Plot sfc increment
-#    if plot_increment_sfc == "YES":
-
+    if plot_increment_sfc == "YES":
+        if var_list_sfc:
+            for var_nm in var_list_sfc:
+                plot_data(path_data_inc,fn_data_inc_sfc,var_nm,zlvlm1_atm,out_title_base,
+                          out_fn_base,glon_sfc,glat_sfc,work_dir,"real","inc")
 
 
 # geo lon/lat from =================================================== CHJ =====

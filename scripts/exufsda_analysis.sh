@@ -883,7 +883,10 @@ plot_increment_sfc: 'NO'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 var_list_atm:
   - o3mr
+  - spfh
   - tmp
+  - ugrd
+  - vgrd
 var_list_sfc:
   - snod
   - soilm
