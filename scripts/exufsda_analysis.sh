@@ -79,8 +79,11 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   # Background files
   atm_fn="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
   cp -p "${data_restart}/${atm_fn}" ${DATA}/bkg/.
+  cp -p "${DATA}/bkg/${atm_fn}" "${DATA}/${atm_fn}_before_inc"
   sfc_fn="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
   cp -p "${data_restart}/${sfc_fn}" ${DATA}/bkg/.
+  cp -p "${DATA}/bkg/${sfc_fn}" "${DATA}/${sfc_fn}_before_inc"
+
   # Backgound ensemble files
   if [ "${ENSEMBLE_NUM_MEMBERS}" -gt 0 ]; then
     atm_fn="${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc"
@@ -181,14 +184,21 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
     err_exit "JEDI DA increment failed"
   fi
 
+  #################
+  # Output files
+  #################
   # Copy H(x) output to COMINOUThofx
   if [ "$(ls -A "${DATA}/diags")" ]; then
     cp -p ${DATA}/diags/* ${COMINOUThofx}
     ln -nsf ${COMINOUThofx}/*.nc ${DATA_HOFX}
   fi
+  # Copy JEDI increment and FV3 increment files to COMINOUT
+  if [ "$(ls -A "${DATA}/anl")" ]; then
+    cp -p ${DATA}/anl/* ${COMINOUT}
+  fi
+  # Copy background files to COMINOUTrestart
+  cp -p ${DATA}/bkg/* ${COMINOUTrestart}
 
-  # turn off plotting; need to be removed later
-  DO_PLOT_COMP_JEDI_INCR="NO"
 fi
 
 
@@ -849,11 +859,48 @@ fi
 ###########################################################################
 DO_PLOT_COMP_JEDI_INCR="${DO_PLOT_COMP_JEDI_INCR:-YES}"
 if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
-  out_fn_base_prefix="ufsda_comp_"
-  # zlevel_number is valid only for 3-D fields such as stc/smc/slc
-  zlevel_number="1"
 
-  cat > plot_analysis_comp_increment.yaml <<EOF
+  if [ "${JEDI_TYPE_FV3}" = "YES" ]; then
+    fn_data_atm="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
+    fn_data_sfc="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+    out_title_base="UFS-DA::CubedSphere::${YYYY}-${MM}-${DD}-${HH}::"
+    out_fn_base_prefix="ufsda_cubed_sphere_${YYYY}${MM}${DD}${HH}_"
+    # zlevel_number is valid only for 3-D fields
+    zlevel_number_atm="1"
+    zlevel_number_sfc="1"
+
+    cat > plot_cubed_sphere_grid.yaml <<EOF
+cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+colorbar_option: 'fixed'
+fn_data_atm: '${fn_data_atm}'
+fn_data_sfc: '${fn_data_sfc}'
+out_title_base: '${out_title_base}'
+out_fn_base: '${out_fn_base_prefix}'
+path_data: '${DATA}/bkg'
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+var_list_atm:
+  - o3mr
+  - tmp
+var_list_sfc:
+  - snod
+  - soilm
+  - spfh2m
+  - tmp2m
+work_dir: '${DATA}'
+zlevel_number_atm: '${zlevel_number_atm}'
+zlevel_number_sfc: '${zlevel_number_sfc}'
+EOF
+
+    ${USHufsda}/plot_cubed_sphere_grid.py
+    if [ $? -ne 0 ]; then
+      err_exit "Cubed sphere grid plots failed."
+    fi
+
+  else
+    out_fn_base_prefix="ufsda_comp_"
+    # zlevel_number is valid only for 3-D fields such as stc/smc/slc
+    zlevel_number="1"
+    cat > plot_analysis_comp_increment.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 fn_ice_data: '${fn_ice_data}'
 fn_ice_incr: '${fn_ice_incr}'
@@ -876,11 +923,11 @@ work_dir: '${DATA}'
 zlevel_number: '${zlevel_number}'
 EOF
 
-  ${USHufsda}/plot_analysis_comp_increment.py
-  if [ $? -ne 0 ]; then
-    err_exit "JEDI increment comparison plot failed"
+    ${USHufsda}/plot_analysis_comp_increment.py
+    if [ $? -ne 0 ]; then
+      err_exit "JEDI increment comparison plot failed"
+    fi
   fi
-
   # Copy result file to COMINOUT
   cp -p ${out_fn_base_prefix}* ${COMINOUTplot}
 fi

@@ -3,15 +3,15 @@
 set -xue
 
 # Set the default values of plotting flags
-do_plot_obs="NO"
-do_plot_stats="NO"
-do_plot_time_history="NO"
 do_plot_fcst_out_fv3="NO"
 do_plot_fcst_out_mom6="NO"
 do_plot_fcst_out_cice="NO"
 do_plot_fcst_restart_fv3="NO"
 do_plot_fcst_restart_mom6="NO"
 do_plot_fcst_restart_cice="NO"
+do_plot_obs="NO"
+do_plot_stats="NO"
+do_plot_time_history="NO"
 if [ "${TYPE_ANAL_FCST}" = "fcst-1st" ]; then
   if [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
     do_plot_fcst_out_fv3="YES"
@@ -84,15 +84,15 @@ if [ "${OUTPUT_GRID}" != "cubed_sphere_grid" ]; then
   do_plot_fcst_out_fv3="NO"
 fi
 
-DO_PLOT_OBS="${DO_PLOT_OBS:-${do_plot_obs}}"
-DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
-DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 DO_PLOT_FCST_OUT_FV3="${DO_PLOT_FCST_OUT_FV3:-${do_plot_fcst_out_fv3}}"
 DO_PLOT_FCST_OUT_MOM6="${DO_PLOT_FCST_OUT_MOM6:-${do_plot_fcst_out_mom6}}"
 DO_PLOT_FCST_OUT_CICE="${DO_PLOT_FCST_OUT_CICE:-${do_plot_fcst_out_cice}}"
 DO_PLOT_FCST_RESTART_FV3="${DO_PLOT_FCST_RESTART_FV3:-${do_plot_fcst_restart_fv3}}"
 DO_PLOT_FCST_RESTART_MOM6="${DO_PLOT_FCST_RESTART_MOM6:-${do_plot_fcst_restart_mom6}}"
 DO_PLOT_FCST_RESTART_CICE="${DO_PLOT_FCST_RESTART_CICE:-${do_plot_fcst_restart_cice}}"
+DO_PLOT_OBS="${DO_PLOT_OBS:-${do_plot_obs}}"
+DO_PLOT_STATS="${DO_PLOT_STATS:-${do_plot_stats}}"
+DO_PLOT_TIME_HISTORY="${DO_PLOT_TIME_HISTORY:-${do_plot_time_history}}"
 
 # Set other dates
 next_date=$($NDATE ${DATE_CYCLE_FREQ_HR} $PDY$cyc)
