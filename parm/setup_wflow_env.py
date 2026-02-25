@@ -939,7 +939,7 @@ def set_machine_parm(machine):
     match lowercase_machine:
         case "derecho":
             MAX_CORES_PER_NODE = 128
-            NATIVE = 'place=excl'
+            NATIVE = '-l place=excl'
             PARTITION_QUEUE = "main"
             QOS = None
             RUN_CMD = "aprun"
