@@ -24,6 +24,9 @@
 #PBS -q {{ partition_queue }}
 #PBS -l walltime={{ walltime }}
 #PBS -l select={{ nnodes }}:ncpus={{ nprocs_per_node }}:mpiprocs={{ nprocs_per_node }}
+    {%- if NATIVE is not none %}
+#PBS -l {{ NATIVE }}
+    {%- endif %}
   {%- endif %}
 {%- endif %}
 

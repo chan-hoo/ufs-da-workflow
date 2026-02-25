@@ -939,7 +939,7 @@ def set_machine_parm(machine):
     match lowercase_machine:
         case "derecho":
             MAX_CORES_PER_NODE = 128
-            NATIVE = None
+            NATIVE = 'place=excl'
             PARTITION_QUEUE = "main"
             QOS = None
             RUN_CMD = "aprun"
@@ -967,7 +967,7 @@ def set_machine_parm(machine):
             SCHED = "slurm"
         case "ursa":
             MAX_CORES_PER_NODE = 192
-            NATIVE = None
+            NATIVE = '--exclusive'
             PARTITION_QUEUE = "u1-compute"
             QOS = "batch"
             RUN_CMD = "srun"
