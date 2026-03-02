@@ -749,6 +749,27 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
     ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
   fi
 
+  ###################################################
+  ## Horizontal/vertical correlation length scales
+  ###################################################
+  cat > calc_scales4parameter.yaml <<EOF
+bkg_fn: rossby_radius_h.nc
+gridspec_fn: rossby_radius_h.nc
+HZ_MAX: 300e3
+HZ_MIN_GRID_MULT: 2.0
+HZ_ROSSBY_MULT: 2.0
+mld_fn: MLD_003.nc
+output_fn: scales_cor1.nc
+output_variable_hz: hz
+output_variable_vt: vt
+PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+VT_MIN: 1.5
+VT_MAX: 50
+work_dir: '${DATA}'
+EOF
+
+
+
   ##################
   ## setcorscales
   ##################
