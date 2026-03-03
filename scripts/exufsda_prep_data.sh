@@ -751,9 +751,53 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
     ln -nsf "${COMINOUT}/${soca_gridspec_fn}" "${DATA_SHARE}/${soca_gridspec_fn}"
   fi
 
-  ###################################################
-  ## Horizontal/vertical correlation length scales
-  ###################################################
+
+  ##################
+  ## setcorscales
+  ##################
+  tmp_time_iso="0000-00-00T00:00:00Z"
+  soca_cor_rh_fn_prefix="ocn.cor_rh.incr"
+  soca_cor_rv_fn_prefix="ocn.cor_rv.incr"
+  soca_cor_rh_fn="${soca_cor_rh_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
+     [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
+    cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
+    cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
+    cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
+    cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+  elif [ -e "${DATA_SHARE}/${soca_cor_rh_fn}" ] && \
+       [ -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
+    cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
+    cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
+    cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
+    cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+  else
+    ### SOCA input yaml file
+    jedi_nml_fn="setcorscales.yaml"
+    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
+
+    ### Run soca_setcorscales.x
+    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
+      jedi_exe_fn="gdas_soca_setcorscales.x"
+    else
+      jedi_exe_fn="soca_setcorscales.x"
+    fi
+    export pgm="${jedi_exe_fn}"
+    . prep_step
+    ${RUN_CMD} -n 12 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
+    export err=$?; err_chk
+    cp errfile errfile_setcorscales
+    if [[ $err != 0 ]]; then
+      err_exit "JEDI SOCA setcorscales failed"
+    fi
+    cp -p "${soca_cor_rh_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rh_fn_prefix}_orig.nc"
+    cp -p "${soca_cor_rv_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rv_fn_prefix}_orig.nc"
+    cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
+    cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+  fi
+
+  ### Calculate horizontal and vertical correlation scales
   output_fn_scales_cor="scales_cor1.nc"
   cat > calc_scales4parameter.yaml <<EOF
 bkg_fp: '${bkg_fp}'
@@ -778,44 +822,16 @@ EOF
   fi
   cp -p ${output_fn_scales_cor} ${COMINOUT}
 
-  ##################
-  ## setcorscales
-  ##################
-  tmp_time_iso="0000-00-00T00:00:00Z"
-  soca_cor_rh_fn_prefix="ocn.cor_rh.incr"
-  soca_cor_rv_fn_prefix="ocn.cor_rv.incr"
-  soca_cor_rh_fn="${soca_cor_rh_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
-  soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
-  if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
-     [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
-    cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
-    cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
-  elif [ -e "${DATA_SHARE}/${soca_cor_rh_fn}" ] && \
-       [ -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
-    cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
-    cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
-  else
-    ### SOCA input yaml file
-    jedi_nml_fn="setcorscales.yaml"
-    cp -p "${PARMufsda}/jedi/soca/${jedi_nml_fn}" .
+  ### Replace horizontal and vertical correlation scales
+  ncks -A -v hz ${output_fn_scales_cor} "${soca_cor_rh_fn_prefix}_mod.nc"
+  ncap2 -O -s "Temp=hz;Salt=hz;ave_ssh(0,:,:)=hz(0,0,:,:);u=hz;v=hz" \
+              "${soca_cor_rh_fn_prefix}_mod.nc" "${soca_cor_rh_fn_prefix}.nc"
 
-    ### Run soca_setcorscales.x
-    if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
-      jedi_exe_fn="gdas_soca_setcorscales.x"
-    else
-      jedi_exe_fn="soca_setcorscales.x"
-    fi
-    export pgm="${jedi_exe_fn}"
-    . prep_step
-    ${RUN_CMD} -n 12 ${JEDI_BIN_PATH}/$pgm ${jedi_nml_fn} >>$pgmout 2>errfile
-    export err=$?; err_chk
-    cp errfile errfile_setcorscales
-    if [[ $err != 0 ]]; then
-      err_exit "JEDI SOCA setcorscales failed"
-    fi
-    cp -p "${soca_cor_rh_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rh_fn_prefix}.nc"
-    cp -p "${soca_cor_rv_fn_prefix}.${tmp_time_iso}.nc" "${soca_cor_rv_fn_prefix}.nc"
-  fi
+  ncks -A -v vt ${output_fn_scales_cor} "${soca_cor_rv_fn_prefix}_mod.nc"
+  ncap2 -O -s "Temp=vt;Salt=vt;ave_ssh(0,:,:)=vt(0,0,:,:);u=vt;v=vt" \
+              "${soca_cor_rv_fn_prefix}_mod.nc" "${soca_cor_rv_fn_prefix}.nc"
+
+  ### Copy output files to COMINOUT
   cp -p "${soca_cor_rh_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rh_fn}"
   cp -p "${soca_cor_rv_fn_prefix}.nc" "${COMINOUT}/${soca_cor_rv_fn}"
   if [ ! -e "${DATA_SHARE}/${soca_cor_rh_fn}" ]; then
@@ -824,6 +840,7 @@ EOF
   if [ ! -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
     ln -nsf "${COMINOUT}/${soca_cor_rv_fn}" "${DATA_SHARE}/${soca_cor_rv_fn}"
   fi
+
 
   ##########################
   ## parameters_diffusion
