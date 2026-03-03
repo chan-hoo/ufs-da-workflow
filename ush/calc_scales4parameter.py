@@ -17,12 +17,13 @@ def main():
         yaml_data = yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
-    bkg_fn = yaml_data['bkg_fn']
+    bkg_fp = yaml_data['bkg_fp']
     gridspec_fn = yaml_data['gridspec_fn']
     HZ_MAX = yaml_data['HZ_MAX']
     HZ_MIN_GRID_MULT = yaml_data['HZ_MIN_GRID_MULT']
     HZ_ROSSBY_MULT = yaml_data['HZ_ROSSBY_MULT']
-    mld_fn = yaml_data['mld_fn']
+    mld_fp = yaml_data['mld_fp']
+    mld_vn = yaml_data['mld_vn']
     output_fn = yaml_data['output_fn']
     output_variable_hz = yaml_data['output_variable_hz']
     output_variable_vt = yaml_data['output_variable_vt']
@@ -43,6 +44,9 @@ def main():
     logging.basicConfig(format='%(levelname)s::%(pathname)s::L%(lineno)d::%(message)s', level=log_level)
     logging.info(f''' YAML Data: {yaml_data}''')
 
+    if isinstance(HZ_MAX, str):
+        HZ_MAX = float(HZ_MAX)
+
     # read input
     gridspec_fp = os.path.join(work_dir,gridspec_fn)
     with nc.Dataset(gridspec_fp, 'r') as src:
@@ -52,14 +56,12 @@ def main():
         area = src.variables['area'][0]
         mask = src.variables['mask2d'][0]
 
-    bkg_fp = os.path.join(work_dir,bkg_fn)
     with nc.Dataset(bkg_fp, 'r') as src:
         h = src.variables['h'][0]
         varType = src.variables['h'].datatype
 
-    mld_fp = os.path.join(work_dir,mld_fn)
     with nc.Dataset(mld_fp, 'r') as src:
-        mld = src.variables['MLD_003'][0]
+        mld = src.variables[mld_vn][0]
     nl3 = mld.shape
   
     nz = h.shape[0]

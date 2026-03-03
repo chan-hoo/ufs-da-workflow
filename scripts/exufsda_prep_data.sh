@@ -674,8 +674,9 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
     data_dir="${COMINrestart_mc1}"
   fi
   r_fp="${data_dir}/${filedate}.MOM.res.nc"
+  bkg_fp="${DATA}/soca_prep/INPUT/MOM.res.nc"
   if [ -e "${r_fp}" ]; then
-    ln -nsf "${r_fp}" INPUT/MOM.res.nc
+    ln -nsf "${r_fp}" "${bkg_fp}"
   else
     err_exit "Symlink failed: ${r_fp} file does not exist."
   fi
@@ -686,11 +687,12 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
   ## Make sure this should run in parallel, otherwise it will cause unexpected errors.
 
   path_mom6_fix_dir="${FIXufsda}/DATA_fix/MOM6"
-  soca_gridspec_fn="soca_gridspec_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
+  soca_gridspec_prefix="soca_gridspec"
+  soca_gridspec_fn="${soca_gridspec_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   if [ -e "${path_mom6_fix_dir}/${soca_gridspec_fn}" ]; then
-    cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "soca_gridspec.nc"
+    cp -p "${path_mom6_fix_dir}/${soca_gridspec_fn}" "${soca_gridspec_prefix}.nc"
   elif [ -e "${DATA_SHARE}/${soca_gridspec_fn}" ]; then
-    cp -p "${DATA_SHARE}/${soca_gridspec_fn}" "soca_gridspec.nc"
+    cp -p "${DATA_SHARE}/${soca_gridspec_fn}" "${soca_gridspec_prefix}.nc"
   else
     ### SOCA input yaml file
     jedi_nml_fn="gridgen.yaml"
@@ -752,23 +754,29 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
   ###################################################
   ## Horizontal/vertical correlation length scales
   ###################################################
+  output_fn_scales_cor="scales_cor1.nc"
   cat > calc_scales4parameter.yaml <<EOF
-bkg_fn: rossby_radius_h.nc
-gridspec_fn: rossby_radius_h.nc
-HZ_MAX: 300e3
+bkg_fp: '${bkg_fp}'
+gridspec_fn: '${soca_gridspec_prefix}.nc'
+HZ_MAX: 3.0e5
 HZ_MIN_GRID_MULT: 2.0
 HZ_ROSSBY_MULT: 2.0
-mld_fn: MLD_003.nc
-output_fn: scales_cor1.nc
-output_variable_hz: hz
-output_variable_vt: vt
+mld_fp: '${bkg_fp}'
+mld_vn: 'MLD'
+output_fn: '${output_fn_scales_cor}'
+output_variable_hz: 'hz'
+output_variable_vt: 'vt'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
 VT_MIN: 1.5
 VT_MAX: 50
-work_dir: '${DATA}'
+work_dir: '${DATA}/soca_prep'
 EOF
 
-
+  ${USHufsda}/calc_scales4parameter.py
+  if [ $? -ne 0 ]; then
+    err_exit "Correlation length scales calculation failed."
+  fi
+  cp -p ${output_fn_scales_cor} ${COMINOUT}
 
   ##################
   ## setcorscales
