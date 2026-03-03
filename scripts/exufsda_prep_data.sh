@@ -477,13 +477,18 @@ if [[ ( "${TYPE_ANAL_FCST}" == "both" || "${TYPE_ANAL_FCST}" == "anal-only" ||
     if [ "${CUSTOM_JEDI_CONFIG_FLAG}" = "TEMPLATE" ]; then
       soca_timewindow_begin_iso="${yyyy_hf}-${mm_hf}-${dd_hf}T${hh_hf}:00:00Z"
       soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
+      soca_bkg_error_hz_fn="diffusion_cor1_hz"
+      soca_bkg_error_vt_fn="diffusion_cor1_vt"
       settings="\
   'cdate': !!str ${PDY}${cyc}
   'cycle': ${cycle}
+  'MOM6_NK': ${MOM6_NK}
   'OBS_SOCA_RTOFS': '${OBS_SOCA_RTOFS}'
   'PDY': !!str ${PDY}
   'soca_timewindow_begin_iso': !!str ${soca_timewindow_begin_iso}
   'soca_background_date_iso': !!str ${soca_background_date_iso}
+  'soca_bkg_error_hz_fn': ${soca_bkg_error_hz_fn}
+  'soca_bkg_error_vt_fn': ${soca_bkg_error_vt_fn}
 " # End of settings variable
       fn_template="template.jedi_3dvar_soca.yaml"
       fp_template="${PARMufsda}/jedi/soca/${fn_template}"

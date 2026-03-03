@@ -249,11 +249,9 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   cp -p "${PARMufsda}/jedi/fieldmetadata/fv3jedi_fieldmetadata_soca.yaml" "fields_metadata.yaml"
 
   # Diffusion parameter files
-  soca_diff_cor_hz1_fn="diffusion_cor1_hz_rossby"
-  soca_diff_cor_hz2_fn="diffusion_cor1_hz_600km"
-  soca_diff_cor_vt_fn="diffusion_cor1_vt_6lvls"
-  ln -nsf "${COMINOUT}/${soca_diff_cor_hz1_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_hz1_fn}.nc
-  ln -nsf "${COMINOUT}/${soca_diff_cor_hz2_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_hz2_fn}.nc
+  soca_diff_cor_hz_fn="diffusion_cor1_hz"
+  soca_diff_cor_vt_fn="diffusion_cor1_vt"
+  ln -nsf "${COMINOUT}/${soca_diff_cor_hz_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_hz_fn}.nc
   ln -nsf "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc" ${soca_diff_cor_vt_fn}.nc
 
   # godas sst file
