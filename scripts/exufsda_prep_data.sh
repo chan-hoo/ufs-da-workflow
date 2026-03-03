@@ -849,14 +849,16 @@ EOF
   ### SOCA input yaml file
   soca_background_basename="${DATA}/soca_prep/INPUT"
   soca_background_date_iso="${YYYY}-${MM}-${DD}T${HH}:00:00Z"
-  soca_diff_cor_hz1_fn="diffusion_cor1_hz_rossby"
-  soca_diff_cor_hz2_fn="diffusion_cor1_hz_600km"
-  soca_diff_cor_vt_fn="diffusion_cor1_vt_6lvls"
+  soca_bkg_error_hz_ocn_fn="${soca_cor_rh_fn_prefix}.nc"
+  soca_bkg_error_vt_ocn_fn="${soca_cor_rv_fn_prefix}.nc"
+  soca_diff_cor_hz_fn="diffusion_cor1_hz"
+  soca_diff_cor_vt_fn="diffusion_cor1_vt"
   settings="\
   'soca_background_basename': ${soca_background_basename}
   'soca_background_date_iso': !!str ${soca_background_date_iso}
-  'soca_diff_cor_hz1_fn': ${soca_diff_cor_hz1_fn}
-  'soca_diff_cor_hz2_fn': ${soca_diff_cor_hz2_fn}
+  'soca_bkg_error_hz_ocn_fn': ${soca_bkg_error_hz_ocn_fn}
+  'soca_bkg_error_vt_ocn_fn': ${soca_bkg_error_vt_ocn_fn}
+  'soca_diff_cor_hz_fn': ${soca_diff_cor_hz_fn}
   'soca_diff_cor_vt_fn': ${soca_diff_cor_vt_fn}
 " # End of settings variable
   fn_template="template.parameters_diffusion.yaml"
@@ -864,7 +866,7 @@ EOF
   jedi_nml_fn="parameters_diffusion.yaml"
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${jedi_nml_fn}"
 
-  ### Run soca_error_covariance_toolbox.x
+  ### Executable for parameters diffusion
   if [ "${JEDI_BUNDLE_GDAS}" = "gdas" ]; then
     jedi_exe_fn="gdas_soca_error_covariance_toolbox.x"
   else
@@ -878,8 +880,7 @@ EOF
   if [[ $err != 0 ]]; then
     err_exit "JEDI SOCA parameters_diffusion failed"
   fi
-  cp -p "${soca_diff_cor_hz1_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz1_fn}_${PDY}${cyc}.nc"
-  cp -p "${soca_diff_cor_hz2_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz2_fn}_${PDY}${cyc}.nc"
+  cp -p "${soca_diff_cor_hz_fn}.nc" "${COMINOUT}/${soca_diff_cor_hz_fn}_${PDY}${cyc}.nc"
   cp -p "${soca_diff_cor_vt_fn}.nc" "${COMINOUT}/${soca_diff_cor_vt_fn}_${PDY}${cyc}.nc"
 
   #############
