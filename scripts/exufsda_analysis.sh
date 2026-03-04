@@ -313,6 +313,7 @@ if [ "${JEDI_TYPE_SOCA}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   cat > bkg_var_replace.yaml << EOF
 bkg_data_fn_suffix: '${bkg_data_fn_suffix}'
 fn_data_base: '${fn_ocn_data}'
+fn_grid_mask: 'soca_gridspec.nc'
 jedi_out_fn_prefix: '${fn_ocn_out}'
 jedi_out_fn_suffix: ''
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
@@ -578,6 +579,7 @@ EOF
       cat > bkg_var_replace.yaml << EOF
 bkg_data_fn_suffix: '${bkg_data_fn_suffix}'
 fn_data_base: '${fn_data_base}'
+fn_grid_mask: ''
 jedi_out_fn_prefix: '${jedi_out_fn_prefix}'
 jedi_out_fn_suffix: '${jedi_out_fn_suffix}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
