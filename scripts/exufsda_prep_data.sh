@@ -767,16 +767,26 @@ if [[ "${JEDI_TYPE_SOCA}" == "YES" && "${do_soca_prep}" = "YES" &&
   soca_cor_rv_fn="${soca_cor_rv_fn_prefix}_${MOM6_NIGLOBAL}x${MOM6_NJGLOBAL}x${MOM6_NK}.nc"
   if [ -e "${path_mom6_fix_dir}/${soca_cor_rh_fn}" ] && \
      [ -e "${path_mom6_fix_dir}/${soca_cor_rv_fn}" ]; then
-    cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
-    cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
-    cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
-    cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+    if [ "${JEDI_SOCA_B_MATRIX}" = "cpc" ]; then
+      cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
+      cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
+      cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
+      cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+    else
+      cp -p "${path_mom6_fix_dir}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
+      cp -p "${path_mom6_fix_dir}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
+    fi
   elif [ -e "${DATA_SHARE}/${soca_cor_rh_fn}" ] && \
        [ -e "${DATA_SHARE}/${soca_cor_rv_fn}" ]; then
-    cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
-    cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
-    cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
-    cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+    if [ "${JEDI_SOCA_B_MATRIX}" = "cpc" ]; then
+      cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}_orig.nc"
+      cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}_orig.nc"
+      cp -p "${soca_cor_rh_fn_prefix}_orig.nc" "${soca_cor_rh_fn_prefix}_mod.nc"
+      cp -p "${soca_cor_rv_fn_prefix}_orig.nc" "${soca_cor_rv_fn_prefix}_mod.nc"
+    else
+      cp -p "${DATA_SHARE}/${soca_cor_rh_fn}" "${soca_cor_rh_fn_prefix}.nc"
+      cp -p "${DATA_SHARE}/${soca_cor_rv_fn}" "${soca_cor_rv_fn_prefix}.nc"
+    fi
   else
     ### SOCA input yaml file
     jedi_nml_fn_prefix="soca_setcorscales"
