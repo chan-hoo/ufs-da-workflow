@@ -120,11 +120,15 @@ fi
 # Observation File Plot
 ############################################################
 if [ "${DO_PLOT_OBS}" = "YES" ]; then
-  # Soft-link the observation files to DATA
-  ln -nsf ${COMINOUTobs}/* .
+  # Soft-link the observation and diags files to DATA
+  ln -nsf ${COMINOUTobs}/* ${DATA}
+  ln -nsf ${COMINOUThofx}/* ${DATA}
 
   cat > plot_obs_file.yaml << EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+cyc: '${cyc}'
+diags_dir: '${DATA}'
+diags_obs_plot: 'YES'
 JEDI_TYPE_FV3: '${JEDI_TYPE_FV3}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 OBS_ATM_AMV_ABI_GOES_16: '${OBS_ATM_AMV_ABI_GOES_16}'
@@ -138,6 +142,7 @@ OBS_SNOW_GHCN: '${OBS_SNOW_GHCN}'
 OBS_SNOW_IMS: '${OBS_SNOW_IMS}'
 OBS_SWC_SMAP: '${OBS_SWC_SMAP}'
 OBS_SWC_SMOPS: '${OBS_SWC_SMOPS}'
+obs_dir: '${DATA}'
 obs_prefix: 'obs.${PDY}.${cycle}'
 PDY: '${PDY}'
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'

@@ -590,6 +590,7 @@ JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 new_bkg_data_fn_suffix: '${new_bkg_data_fn_suffix}'
 num_tiles: 6
 PY_LOG_LEVEL: '${PY_LOG_LEVEL}'
+replace_opt: 'mask'
 work_dir: '${DATA}'
 EOF
       ${USHufsda}/bkg_var_replace.py

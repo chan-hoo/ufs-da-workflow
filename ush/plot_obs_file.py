@@ -25,14 +25,17 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Main part (will be called at the end) ============================= CHJ =====
 def main():
-
+    global obs_dir, diags_dir, diags_obs_plot
     yaml_file="plot_obs_file.yaml"
     with open(yaml_file, 'r') as f:
         yaml_data=yaml.load(f, Loader=yaml.FullLoader)
     f.close()
 
     work_dir = yaml_data['work_dir']
+    obs_dir = yaml_data['obs_dir']
     cartopy_ne_path = yaml_data['cartopy_ne_path']
+    diags_dir = yaml_data['diags_dir']
+    diags_obs_plot = yaml_data['diags_obs_plot']
     TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
@@ -49,6 +52,7 @@ def main():
     OBS_SWC_SMOPS = yaml_data['OBS_SWC_SMOPS']
     obs_prefix = yaml_data['obs_prefix']
     PDY = yaml_data['PDY']
+    cyc = yaml_data['cyc']
     PY_LOG_LEVEL = yaml_data['PY_LOG_LEVEL']
  
     # Set logging config
@@ -69,88 +73,90 @@ def main():
 
     # Plot AMV_ABI_GOES16
     if OBS_ATM_AMV_ABI_GOES_16 == "YES":
-        obs_plot("goes16_e",PDY,work_dir,obs_prefix,"satwnd.abi_goes-16")
-        obs_plot("goes16_n",PDY,work_dir,obs_prefix,"satwnd.abi_goes-16")
+        obs_plot("goes16_e",PDY,cyc,work_dir,obs_prefix,"satwnd.abi_goes-16","satwnd.abi_goes-16")
+        obs_plot("goes16_n",PDY,cyc,work_dir,obs_prefix,"satwnd.abi_goes-16","satwnd.abi_goes-16")
     # Plot ASCAT_W
     if OBS_ATM_ASCAT_W == "YES":
-        obs_plot("ascat_e",PDY,work_dir,obs_prefix,"scatwnd.ascat_metop-b")
-        obs_plot("ascat_n",PDY,work_dir,obs_prefix,"scatwnd.ascat_metop-b")
+        obs_plot("ascat_e",PDY,cyc,work_dir,obs_prefix,"scatwnd.ascat_metop-b","scatwnd.ascat_metop-b")
+        obs_plot("ascat_n",PDY,cyc,work_dir,obs_prefix,"scatwnd.ascat_metop-b","scatwnd.ascat_metop-b")
     # Plot ATMS_N20
     if OBS_ATM_ATMS_N20 == "YES":
-        obs_plot("atms_n20",PDY,work_dir,obs_prefix,"atms_n20")
+        obs_plot("atms_n20",PDY,cyc,work_dir,obs_prefix,"atms_n20","atms_n20")
     # Plot CONVENTIONAL_PS
     if OBS_ATM_CONVENTIONAL_PS == "YES":
-        obs_plot("conventional_ps",PDY,work_dir,obs_prefix,"conventional_ps")
+        obs_plot("conventional_ps",PDY,cyc,work_dir,obs_prefix,"conventional_ps","conventional_ps")
     # Plot GNSSRO_COSMIC2
     if OBS_ATM_GNSSRO_COSMIC2== "YES":
-        obs_plot("gnssro_cosmic2",PDY,work_dir,obs_prefix,"gnssro_cosmic2")
+        obs_plot("gnssro_cosmic2",PDY,cyc,work_dir,obs_prefix,"gnssro_cosmic2","gnssro_cosmic2")
     # Plot OZONE_OMPSNP_NPP
     if OBS_ATM_OZONE_OMPSNP_NPP== "YES":
-        obs_plot("ompsnp_npp",PDY,work_dir,obs_prefix,"ozone.ompsnp_npp")
+        obs_plot("ompsnp_npp",PDY,cyc,work_dir,obs_prefix,"ozone.ompsnp_npp","ozone.ompsnp_npp")
     # Plot OZONE_OMPSTC_NPP
     if OBS_ATM_OZONE_OMPSTC_NPP== "YES":
-        obs_plot("ompstc_npp",PDY,work_dir,obs_prefix,"ozone.ompstc_npp")
+        obs_plot("ompstc_npp",PDY,cyc,work_dir,obs_prefix,"ozone.ompstc_npp","ozone.ompstc_npp")
     # Plot GHCN
     if OBS_SNOW_GHCN == "YES":
-        obs_plot("ghcn",PDY,work_dir,obs_prefix,"ghcn_snow")
+        obs_plot("ghcn",PDY,cyc,work_dir,obs_prefix,"ghcn_snow","ghcn_snow")
     # Plot IMS
     if OBS_SNOW_IMS == "YES":
-        obs_plot("ims",PDY,work_dir,obs_prefix,"ims_snow.tm00")
+        obs_plot("ims",PDY,cyc,work_dir,obs_prefix,"ims_snow.tm00","ims_snow")
     # Plot SMAP
     if OBS_SWC_SMAP == "YES":
-        obs_plot("smap",PDY,work_dir,obs_prefix,"smap_combined")
+        obs_plot("smap",PDY,cyc,work_dir,obs_prefix,"smap_combined","smap_soil_moisture")
     # Plot SMOPS
     if OBS_SWC_SMOPS == "YES":
-        obs_plot("smops",PDY,work_dir,obs_prefix,"smops")
+        obs_plot("smops",PDY,cyc,work_dir,obs_prefix,"smops","smops_soil_moisture")
     # Plot SOCA
     if JEDI_TYPE_SOCA == "YES":
         if TYPE_ANAL_FCST == "ctest":
-            obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst")
-            obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss")
-            obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt")
-            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"prof")
-            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"prof")
-            obs_plot("soca_icec",PDY,work_dir,obs_prefix,"icec")
+            obs_plot("soca_sst",PDY,cyc,work_dir,obs_prefix,"sst","SeaSurfaceTemp")
+            obs_plot("soca_sss",PDY,cyc,work_dir,obs_prefix,"sss","SeaSurfaceSalinity")
+            obs_plot("soca_adt",PDY,cyc,work_dir,obs_prefix,"adt","ADT")
+            obs_plot("soca_prof_t",PDY,cyc,work_dir,obs_prefix,"prof","InsituTemperature")
+            obs_plot("soca_prof_s",PDY,cyc,work_dir,obs_prefix,"prof","InsituSalinity")
+            obs_plot("soca_icec",PDY,cyc,work_dir,obs_prefix,"icec","SeaIceFraction")
         else:
-            obs_plot("soca_adt",PDY,work_dir,obs_prefix,"adt_ssh")
-            obs_plot("soca_sst",PDY,work_dir,obs_prefix,"sst_satellite")
-            obs_plot("soca_sss",PDY,work_dir,obs_prefix,"sss_salinity")
-            obs_plot("soca_prof_t",PDY,work_dir,obs_prefix,"rtofs_prof_waterTemperature")
-            obs_plot("soca_prof_s",PDY,work_dir,obs_prefix,"rtofs_prof_salinity")
+            obs_plot("soca_adt",PDY,cyc,work_dir,obs_prefix,"adt_ssh","ADT")
+            obs_plot("soca_sst",PDY,cyc,work_dir,obs_prefix,"sst_satellite","SeaSurfaceTemp")
+            obs_plot("soca_sss",PDY,cyc,work_dir,obs_prefix,"sss_salinity","SeaSurfaceSalinity")
+            obs_plot("soca_prof_t",PDY,cyc,work_dir,obs_prefix,"rtofs_prof_waterTemperature","InsituTemperature")
+            obs_plot("soca_prof_s",PDY,cyc,work_dir,obs_prefix,"rtofs_prof_salinity","InsituSalinity")
     # Plot FV3-JEDI
     if JEDI_TYPE_FV3 == "YES":
         if TYPE_ANAL_FCST == "ctest":
-            obs_plot("fv3_geos",PDY,work_dir,obs_prefix,"tropomi_no2")
+            obs_plot("fv3_geos",PDY,cyc,work_dir,obs_prefix,"tropomi_no2","tropomi_no2")
 
 
 # obs plot =============================================== CHJ =====
-def obs_plot(obs_type,PDY,work_dir,fn_prefix,fn_suffix):
+def obs_plot(obs_type,PDY,cyc,work_dir,fn_prefix,fn_suffix,fn_diag):
 
-    # open the data file
+    # open the data files
+    ## Original observation file
     fn_input = f'''{fn_prefix}.{fn_suffix}.nc'''
     logging.info(f''' ===== INPUT:: {obs_type}:: '{fn_input}' ================================''')
-    fpath = os.path.join(work_dir,fn_input)
+    fpath = os.path.join(obs_dir,fn_input)
     try: mdat = nc.Dataset(fpath)
     except: raise Exception('Could NOT find the file',fpath)
-
-    logging.debug(" MetaData:", mdat.groups['MetaData'])
-    logging.debug(" ObsValue:", mdat.groups['ObsValue'])
-
+    logging.debug(" MetaData(orig):", mdat.groups['MetaData'])
+    logging.debug(" ObsValue(orig):", mdat.groups['ObsValue'])
     lon = mdat.groups['MetaData'].variables['longitude'][:]
     lat = mdat.groups['MetaData'].variables['latitude'][:]
+
+    ## Observation data in H(x) output file
+    if diags_obs_plot == "YES":
+        diags_fn = f'''diag.{fn_diag}_{PDY}{cyc}.nc'''
+        diags_fp = os.path.join(diags_dir,diags_fn)
+        try: odat = nc.Dataset(diags_fp)
+        except: raise Exception('Could NOT find the file',diags_fp)
+        logging.debug(" MetaData(hofx):", odat.groups['MetaData'])
+        logging.debug(" ObsValue(hofx):", odat.groups['ObsValue'])
+        olon = odat.groups['MetaData'].variables['longitude'][:]
+        olat = odat.groups['MetaData'].variables['latitude'][:]
+
     # Variables
     #vars_out=["ObsValue", "ObsError", "PreQC"]
     vars_out=["ObsValue"]
 
-    # Highest and lowest longitudes and latitudes for plot extent
-    lon_min=np.min(lon)
-    lon_max=np.max(lon)
-    lat_min=np.min(lat)
-    lat_max=np.max(lat)
-    logging.info(f''' lon min,max = {lon_min}, {lon_max}''')
-    logging.info(f''' lat min,max = {lat_min}, {lat_max}''')
-
-    #extent=[lon_min,lon_max,lat_min,lat_max]
     extent=[]
     if obs_type == "fv3_geos":
         # for CONUS
@@ -165,13 +171,15 @@ def obs_plot(obs_type,PDY,work_dir,fn_prefix,fn_suffix):
     logging.info(f''' c_lon= {c_lon}''')
 
     for svar in vars_out:
-        svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir)
-    
+        svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir,'orig')
+        if diags_obs_plot == "YES":
+            svar_plot(svar,odat,olon,olat,c_lon,extent,obs_type,PDY,work_dir,'hofx')
+
 
 # Variable plot =============================================== CHJ =====
-def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
+def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir,dat_txt):
 
-    logging.info(' ===== '+svar+' ==========================================')
+    logging.info(f''' ===== {svar} ({dat_txt}) ==========================================''')
 
     cs_cmap='gist_ncar_r'
     lb_ext='neither'
@@ -241,21 +249,21 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
         gvar = svar
         pvar = svar
 
+    lon_len = len(lon)
     obs_type_upper = obs_type.upper()
     if obs_type == "atms_n20":
         # channel number (total=22)
         ich = 1
         logging.info(f''' ATMS_N20: Channel number = {ich}''')
         sfld = mdat.groups[svar].variables[gvar][:,ich-1]
-        out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}::CH{ich}'''
-        out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}_ch{ich}'''
+        out_title_fld = f'''Obs({dat_txt},N={lon_len})::{obs_type_upper}::{PDY}::{gvar}::CH{ich}'''
+        out_fn = f'''obs_{dat_txt}_{obs_type}_{PDY}_{gvar}_ch{ich}'''
     else:
         sfld = mdat.groups[svar].variables[gvar][:]
-        out_title_fld = f'''UFS-DA::Obs::{obs_type_upper}::{PDY}::{pvar}'''
-        out_fn = f'''ufsda_obs_{obs_type}_{PDY}_{gvar}'''
+        out_title_fld = f'''Obs({dat_txt},N={lon_len})::{obs_type_upper}::{PDY}::{gvar}'''
+        out_fn = f'''obs_{dat_txt}_{obs_type}_{PDY}_{gvar}'''
 
     # Check array size
-    lon_len = len(lon)
     lat_len = len(lat)
     sfld_len = len(sfld)
     logging.info(f''' length of lon = {lon_len}''')
@@ -263,6 +271,7 @@ def svar_plot(svar,mdat,lon,lat,c_lon,extent,obs_type,PDY,work_dir):
     logging.info(f''' lenght of sfld = {sfld_len}''')
     if lon_len != lat_len or lon_len != sfld_len or lat_len != sfld_len:
         sys.exit('FATAL ERROR: array size mismatched !!!')
+
 
     # Max and Min of the field
     fmax = np.max(sfld)
