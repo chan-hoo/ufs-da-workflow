@@ -77,22 +77,24 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
   hhh_3d=$(printf "%03d" "${DATE_CYCLE_FREQ_HR}")
 
   # Background files
-  atm_fn="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
-  cp -p "${data_restart}/${atm_fn}" ${DATA}/bkg/.
-  sfc_fn="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
-  cp -p "${data_restart}/${sfc_fn}" ${DATA}/bkg/.
+  atm_bkg_fn="${NET}.t${HHp}z.atm.f${hhh_3d}.cubed_sphere_grid.nc"
+  cp -p "${data_restart}/${atm_bkg_fn}" ${DATA}/bkg/.
+  sfc_bkg_fn="${NET}.t${HHp}z.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+  cp -p "${data_restart}/${sfc_bkg_fn}" ${DATA}/bkg/.
 
   # Backgound ensemble files
   if [ "${ENSEMBLE_NUM_MEMBERS}" -gt 0 ]; then
-    atm_fn="${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc"
-    sfc_fn="${NET}.t${HHp}z.enkf.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
+    atm_bkg_ens_fn="${NET}.t${HHp}z.enkf.atm.f${hhh_3d}.cubed_sphere_grid.nc"
+    sfc_bkg_ens_fn="${NET}.t${HHp}z.enkf.sfc.f${hhh_3d}.cubed_sphere_grid.nc"
     for imem in $(seq 1 ${ENSEMBLE_NUM_MEMBERS}); do
       imem_3d=$(printf "%03d" "${imem}")	
       mkdir -p ${DATA}/ens/mem${imem_3d}
-      cp -p "${data_restart}/mem${imem_3d}/${atm_fn}" ${DATA}/ens/mem${imem_3d}/.
-      cp -p "${data_restart}/mem${imem_3d}/${sfc_fn}" ${DATA}/ens/mem${imem_3d}/.
+      cp -p "${data_restart}/mem${imem_3d}/${atm_bkg_ens_fn}" ${DATA}/ens/mem${imem_3d}/.
+      cp -p "${data_restart}/mem${imem_3d}/${sfc_bkg_ens_fn}" ${DATA}/ens/mem${imem_3d}/.
     done
   fi
+  # Increment files
+  atm_incr_fn_prefix="${NET}.${cycle}.atminc.cubed_sphere_grid.tile"
 
   # Observation files
   obs_prefix="obs.${PDY}.${cycle}"  
@@ -867,7 +869,7 @@ if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
     fn_data_inc_atm="cubed_sphere_grid_atminc.jedi.nc"
     fn_data_inc_sfc="cubed_sphere_grid_sfcinc.jedi.nc"
     out_title_base="UFS-DA::CubedSphere::${YYYY}-${MM}-${DD}-${HH}::"
-    out_fn_base_prefix="ufsda_cubed_sphere_${YYYY}${MM}${DD}${HH}_"
+    out_fn_fv3_prefix="ufsda_cubed_sphere_${YYYY}${MM}${DD}${HH}_"
     # zlevel_number is valid only for 3-D fields
     zlevel_number_atm="1"
     zlevel_number_sfc="1"
@@ -880,7 +882,7 @@ fn_data_sfc: '${fn_data_sfc}'
 fn_data_inc_atm: '${fn_data_inc_atm}'
 fn_data_inc_sfc: '${fn_data_inc_sfc}'
 out_title_base: '${out_title_base}'
-out_fn_base: '${out_fn_base_prefix}'
+out_fn_base: '${out_fn_fv3_prefix}'
 path_data: '${DATA}/bkg'
 path_data_inc: '${DATA}/anl'
 plot_increment_atm: 'YES'
@@ -906,13 +908,20 @@ EOF
     if [ $? -ne 0 ]; then
       err_exit "Cubed sphere grid plots failed."
     fi
+    # Copy result file to COMINOUT
+    cp -p ${out_fn_fv3_prefix}* ${COMINOUTplot}
+  fi
 
-  else
-    out_fn_base_prefix="ufsda_comp_"
-    # zlevel_number is valid only for 3-D fields such as stc/smc/slc
-    zlevel_number="1"
-    cat > plot_analysis_comp_increment.yaml <<EOF
+  ####################################
+  ## Plot comparison in tiled files
+  ####################################
+  out_fn_base_prefix="ufsda_comp_"
+  ## zlevel_number is valid only for 3-D fields such as stc/smc/slc
+  zlevel_number="1"
+  cat > plot_analysis_comp_increment.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
+fn_atm_data: '${atm_bkg_fn}'
+fn_atm_incr_prefix: '${atm_incr_fn_prefix}'
 fn_ice_data: '${fn_ice_data}'
 fn_ice_incr: '${fn_ice_incr}'
 fn_ocn_data: '${fn_ocn_data}'
@@ -920,6 +929,7 @@ fn_ocn_incr: '${fn_ocn_incr}'
 fn_sfc_data: '${fn_sfc_data}'
 fn_sfc_incr: '${fn_sfc_incr}'
 JEDI_ALGORITHM: '${JEDI_ALGORITHM}'
+JEDI_TYPE_FV3: '${JEDI_TYPE_FV3}'
 JEDI_TYPE_SNOW: '${JEDI_TYPE_SNOW}'
 JEDI_TYPE_SOCA: '${JEDI_TYPE_SOCA}'
 JEDI_TYPE_SOIL_MOISTURE: '${JEDI_TYPE_SOIL_MOISTURE}'
@@ -934,11 +944,11 @@ work_dir: '${DATA}'
 zlevel_number: '${zlevel_number}'
 EOF
 
-    ${USHufsda}/plot_analysis_comp_increment.py
-    if [ $? -ne 0 ]; then
-      err_exit "JEDI increment comparison plot failed"
-    fi
+  ${USHufsda}/plot_analysis_comp_increment.py
+  if [ $? -ne 0 ]; then
+    err_exit "JEDI increment comparison plot failed"
   fi
+
   # Copy result file to COMINOUT
   cp -p ${out_fn_base_prefix}* ${COMINOUTplot}
 fi

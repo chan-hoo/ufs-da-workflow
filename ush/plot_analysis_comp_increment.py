@@ -43,6 +43,8 @@ def main():
 
     cartopy_ne_path = yaml_data['cartopy_ne_path']
     TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
+    fn_atm_data = yaml_data['fn_atm_data']
+    fn_atm_incr_prefix = yaml_data['fn_atm_incr_prefix']
     fn_ice_data = yaml_data['fn_ice_data']
     fn_ice_incr = yaml_data['fn_ice_incr']
     fn_ocn_data = yaml_data['fn_ocn_data']
@@ -50,6 +52,7 @@ def main():
     fn_sfc_data = yaml_data['fn_sfc_data']
     fn_sfc_incr = yaml_data['fn_sfc_incr']
     JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
+    JEDI_TYPE_FV3 = yaml_data['JEDI_TYPE_FV3']
     JEDI_TYPE_SNOW = yaml_data['JEDI_TYPE_SNOW']
     JEDI_TYPE_SOCA = yaml_data['JEDI_TYPE_SOCA']
     JEDI_TYPE_SOIL_MOISTURE = yaml_data['JEDI_TYPE_SOIL_MOISTURE']
@@ -83,6 +86,8 @@ def main():
     cartopy.config['data_dir'] = cartopy_ne_path
 
     list_jedi_type = []
+    if JEDI_TYPE_FV3 == "YES":
+        list_jedi_type.append("fv3")
     if JEDI_TYPE_SNOW == "YES":
         list_jedi_type.append("snow")
     if JEDI_TYPE_SOIL_MOISTURE == "YES":
@@ -94,11 +99,14 @@ def main():
             list_jedi_type.append("soca")
     logging.info(f''' list of JEDI types: {list_jedi_type}''')
 
+    var_list_fv3 = []
     var_list_sfc = []
     var_list_ocn = []
     var_list_ice = []
     for jtype in list_jedi_type:
-        if jtype == "snow":
+        if jtype == "fv3":
+            var_list_fv3 += ["u_inc", "v_inc", "T_inc", "o3mr_inc"]
+        elif jtype == "snow":
             var_list_sfc.append(snowdepth_vn)
         elif jtype == "soil_moisture":
             var_list_sfc.append("smc")
@@ -109,9 +117,22 @@ def main():
             if JEDI_ALGORITHM == "3dvar":
                 var_list_sfc += ["sw_rad", "latent_heat", "fric_vel"]
                 var_list_ice += ["hi_h", "hs_h"]
+        logging.info(f''' list of vars for fv3: {var_list_fv3}''')
         logging.info(f''' list of vars for sfc: {var_list_sfc}''')
         logging.info(f''' list of vars for ocn: {var_list_ocn}''')
         logging.info(f''' list of vars for ice: {var_list_ice}''')
+
+        # fv3 cubed-sphere-grid tiles
+        if var_list_fv3:
+            # Set output file name and title base
+            out_title_base=f'''UFS-DA::COMP::FV3::{JEDI_ALGORITHM}::{PDY}'''
+            out_fn_base=f'''{out_fn_base_prefix}{jtype}_{JEDI_ALGORITHM}_{PDY}'''
+            # get lon, lat from orography
+            get_geo_tile(orog_path,orog_fn_base)
+            for var_nm in var_list_fv3:
+                # get increment data of analysis
+                var_data_inc = get_data_tile(work_dir,fn_atm_incr_prefix,var_nm,zlvlm1,
+                               jtype,out_title_base,out_fn_base,'inc',True)
 
         # sfc file
         if var_list_sfc:
@@ -303,10 +324,10 @@ def get_data(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
 
 
 # Get data tiles from files and plot ================================ CHJ =====
-def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
+def get_data_tile(work_dir,fn_data_base,var_nm,zlvl,jtype,out_title_base,
                   out_fn_base,data_opt,opt_tile):
 
-    logging.info(f''' ===== sfc files: {var_nm} :: {data_opt} ===============================''')
+    logging.info(f''' ===== {jtype} :: {var_nm} :: {data_opt} ===============================''')
     var_data_all=[]
     if data_opt == 'before':
         fn_data_ext=f'''.nc_{jtype}_before_inc'''
@@ -315,6 +336,11 @@ def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
     else:
         fn_data_ext=".nc"
 
+    if jtype == 'fv3':
+        path_data = os.path.join(work_dir,"anl")
+    else:
+        path_data = work_dir
+
     for it in range(num_tiles):
         itp=it+1
         fn_data = f'''{fn_data_base}{itp}{fn_data_ext}'''
@@ -322,7 +348,7 @@ def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
         try: ds = xr.open_dataset(fp_data)
         except: raise Exception('Could NOT find the file',fp_data)
         var_data = np.ma.masked_invalid(ds[var_nm].data)
-        if var_nm == 'stc' or var_nm == 'smc' or var_nm == 'slc':
+        if jtype == 'fv3' or var_nm == 'stc' or var_nm == 'smc' or var_nm == 'slc':
             var_data3d = np.squeeze(var_data,axis=0)
             var_data2d = var_data3d[zlvl,:,:]
         else:
@@ -333,10 +359,10 @@ def get_data_tile(path_data,fn_data_base,var_nm,zlvl,jtype,out_title_base,
 
     if data_opt == 'inc':
         plot_increment(data_var,var_nm,data_opt,zlvl,jtype,out_title_base,
-                       out_fn_base,path_data,opt_tile)
+                       out_fn_base,work_dir,opt_tile)
     else:
         plot_data(data_var,var_nm,data_opt,zlvl,jtype,out_title_base,
-                  out_fn_base,path_data,opt_tile)
+                  out_fn_base,work_dir,opt_tile)
    
     return data_var
 
@@ -380,7 +406,10 @@ def plot_increment(plt_var,plt_var_nm,plt_out_txt,zlvl,jtype,out_title_base,
         cs_min = -150
         cbar_extend='both'
 
-    if jtype == 'soil_moisture':
+    if jtype == 'fv3':
+        out_title=f'''{out_title_base}::{plt_var_nm}::L{zlvl+1}'''
+        out_fn=f'''{out_fn_base}_{plt_var_nm}_z{zlvl+1}'''
+    elif jtype == 'soil_moisture':
         out_title=f'''{out_title_base}::{plt_var_nm}::L{zlvl+1}::{plt_out_txt}'''
         out_fn=f'''{out_fn_base}_{plt_var_nm}_z{zlvl+1}_{plt_out_txt}'''
     else:

@@ -124,7 +124,7 @@ def main():
     # Plot FV3-JEDI
     if JEDI_TYPE_FV3 == "YES":
         if TYPE_ANAL_FCST == "ctest":
-            obs_plot("fv3_geos",PDY,cyc,work_dir,obs_prefix,"tropomi_no2","tropomi_no2")
+            obs_plot("fv3_geos",PDY,cyc,work_dir,obs_prefix,"tropomi_no2","NO2")
 
 
 # obs plot =============================================== CHJ =====
