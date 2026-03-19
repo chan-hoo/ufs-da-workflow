@@ -64,7 +64,7 @@ if [ "${JEDI_TYPE_FV3}" = "YES" ] && [ "${TYPE_ANAL_FCST}" != "ctest" ]; then
 
   # Static GSI files
   ln -nsf ${FIXufsda}/DATA_fix/GSI/gfs_gsi_global.nml ${DATA}/berror/.
-  ln -nsf ${FIXufsda}/DATA_fix/GSI/gsi-coeffs-gfs-global.nc4 ${DATA}/berror/.
+  ln -nsf ${FIXufsda}/DATA_fix/GSI/gsi-coeffs-gfs-global.nc ${DATA}/berror/.
 
   # Background/observation file paths
   if [ "${COLDSTART}" = "NO" ] && [ "${PDY}${cyc}" = "${DATE_FIRST_CYCLE:0:10}" ]; then
