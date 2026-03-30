@@ -17,20 +17,23 @@ import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 
 def get_obs_stats(fname, svar_long):
-
+    global ch_ext_title,ch_ext_fn
     logging.info(f''' === File Name: {fname}''')
     f=netCDF4.Dataset(fname)
     if svar_long == "brightnessTemperature":
         # Channel number
-        ich = 1
-        ichm1 = ich - 1
+        ichm1 = channel_num - 1
         obs=f.groups['ObsValue'].variables[svar_long][:,ichm1]
         omb=f.groups['ombg'].variables[svar_long][:,ichm1]
         oma=f.groups['oman'].variables[svar_long][:,ichm1]
+        ch_ext_title=f'''::CH{channel_num}'''
+        ch_ext_fn=f'''_ch{channel_num}'''
     else:
         obs=f.groups['ObsValue'].variables[svar_long][:]
         omb=f.groups['ombg'].variables[svar_long][:]
         oma=f.groups['oman'].variables[svar_long][:]
+        ch_ext_title=""
+        ch_ext_fn=""
     logging.debug("ObsValue:",obs)
     logging.debug("OMBG:",omb)
     logging.debug("OMAN:",oma)
@@ -83,7 +86,7 @@ def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max):
     logging.info(f''' Min |OMB|= {field_min}''')
 
     # Print out OMB values to file
-    hofx_data_fn=f'''hofx_omb_timehis_abs_{svar}.txt'''
+    hofx_data_fn=f'''hofx_omb_timehis_abs_{svar}{ch_ext_fn}.txt'''
     hofx_data_fp=os.path.join(hofx_data_path,hofx_data_fn)
     if os.path.exists(hofx_data_fp):
         # Remove line for same date
@@ -114,7 +117,7 @@ def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max):
     cbar=plt.colorbar(sc, orientation="horizontal", shrink=0.5, pad=0.05)
     stitle=title_fig+' \n '+'Mean |OMB| ='+str(field_mean)+', STDV |OMB| ='+str(field_std)
     plt.title(stitle)
-    output_fn=f'''hofx_omb_{svar}_{PDY}_scatter.png'''
+    output_fn=f'''hofx_omb_{svar}_{PDY}_scatter{ch_ext_fn}.png'''
     plt.savefig(output_fn,dpi=200,bbox_inches='tight')
     plt.close('all')
 
@@ -140,7 +143,7 @@ def plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY
     logging.info(f''' Min OMA= {field_min_oma}''')
 
     # Print out OMB values to file
-    hofx_data_fn=f'''hofx_omb_timehis_{svar}.txt'''
+    hofx_data_fn=f'''hofx_omb_timehis_{svar}{ch_ext_fn}.txt'''
     hofx_data_fp=os.path.join(hofx_data_path,hofx_data_fn)
     if os.path.exists(hofx_data_fp):
         # Remove line for same date
@@ -179,7 +182,7 @@ def plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY
     stitle=title_fig+' \n '+'Mean(OMB):'+str(field_mean)+', STDV(OMB):'+str(field_std)+', Mean(OMA):'+str(field_mean_oma)+', STDV(OMA):'+str(field_std_oma)
     plt.title(stitle, fontsize=10)
     plt.legend()
-    output_fn=f'''hofx_omb_{svar}_{PDY}_histogram.png'''
+    output_fn=f'''hofx_omb_{svar}_{PDY}_histogram{ch_ext_fn}.png'''
     plt.savefig(output_fn,dpi=150,bbox_inches='tight')
     plt.close('all')
 
@@ -187,7 +190,7 @@ def plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY
 
 
 if __name__ == '__main__':
-    global yaml_data
+    global yaml_data,channel_num
 
     yaml_file="plot_hofx_stats.yaml"
     with open(yaml_file, 'r') as f:
@@ -195,6 +198,7 @@ if __name__ == '__main__':
     f.close()
 
     cdate = yaml_data['cdate']
+    channel_num = yaml_data['channel_num']
     TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     hofx_data_path = yaml_data['hofx_data_path']
     JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
@@ -313,8 +317,8 @@ if __name__ == '__main__':
 
         omb,oma,lat,lon=get_obs_stats(fp_input,svar_long)
 
-        title_fig=f'''{svar}::Obs-Bkg::{PDY}'''
-        title_fig_anl=f'''{svar}::Obs-Anl::{PDY}'''
+        title_fig=f'''{svar}::Obs-Bkg::{PDY}{ch_ext_title}'''
+        title_fig_anl=f'''{svar}::Obs-Anl::{PDY}{ch_ext_title}'''
         fld_min,fld_max = plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY)       
         plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max)
 
