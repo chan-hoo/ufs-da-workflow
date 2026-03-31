@@ -171,7 +171,6 @@ if [ "${DO_PLOT_STATS}" = "YES" ]; then
   cat > plot_hofx.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
-channel_num: 11
 cyc: '${cyc}'
 hofx_data_path: '${DATA_HOFX}'
 JEDI_ALGORITHM: '${JEDI_ALGORITHM}'

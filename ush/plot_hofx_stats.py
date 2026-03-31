@@ -16,24 +16,17 @@ import matplotlib.ticker
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 
-def get_obs_stats(fname, svar_long):
-    global ch_ext_title,ch_ext_fn
+def get_obs_stats(fname, svar_long, ichm1):
     logging.info(f''' === File Name: {fname}''')
     f=netCDF4.Dataset(fname)
     if svar_long == "brightnessTemperature":
-        # Channel number
-        ichm1 = channel_num - 1
         obs=f.groups['ObsValue'].variables[svar_long][:,ichm1]
         omb=f.groups['ombg'].variables[svar_long][:,ichm1]
         oma=f.groups['oman'].variables[svar_long][:,ichm1]
-        ch_ext_title=f'''::CH{channel_num}'''
-        ch_ext_fn=f'''_ch{channel_num}'''
     else:
         obs=f.groups['ObsValue'].variables[svar_long][:]
         omb=f.groups['ombg'].variables[svar_long][:]
         oma=f.groups['oman'].variables[svar_long][:]
-        ch_ext_title=""
-        ch_ext_fn=""
     logging.debug("ObsValue:",obs)
     logging.debug("OMBG:",omb)
     logging.debug("OMAN:",oma)
@@ -70,7 +63,7 @@ def get_obs_stats(fname, svar_long):
     return omb,oma,lat,lon
 
 
-def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max):
+def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,ch_ext_fn,PDY,fld_min,fld_max):
     logging.info(f''' ========== PLOT: SCATTER ==========''')
     
     # Set the path to Natural Earth dataset
@@ -122,8 +115,8 @@ def plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max):
     plt.close('all')
 
 
-def plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY):
-    logging.info(f''' ========== PLOT: HISTOGRAM ==========''')    
+def plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,ch_ext_fn,PDY):
+    logging.info(f''' ========== PLOT: HISTOGRAM ==========''')
     field_mean=float("{:.2f}".format(np.mean(omb)))
     field_std=float("{:.2f}".format(np.std(omb)))
     field_max=float("{:.2f}".format(np.max(omb)))
@@ -198,7 +191,6 @@ if __name__ == '__main__':
     f.close()
 
     cdate = yaml_data['cdate']
-    channel_num = yaml_data['channel_num']
     TYPE_ANAL_FCST = yaml_data['TYPE_ANAL_FCST']
     hofx_data_path = yaml_data['hofx_data_path']
     JEDI_ALGORITHM = yaml_data['JEDI_ALGORITHM']
@@ -315,10 +307,23 @@ if __name__ == '__main__':
         else:
             svar_long = svar
 
-        omb,oma,lat,lon=get_obs_stats(fp_input,svar_long)
+        if svar == "atms_n20":
+            num_channel = 22
+        else:
+            num_channel = 1
 
-        title_fig=f'''{svar}::Obs-Bkg::{PDY}{ch_ext_title}'''
-        title_fig_anl=f'''{svar}::Obs-Anl::{PDY}{ch_ext_title}'''
-        fld_min,fld_max = plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,PDY)       
-        plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,PDY,fld_min,fld_max)
+        for ichm1 in range(num_channel):
+            omb,oma,lat,lon=get_obs_stats(fp_input,svar_long,ichm1)
+            if svar == "atms_n20":
+                ich = ichm1+1
+                logging.info(f''' Channel No.: {ich} / {num_channel}''')
+                title_fig=f'''{svar}::Obs-Bkg::{PDY}::CH{ich}'''
+                title_fig_anl=f'''{svar}::Obs-Anl::{PDY}::CH{ich}'''
+                ch_ext_fn=f'''_ch{ich}'''
+            else:
+                title_fig=f'''{svar}::Obs-Bkg::{PDY}'''
+                title_fig_anl=f'''{svar}::Obs-Anl::{PDY}'''
+                ch_ext_fn=""
+            fld_min,fld_max = plot_histogram(omb,oma,svar,hofx_data_path,cdate,title_fig,title_fig_anl,ch_ext_fn,PDY)
+            plot_scatter(omb,svar,hofx_data_path,cdate,title_fig,ch_ext_fn,PDY,fld_min,fld_max)
 
