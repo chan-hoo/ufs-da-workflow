@@ -94,13 +94,13 @@ def main():
         if var_list_atm:
             for var_nm in var_list_atm:
                 plot_data(path_data_inc,fn_data_inc_atm,var_nm,zlvlm1_atm,out_title_base,
-                          out_fn_base,glon_atm,glat_atm,work_dir,"real","inc")
+                          out_fn_base,glon_atm,glat_atm,work_dir,colorbar_option,"inc")
     # Plot sfc increment
     if plot_increment_sfc == "YES":
         if var_list_sfc:
             for var_nm in var_list_sfc:
                 plot_data(path_data_inc,fn_data_inc_sfc,var_nm,zlvlm1_atm,out_title_base,
-                          out_fn_base,glon_sfc,glat_sfc,work_dir,"real","inc")
+                          out_fn_base,glon_sfc,glat_sfc,work_dir,colorbar_option,"inc")
 
 
 # geo lon/lat from =================================================== CHJ =====
@@ -140,6 +140,10 @@ def plot_data(path_data,fn_data,var_nm,zlvlm1,out_title_base,out_fn_base,
     except: raise Exception('Could NOT find the file',fp_data)
     logging.info(f''' Variables: {list(data_raw.variables)}''')
 
+    # Check pfull (1->127: high->low altitude: 127=near-surface, 76=505.65mb)
+    pfull = data_raw['pfull']
+    logging.debug(f''' PFULL: {pfull}''')
+
     # Extract valid variable
     var_orig = data_raw[var_nm]
     var_data = np.ma.masked_invalid(var_orig.values)
@@ -178,6 +182,18 @@ def plot_data(path_data,fn_data,var_nm,zlvlm1,out_title_base,out_fn_base,
             cs_min = cs_max*-1.0
         else:
             cs_max = max(abs(var_max),abs(var_min))
+            cs_min = cs_max*-1.0
+
+        if colorbar_option == "fixed":
+            cbar_extend = 'both'
+            if var_nm == "tmp":
+                cs_max = 1
+            elif var_nm == "ugrd" or var_nm == "vgrd":
+                cs_max = 2
+            elif var_nm == "o3mr":
+                cs_max = 1.0e-12
+            elif var_nm == "spfh":
+                cs_max = 1.0e-9
             cs_min = cs_max*-1.0
     else:
         # cs_cmap options
