@@ -168,7 +168,7 @@ if [ "${DO_PLOT_STATS}" = "YES" ]; then
   # Symlink hofx (diag) files to work dir
   ln -nsf ${COMINOUThofx}/* ${DATA}
 
-  cat > plot_hofx.yaml <<EOF
+  cat > plot_hofx_stats.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
 cdate: '${YYYY}-${MM}-${DD}-${HH}'
 cyc: '${cyc}'
