@@ -870,9 +870,9 @@ if [ "${DO_PLOT_COMP_JEDI_INCR}" = "YES" ]; then
     fn_data_inc_sfc="cubed_sphere_grid_sfcinc.jedi.nc"
     out_title_base="UFS-DA::CubedSphere::${YYYY}-${MM}-${DD}-${HH}::"
     out_fn_fv3_prefix="ufsda_cubed_sphere_${YYYY}${MM}${DD}${HH}_"
-    # zlevel_number is valid only for 3-D fields (76=505.65mb, 1->127:sky->surface)
+    # zlevel_number is valid only for 3-D fields (atm: 76=505.65mb, 1->127:sky->surface)
     zlevel_number_atm="76"
-    zlevel_number_sfc="76"
+    zlevel_number_sfc="1"
 
     cat > plot_cubed_sphere_grid.yaml <<EOF
 cartopy_ne_path: '${FIXufsda}/NaturalEarth'
