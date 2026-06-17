@@ -299,7 +299,7 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       git clone https://github.com/NOAA-EMC/GDASApp.git
       cd GDASApp
       # For specific hash
-      git checkout dcc7507
+      git checkout 16c416d
       git submodule update --init --recursive
       # Run build script
       if [ "${PLATFORM}" = "derecho" ]; then
