@@ -10,9 +10,9 @@ build:
   tools:
     python: "3.13"
 
-# Build documentation in the "docs/" directory with Sphinx
+# Build documentation in the "doc/" directory with Sphinx
 sphinx:
-   configuration: doc/UserGuide/source/conf.py
+   configuration: doc/conf.py
 
 # Optionally, but recommended,
 # declare the Python requirements required to build your documentation
