@@ -302,7 +302,13 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       git checkout 16c416d
       git submodule update --init --recursive
       # Run build script
-      ./build.sh -f -a -d -t ${PLATFORM} > build.log 2>&1 &
+      if [ "${PLATFORM}" = "derecho" ]; then
+	cp -p "${SORC_DIR}/gdas_jcard_derecho.sh" "${JEDI_BUILD_DIR}"
+	sed -i "s|{{ JEDI_BUILD_DIR }}|$JEDI_BUILD_DIR|g" "${JEDI_BUILD_DIR}/gdas_jcard_derecho.sh"
+        qsub ${SORC_DIR}/gdas_jcard_derecho.sh
+      else
+        ./build.sh -f -t ${PLATFORM} > build.log 2>&1 &
+      fi
     fi
     cd "${SORC_DIR}"
   fi
