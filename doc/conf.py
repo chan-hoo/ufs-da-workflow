@@ -39,7 +39,7 @@ master_doc = 'index'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['doc-snippets/*']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -61,10 +61,20 @@ rst_prolog = """
 # Can be found using navigator.userAgent inside a browser console.
 user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 
+# Keep slow external sites from making linkcheck look hung.
+linkcheck_timeout = 5
+linkcheck_report_timeouts_as_broken = False
+
 # Ignore working links that cause a linkcheck 403 error.
 linkcheck_ignore = [r'https://www\.intel\.com/content/www/us/en/developer/tools/oneapi/hpc\-toolkit\-download\.html',
                     r'https://doi.org/*',
                     r'https://sourceforge.net/projects/xming/',
+                    r'https://dtcenter\.org/software-tools/common-community-physics-package-ccpp',
+                    r'https://www\.ucar\.edu/',
+                    r'https://spack\.readthedocs\.io/en/latest/',
+                    r'https://docs\.unidata\.ucar\.edu/netcdf-c/current/',
+                    r'https://ncar\.ucar\.edu/',
+                    r'https://www\.cesm\.ucar\.edu/',
                     ]
 
 # Ignore anchor tags for Land DA data bucket. Shows Not Found even when they exist.
@@ -113,13 +123,13 @@ html_static_path = ['_static']
 html_context = {}
 
 def setup(app):
-    app.add_css_file('custom.css')  # may also be an URL
+    app.add_css_file('custom.css')  # may also be a URL
     app.add_css_file('theme_overrides.css')  # may also be a URL
 
 # -- Options for intersphinx extension ---------------------------------------
 
 intersphinx_mapping = {
-   'jedi': ('https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/8.0.0/', None),
+   'jedi': ('https://jcsda-jedi-docs.readthedocs-hosted.com/en/8.0.0/', None),
    'spack-stack': ('https://spack-stack.readthedocs.io/en/1.6.0/', None),
 }
 
@@ -130,8 +140,8 @@ extlinks = {'ccpp-techdoc': ('https://ccpp-techdoc.readthedocs.io/en/latest/%s',
             'github': ('https://github.com/ufs-community/land-DA_workflow/%s', '%s'),
             'github-docs': ('https://docs.github.com/en/%s', '%s'),
             'gswp3': ('https://hydro.iis.u-tokyo.ac.jp/GSWP3/%s', '%s'),
-            'jedi': ('https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/8.0.0/%s', '%s'),
-            'jedi-latest': ('https://jointcenterforsatellitedataassimilation-jedi-docs.readthedocs-hosted.com/en/latest/%s', '%s'),
+            'jedi': ('https://jcsda-jedi-docs.readthedocs-hosted.com/en/8.0.0/%s', '%s'),
+            'jedi-latest': ('https://jcsda-jedi-docs.readthedocs-hosted.com/en/latest/%s', '%s'),
             'nco': ('https://www.nco.ncep.noaa.gov/idsb/implementation_standards/%s', '%s'),
             'rocoto': ('https://christopherwharrop.github.io/rocoto/%s', '%s'),
             'rst': ('https://www.sphinx-doc.org/en/master/usage/restructuredtext/%s', '%s'),

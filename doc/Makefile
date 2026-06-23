@@ -1,11 +1,10 @@
-# Minimal makefile for Sphinx documentation
-#
+# Makefile for Sphinx documentation
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-SPHINXOPTS    += -a -n #-W --keep-going
+SPHINXOPTS    += -a -n -W --keep-going
 SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
+SOURCEDIR     = .
 BUILDDIR      = build
 LINKCHECKDIR  = $(BUILDDIR)/linkcheck
 
@@ -17,8 +16,8 @@ help:
 
 doc:
 	make clean
-	$(MAKE) html
 	$(MAKE) linkcheck
+	$(MAKE) html
 
 linkcheck:
 	$(SPHINXBUILD) -b linkcheck $(SPHINXOPTS) $(SOURCEDIR) $(LINKCHECKDIR)

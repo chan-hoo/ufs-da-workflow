@@ -16,7 +16,9 @@ git clone -b develop --recursive https://github.com/ufs-community/ufs-da-workflo
 
 2. Move to the `sorc` directory:
 ```
-cd ufs-da-workflow/sorc
+cd ufs-da-workflow
+export HOMEufsda=$PWD
+cd sorc
 ```
 
 3. Run the build script:
@@ -70,7 +72,7 @@ Change the parameter values such as `ACCOUNT` as needed.
 7. Launch the workflow tasks:
 - WORKFLOW_MANAGER: ecflow
 ```
-cd ../../exp_case/ecf_server
+cd ${HOMEufsda}/../exp_case/ecf_server
 ./start_server.sh
 cd ../[EXP_CASE_NAME]/ecf
 ./begin_suite.sh
@@ -80,7 +82,7 @@ where `[EXP_CASE_NAME]` is specified in the configuration file `config.yaml`.
 
 - WORKFLOW_MANAGER: rocoto
 ```
-cd ../../exp_case/[EXP_CASE_NAME]
+cd ${HOMEufsda}/../exp_case/[EXP_CASE_NAME]
 ./automate_launch_script.py -i [time interval in seconds]
 ```
 where the default value of `[time interval in seconds]` is 30. This means that the launch script `launch_rocoto_wflow.sh` is submitted every 30 seconds.
