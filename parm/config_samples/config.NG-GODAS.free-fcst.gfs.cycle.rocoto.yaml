@@ -20,4 +20,4 @@ parm:
   OUTPUT_FH: '6 -1'
   RESTART_INTERVAL: '6 -1'
   TYPE_ANAL_FCST: fcst-only
-  WORKFLOW_MANAGER: ecflow
+  WORKFLOW_MANAGER: rocoto
