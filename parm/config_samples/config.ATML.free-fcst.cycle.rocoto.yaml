@@ -11,8 +11,8 @@ parm:
   DATE_LAST_CYCLE: 2021032218
   DT_ATMOS: 720
   DT_RUNSEQ: 720
-  envir: atml_freefcst_ecf
-  EXP_CASE_NAME: atml_freefcst_ecf
+  envir: atml_freefcst
+  EXP_CASE_NAME: atml_freefcst
   FCST_HRS: 12
   OUTPUT_FH: '6 -1'
   TYPE_ANAL_FCST: fcst-only

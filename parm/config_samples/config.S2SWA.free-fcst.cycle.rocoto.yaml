@@ -10,8 +10,8 @@ parm:
   DATE_LAST_CYCLE: 2021032218
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2swa_freefcst_ecf
-  EXP_CASE_NAME: s2swa_freefcst_ecf
+  envir: s2swa_freefcst
+  EXP_CASE_NAME: s2swa_freefcst
   FCST_HRS: 12
   OUTPUT_FH: '6 -1'
   TYPE_ANAL_FCST: fcst-only
