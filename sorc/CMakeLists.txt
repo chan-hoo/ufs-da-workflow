@@ -25,13 +25,13 @@ include_directories( ${NETCDF_INCLUDE_DIRS} )
 
 message(APP="${APP}")
 if(NOT APP)
-  set(APP "S2SWA")
+  set(APP "S2SW")
 endif()
 message(APP="${APP}")
 
 message(CCPP_SUITES="${CCPP_SUITES}")
 if( NOT CCPP_SUITES )
-  if( APP MATCHES "S2SWA" OR APP MATCHES "S2SWAL" )
+  if( APP MATCHES "S2SW" OR APP MATCHES "S2SWL" )
     set(CCPP_SUITES "FV3_GFS_v17_coupled_p8_ugwpv1")
   elseif( APP MATCHES "ATML" OR APP MATCHES "ATM" )
     set(CCPP_SUITES "FV3_GFS_v17_p8_ugwpv1" )
@@ -51,10 +51,11 @@ list(APPEND UFS_MODEL_ARGS
   "-DCCPP_SUITES=${CCPP_SUITES}"
   "-DMPI=ON"
 )
-if( APP MATCHES "S2SWA" )
+if( APP MATCHES "S2SW" )
   list(APPEND UFS_MODEL_ARGS
     "-D32BIT=ON"
     "-DPDLIB=ON"
+    "-DUFS_TRACING=ON"
   )
 elseif( APP MATCHES "ATML" OR APP MATCHES "ATM" )
   list(APPEND UFS_MODEL_ARGS
@@ -143,7 +144,7 @@ if( NOT DA_UTILS_ONLY AND NOT APP STREQUAL "LND" )
   endif()
 endif()
 
-# For snow / soil-moisture DA analysis
+# For snow DA analysis
 if( NOT APP STREQUAL "NG-GODAS" OR DA_UTILS_ONLY )
   # APPLY_INCR for JEDI snow-DA
   list(APPEND APPLY_INCR_ARGS

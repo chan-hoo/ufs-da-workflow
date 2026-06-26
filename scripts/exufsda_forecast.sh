@@ -11,7 +11,7 @@ export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
 export I_MPI_EXTRA_FILESYSTEM=ON
 export FI_MLX_INJECT_LIMIT=0
-if [ "${APP}" = "S2SWAL" ]; then
+if [ "${APP}" = "S2SWL" ]; then
   export MPI_TYPE_DEPTH=20
   export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
   export PSM_RANKS_PER_CONTEXT=4
@@ -673,7 +673,7 @@ if [ "${wav_model}" = "ww3" ]; then
     cp -p "${DATA}/${ipdy}.${ihh}0000.out_grd.ww3" "${COMINOUT}/${NET}.${cycle}.wav_grd.f${ihr_3d}.c${RES}.ww3"
     cp -p "${DATA}/${ipdy}.${ihh}0000.out_pnt.ww3.nc" "${COMINOUT}/${NET}.${cycle}.wav.f${ihr_3d}.c${RES}.nc"
   done
-  if [ "${APP}" != "S2SWAL" ]; then
+  if [ "${APP}" != "S2SWL" ]; then
     rsync -av --update --no-links out.pnt_wght.ww3.nc ${COMINOUT}
   fi
   rsync -av --update --no-links ${DATA}/ufs.cpld.ww3.r.* ${COMINOUT}

@@ -106,7 +106,7 @@ fi
 
 ## Application dependent variables
 datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
-if [ "${APP}" = "S2SWA" ]; then
+if [ "${APP}" = "S2SW" ]; then
   ### ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
@@ -114,7 +114,7 @@ if [ "${APP}" = "S2SWA" ]; then
   wav_mesh_wav="mesh.global_270k.nc"
   ### model_configure
   use_saved_routehandles=".true."
-elif [ "${APP}" = "S2SWAL" ]; then
+elif [ "${APP}" = "S2SWL" ]; then
   ### ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
@@ -351,7 +351,7 @@ fi
 ## MOM6 input file: MOM_input
 ################################
 if [ "${ocn_model}" = "mom6" ]; then
-  if [ "${APP}" = "S2SWA" ] || [ "${APP}" = "S2SWAL" ]; then
+  if [ "${APP}" = "S2SW" ] || [ "${APP}" = "S2SWL" ]; then
     mom6_use_waves="True"
   else
     mom6_use_waves="False"

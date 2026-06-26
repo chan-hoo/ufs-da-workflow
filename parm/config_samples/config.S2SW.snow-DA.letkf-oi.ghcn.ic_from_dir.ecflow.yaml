@@ -8,14 +8,14 @@ flag:
 path:
 parm:
   ACCOUNT: epic
-  APP: S2SWA
+  APP: S2SW
   DATE_CYCLE_FREQ_HR: 24
   DATE_FIRST_CYCLE: 2021032206
   DATE_LAST_CYCLE: 2021032306
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2swa_snowDA_letkfoi_ecf
-  EXP_CASE_NAME: s2swa_snowDA_letkfoi_ecf
+  envir: s2sw_snowDA_letkfoi_ecf
+  EXP_CASE_NAME: s2sw_snowDA_letkfoi_ecf
   FCST_HRS: 24
   JEDI_ALGORITHM: letkf-oi
   OUTPUT_FH: '6 -1'
