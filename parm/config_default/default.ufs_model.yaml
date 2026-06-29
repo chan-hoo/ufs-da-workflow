@@ -39,6 +39,7 @@ parm:
   OUTPUT_GRID: cubed_sphere_grid
   QUILTING_RESTART: .false.
   RES: 96
+  RESTART_FH: "!empty"
   RESTART_INTERVAL: "12 -1"
   WRITE_GROUPS: 1
   WRITE_TASKS_PER_GROUP: 6

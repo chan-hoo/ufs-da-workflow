@@ -420,14 +420,8 @@ if [ "${wav_model}" = "ww3" ]; then
   ##############
   # WW3 files
   ##############
-  # set ww3_shel.nml
-  output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
-  settings="\
-  'output_fh_ww3_sec': ${output_fh_ww3_sec}
-" # End of settings variable
-  fp_template="${PARMufsda}/templates/template.ww3_shel.nml"
-  fn_namelist="ww3_shel.nml"
-  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  # copy ww3_shel.nml from COMIN
+  cp -p "${COMINOUT}/ww3_shel.nml_${PDY}${cyc}" ww3_shel.nml
 
   # fix files	
   wav_fns=( "ww3_points.list" "mesh.global_270k.nc" )

@@ -282,6 +282,11 @@ rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 ##############################################
 ## UFS weather model input: model_configure
 ##############################################
+if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
+  restart_fh="!empty"
+else
+  restart_fh="${RESTART_FH}"
+fi
 settings="\
   'yyyy': !!str ${YYYY}
   'mm': !!str ${MM}
@@ -302,6 +307,7 @@ settings="\
   'OUTPUT_FH': ${OUTPUT_FH}
   'OUTPUT_GRID': ${OUTPUT_GRID}
   'QUILTING_RESTART': ${QUILTING_RESTART}
+  'RESTART_FH': ${restart_fh}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'use_saved_routehandles': ${use_saved_routehandles}
   'ZSTANDARD_LEVEL': ${ZSTANDARD_LEVEL}
@@ -395,6 +401,22 @@ if [ "${ice_model}" = "cice6" ]; then
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
   rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 fi
+
+##################################
+## WW3 input file: ww3_shel.nml
+##################################
+if [ "${wav_model}" = "ww3" ]; then
+  output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
+  settings="\
+  'APP': ${APP}
+  'output_fh_ww3_sec': ${output_fh_ww3_sec}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.ww3_shel.nml"
+  fn_namelist="ww3_shel.nml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+fi
+
 echo "=========== Input Namelist Files COMPLETE !!! ================="
 
 

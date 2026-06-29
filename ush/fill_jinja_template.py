@@ -87,9 +87,19 @@ def to_quote(loader, node):
     return "''"
 
 
+def to_empty(loader, node):
+    """
+    Convert the input value to an empty string.
+    Intended for YAML values that should become:
+        A:
+    """
+    return ""
+
+
 yaml.add_constructor("!datetime", to_datetime, Loader=yaml.SafeLoader)
 yaml.add_constructor("!join", join, Loader=yaml.SafeLoader)
 yaml.add_constructor("!quote", to_quote, Loader=yaml.SafeLoader)
+yaml.add_constructor("!empty", to_empty, Loader=yaml.SafeLoader)
 
 
 def file_exists(arg):

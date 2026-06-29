@@ -70,7 +70,7 @@
            "units",        "fraction"
        "profile_type", "fixed", "surface_value=0.0" /
 {%- endif %}
-{%- if chm_model %}
+{%- if APP == "S2SWL" %}
 # prognostic aerosols
  "TRACER", "atmos_mod", "so2"
            "longname",     "so2 mixing ratio"

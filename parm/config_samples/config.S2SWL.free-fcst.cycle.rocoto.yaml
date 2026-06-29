@@ -16,5 +16,6 @@ parm:
   NPROCS_WAV: 20
   OUTPUT_FH: '6 -1'
   OUTPUT_FH_LND: 6
+  RESTART_FH: '0.5 3'
   TYPE_ANAL_FCST: fcst-only
   WORKFLOW_MANAGER: rocoto
