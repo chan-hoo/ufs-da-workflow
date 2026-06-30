@@ -206,7 +206,7 @@ def add_new_parm_hpc(machine,config_parm):
     elif app == "S2SWL":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
-        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav + nprocs_forecast_med
+        nprocs_forecast = nprocs_forecast_atm + nprocs_forecast_med + nprocs_ocn + nprocs_ice + nprocs_wav
     elif app == "NG-GODAS":
         nprocs_forecast_atm = nprocs_datm
         nprocs_forecast_med = nprocs_forecast_atm
@@ -970,7 +970,7 @@ def set_machine_parm(machine):
             NATIVE = '--exclusive'
             PARTITION_QUEUE = "u1-compute"
             QOS = "batch"
-            RUN_CMD = "srun"
+            RUN_CMD = "srun --label --distribution=block:block"
             SCHED = "slurm"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")

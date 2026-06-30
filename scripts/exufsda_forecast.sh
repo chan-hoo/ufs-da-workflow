@@ -424,7 +424,7 @@ if [ "${wav_model}" = "ww3" ]; then
   cp -p "${COMINOUT}/ww3_shel.nml_${PDY}${cyc}" ww3_shel.nml
 
   # fix files	
-  wav_fns=( "ww3_points.list" "mesh.global_270k.nc" )
+  wav_fns=( "ww3_points.list" )
   for ifn in "${wav_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/WW3/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -433,6 +433,14 @@ if [ "${wav_model}" = "ww3" ]; then
       err_exit "Symlink failed: ${ifp} does not exist."
     fi
   done
+  if [ "${APP}" = "S2SW" ]; then
+    ifp="${FIXufsda}/DATA_fix/WW3/mesh.global_270k.nc"
+    if [ -e "${ifp}" ]; then
+      ln -nsf ${ifp} .
+    else
+      err_exit "Symlink failed: ${ifp} does not exist."
+    fi    
+  fi
 
   # mod_def.ww3 file
   ifp="${FIXufsda}/DATA_fix/WW3/mod_def.ww3_${APP}"

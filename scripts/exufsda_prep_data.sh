@@ -221,12 +221,17 @@ nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
 nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
 nprocs_atm_ocn_ice_wav=$(( nprocs_atm_ocn_ice + NPROCS_WAV ))
 nprocs_atm_ocn_ice_wav_m1=$(( nprocs_atm_ocn_ice_wav - 1 ))
+nprocs_atm_ocn_ice_wav_lnd=$(( nprocs_atm_ocn_ice_wav + nprocs_forecast_med ))
+nprocs_atm_ocn_ice_wav_lnd_m1=$(( nprocs_atm_ocn_ice_wav_lnd - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
 output_fh_lnd_sec=$(( OUTPUT_FH_LND * 3600 ))
 if [ "${APP}" = "ATML" ]; then
   lnd_petlist_bounds_n1=${nprocs_forecast_atm}
   lnd_petlist_bounds_n2=${nprocs_forecast_m1}
+elif [ "${APP}" = "S2SWL" ]; then
+  lnd_petlist_bounds_n1=${nprocs_atm_ocn_ice_wav}
+  lnd_petlist_bounds_n2=${nprocs_atm_ocn_ice_wav_lnd_m1}
 else
   lnd_petlist_bounds_n1=${nprocs_atm_ocn_ice_wav}
   lnd_petlist_bounds_n2=${nprocs_forecast_m1}
