@@ -287,11 +287,6 @@ rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 ##############################################
 ## UFS weather model input: model_configure
 ##############################################
-if [ "${COLDSTART}" != "YES" ] || [ "${PDY}${cyc}" != "${DATE_FIRST_CYCLE:0:10}" ]; then
-  restart_fh="!empty"
-else
-  restart_fh="${RESTART_FH}"
-fi
 settings="\
   'yyyy': !!str ${YYYY}
   'mm': !!str ${MM}
@@ -312,7 +307,7 @@ settings="\
   'OUTPUT_FH': ${OUTPUT_FH}
   'OUTPUT_GRID': ${OUTPUT_GRID}
   'QUILTING_RESTART': ${QUILTING_RESTART}
-  'RESTART_FH': ${restart_fh}
+  'RESTART_FH': ${RESTART_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'use_saved_routehandles': ${use_saved_routehandles}
   'ZSTANDARD_LEVEL': ${ZSTANDARD_LEVEL}
