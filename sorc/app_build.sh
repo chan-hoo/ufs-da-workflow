@@ -296,11 +296,8 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
       module load git-lfs
       cd "${JEDI_PDIR}"
-      git clone https://github.com/NOAA-EMC/GDASApp.git
+      cp -rp "${SORC_DIR}/GDASApp.cd" GDASApp
       cd GDASApp
-      # For specific hash
-      git checkout 16c416d
-      git submodule update --init --recursive
       # Run build script
       if [ "${PLATFORM}" = "derecho" ]; then
 	cp -p "${SORC_DIR}/gdas_jcard_derecho.sh" "${JEDI_BUILD_DIR}"
