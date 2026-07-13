@@ -90,8 +90,6 @@ def to_quote(loader, node):
 def to_empty(loader, node):
     """
     Convert the input value to an empty string.
-    Intended for YAML values that should become:
-        A:
     """
     return ""
 
