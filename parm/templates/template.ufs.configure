@@ -7,10 +7,10 @@ logKindFlag:            ESMF_LOGKIND_MULTI
 globalResourceControl:  true
 
 # EARTH #
-{%- if APP == "S2SWA" %}
+{%- if APP == "S2SW" %}
 EARTH_component_list: MED ATM OCN ICE WAV
-{%- elif APP == "S2SWAL" %}
-EARTH_component_list: MED ATM CHM OCN ICE WAV LND
+{%- elif APP == "S2SWL" %}
+EARTH_component_list: MED ATM OCN ICE WAV LND
 {%- elif APP == "NG-GODAS" %}
 EARTH_component_list: MED ATM OCN ICE
 {%- elif APP == "ATML" %}
@@ -50,7 +50,7 @@ ATM_omp_num_threads:            1
 ATM_attributes::
   Verbosity = 0
   DumpFields = false
-  {%- if APP == "S2SWA" or APP == "S2SWAL" %}
+  {%- if APP == "S2SW" or APP == "S2SWL" %}
   ProfileMemory = false
   OverwriteSlice = true
   {%- elif APP == "NG-GODAS" %}
@@ -175,7 +175,7 @@ LND_attributes::
 # CMEPS run sequence
 runSeq::
 @{{ DT_RUNSEQ }}
-  {%- if APP == "S2SWA" %}
+  {%- if APP == "S2SW" %}
    MED med_phases_prep_wav_avg
    MED med_phases_prep_ocn_avg
    MED -> WAV :remapMethod=redist
@@ -202,7 +202,7 @@ runSeq::
    MED med_phases_post_ocn
    MED med_phases_post_wav
    MED med_phases_restart_write
-  {%- elif APP == "S2SWAL" %}
+  {%- elif APP == "S2SWL" %}
    MED med_phases_prep_ocn_avg
    MED -> OCN :remapMethod=redist
    OCN
@@ -216,11 +216,7 @@ runSeq::
      MED -> ICE :remapMethod=redist
      MED -> WAV :remapMethod=redist
      MED -> LND :remapMethod=redist
-     ATM phase1
-     ATM -> CHM
-     CHM
-     CHM -> ATM
-     ATM phase2
+     ATM
      ICE
      WAV
      LND
@@ -316,7 +312,7 @@ ALLCOMP_attributes::
   {%- endif %}
       ScalarFieldIdxGridNX = 1
       ScalarFieldIdxGridNY = 2
-  {%- if APP == "S2SWA" or APP == "S2SWAL" %}
+  {%- if APP == "S2SW" or APP == "S2SWL" %}
       ScalarFieldIdxGridNTile = 3
   {%- elif APP == "NG-GODAS" %}
       ScalarFieldIdxNextSwCday = 3

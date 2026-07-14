@@ -11,8 +11,8 @@ parm:
   DATM_DATA_TYPE: gfs
   DT_ATMOS: 900
   DT_RUNSEQ: 3600
-  envir: ng_freefcst_ecf
-  EXP_CASE_NAME: ng_freefcst_ecf
+  envir: ng_freefcst
+  EXP_CASE_NAME: ng_freefcst
   FCST_HRS: 6
   NPROCS_DATM: 12
   NPROCS_ICE: 12

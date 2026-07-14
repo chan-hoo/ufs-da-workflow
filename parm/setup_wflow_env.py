@@ -199,14 +199,14 @@ def add_new_parm_hpc(machine,config_parm):
     nprocs_prep_data = config_parm["parm"]["NPROCS_PREP_DATA"]
     nprocs_wav = config_parm["parm"]["NPROCS_WAV"]
 
-    if app == "S2SWA":
+    if app == "S2SW":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
         nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav
-    elif app == "S2SWAL":
+    elif app == "S2SWL":
         nprocs_forecast_med = 6*(atm_layout_x*atm_layout_y)
         nprocs_forecast_atm = nprocs_forecast_med + 6*(atm_io_layout_x*atm_io_layout_y)
-        nprocs_forecast = nprocs_forecast_atm + nprocs_ocn + nprocs_ice + nprocs_wav + nprocs_forecast_med
+        nprocs_forecast = nprocs_forecast_atm + nprocs_forecast_med + nprocs_ocn + nprocs_ice + nprocs_wav
     elif app == "NG-GODAS":
         nprocs_forecast_atm = nprocs_datm
         nprocs_forecast_med = nprocs_forecast_atm
@@ -360,16 +360,16 @@ def add_new_parm_ufs_model(config_parm):
     restart_interval = config_parm["parm"]["RESTART_INTERVAL"]
 
     # Set model components
-    if app == "S2SWA":
+    if app == "S2SW":
         atm_model = "fv3"
         chm_model = ""
         ice_model = "cice6"
         lnd_model = ""
         ocn_model = "mom6"
         wav_model = "ww3"
-    elif app == "S2SWAL":
+    elif app == "S2SWL":
         atm_model = "fv3"
-        chm_model = "gocart"
+        chm_model = ""
         ice_model = "cice6"
         lnd_model = "noahmp"
         ocn_model = "mom6"
@@ -970,7 +970,7 @@ def set_machine_parm(machine):
             NATIVE = '--exclusive'
             PARTITION_QUEUE = "u1-compute"
             QOS = "batch"
-            RUN_CMD = "srun"
+            RUN_CMD = "srun --label --distribution=block:block"
             SCHED = "slurm"
         case _:
             sys.exit(f"FATAL ERROR: this machine/platform '{lowercase_machine}' is NOT supported yet !!!")

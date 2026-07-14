@@ -16,8 +16,8 @@ parm:
   DATE_LAST_CYCLE: 2025012100
   DT_ATMOS: 720
   DT_RUNSEQ: 720
-  envir: atml_snowDA_letkfoi_ecf
-  EXP_CASE_NAME: atml_snowDA_letkfoi_ecf
+  envir: atml_snowDA_letkfoi
+  EXP_CASE_NAME: atml_snowDA_letkfoi
   FCST_HRS: 24
   IC_DATA_MODEL: gfs
   JEDI_ALGORITHM: letkf-oi

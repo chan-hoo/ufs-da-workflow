@@ -11,7 +11,7 @@ export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT="SUMMARY"
 export I_MPI_EXTRA_FILESYSTEM=ON
 export FI_MLX_INJECT_LIMIT=0
-if [ "${APP}" = "S2SWAL" ]; then
+if [ "${APP}" = "S2SWL" ]; then
   export MPI_TYPE_DEPTH=20
   export ESMF_RUNTIME_COMPLIANCECHECK=OFF:depth=4
   export PSM_RANKS_PER_CONTEXT=4
@@ -420,17 +420,11 @@ if [ "${wav_model}" = "ww3" ]; then
   ##############
   # WW3 files
   ##############
-  # set ww3_shel.nml
-  output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
-  settings="\
-  'output_fh_ww3_sec': ${output_fh_ww3_sec}
-" # End of settings variable
-  fp_template="${PARMufsda}/templates/template.ww3_shel.nml"
-  fn_namelist="ww3_shel.nml"
-  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  # copy ww3_shel.nml from COMIN
+  cp -p "${COMINOUT}/ww3_shel.nml_${PDY}${cyc}" ww3_shel.nml
 
   # fix files	
-  wav_fns=( "ww3_points.list" "mesh.global_270k.nc" )
+  wav_fns=( "ww3_points.list" )
   for ifn in "${wav_fns[@]}" ; do
     ifp="${FIXufsda}/DATA_fix/WW3/${ifn}"
     if [ -e "${ifp}" ]; then
@@ -439,6 +433,14 @@ if [ "${wav_model}" = "ww3" ]; then
       err_exit "Symlink failed: ${ifp} does not exist."
     fi
   done
+  if [ "${APP}" = "S2SW" ]; then
+    ifp="${FIXufsda}/DATA_fix/WW3/mesh.global_270k.nc"
+    if [ -e "${ifp}" ]; then
+      ln -nsf ${ifp} .
+    else
+      err_exit "Symlink failed: ${ifp} does not exist."
+    fi    
+  fi
 
   # mod_def.ww3 file
   ifp="${FIXufsda}/DATA_fix/WW3/mod_def.ww3_${APP}"
@@ -673,7 +675,7 @@ if [ "${wav_model}" = "ww3" ]; then
     cp -p "${DATA}/${ipdy}.${ihh}0000.out_grd.ww3" "${COMINOUT}/${NET}.${cycle}.wav_grd.f${ihr_3d}.c${RES}.ww3"
     cp -p "${DATA}/${ipdy}.${ihh}0000.out_pnt.ww3.nc" "${COMINOUT}/${NET}.${cycle}.wav.f${ihr_3d}.c${RES}.nc"
   done
-  if [ "${APP}" != "S2SWAL" ]; then
+  if [ "${APP}" != "S2SWL" ]; then
     rsync -av --update --no-links out.pnt_wght.ww3.nc ${COMINOUT}
   fi
   rsync -av --update --no-links ${DATA}/ufs.cpld.ww3.r.* ${COMINOUT}

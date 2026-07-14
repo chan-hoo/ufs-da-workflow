@@ -106,7 +106,7 @@ fi
 
 ## Application dependent variables
 datm_data_type_upper=$(echo ${DATM_DATA_TYPE} | tr '[a-z]' '[A-Z]')
-if [ "${APP}" = "S2SWA" ]; then
+if [ "${APP}" = "S2SW" ]; then
   ### ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
@@ -114,7 +114,7 @@ if [ "${APP}" = "S2SWA" ]; then
   wav_mesh_wav="mesh.global_270k.nc"
   ### model_configure
   use_saved_routehandles=".true."
-elif [ "${APP}" = "S2SWAL" ]; then
+elif [ "${APP}" = "S2SWL" ]; then
   ### ufs.configure
   allcomp_case_name="ufs.cpld"
   cmeps_coupling_mode="ufs.frac"
@@ -221,12 +221,17 @@ nprocs_atm_ocn_ice=$(( nprocs_atm_ocn + NPROCS_ICE ))
 nprocs_atm_ocn_ice_m1=$(( nprocs_atm_ocn_ice - 1 ))
 nprocs_atm_ocn_ice_wav=$(( nprocs_atm_ocn_ice + NPROCS_WAV ))
 nprocs_atm_ocn_ice_wav_m1=$(( nprocs_atm_ocn_ice_wav - 1 ))
+nprocs_atm_ocn_ice_wav_lnd=$(( nprocs_atm_ocn_ice_wav + nprocs_forecast_med ))
+nprocs_atm_ocn_ice_wav_lnd_m1=$(( nprocs_atm_ocn_ice_wav_lnd - 1 ))
 nprocs_forecast_m1=$(( nprocs_forecast - 1 ))
 datm_mesh_fn="mesh.datm.${datm_nx_global}x${datm_ny_global}.nc"
 output_fh_lnd_sec=$(( OUTPUT_FH_LND * 3600 ))
 if [ "${APP}" = "ATML" ]; then
   lnd_petlist_bounds_n1=${nprocs_forecast_atm}
   lnd_petlist_bounds_n2=${nprocs_forecast_m1}
+elif [ "${APP}" = "S2SWL" ]; then
+  lnd_petlist_bounds_n1=${nprocs_atm_ocn_ice_wav}
+  lnd_petlist_bounds_n2=${nprocs_atm_ocn_ice_wav_lnd_m1}
 else
   lnd_petlist_bounds_n1=${nprocs_atm_ocn_ice_wav}
   lnd_petlist_bounds_n2=${nprocs_forecast_m1}
@@ -302,6 +307,7 @@ settings="\
   'OUTPUT_FH': ${OUTPUT_FH}
   'OUTPUT_GRID': ${OUTPUT_GRID}
   'QUILTING_RESTART': ${QUILTING_RESTART}
+  'RESTART_FH': ${RESTART_FH}
   'RESTART_INTERVAL': ${RESTART_INTERVAL}
   'use_saved_routehandles': ${use_saved_routehandles}
   'ZSTANDARD_LEVEL': ${ZSTANDARD_LEVEL}
@@ -351,7 +357,7 @@ fi
 ## MOM6 input file: MOM_input
 ################################
 if [ "${ocn_model}" = "mom6" ]; then
-  if [ "${APP}" = "S2SWA" ] || [ "${APP}" = "S2SWAL" ]; then
+  if [ "${APP}" = "S2SW" ] || [ "${APP}" = "S2SWL" ]; then
     mom6_use_waves="True"
   else
     mom6_use_waves="False"
@@ -395,6 +401,22 @@ if [ "${ice_model}" = "cice6" ]; then
   ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
   rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
 fi
+
+##################################
+## WW3 input file: ww3_shel.nml
+##################################
+if [ "${wav_model}" = "ww3" ]; then
+  output_fh_ww3_sec=$(( OUTPUT_FH_WW3 * 3600 ))
+  settings="\
+  'APP': ${APP}
+  'output_fh_ww3_sec': ${output_fh_ww3_sec}
+" # End of settings variable
+  fp_template="${PARMufsda}/templates/template.ww3_shel.nml"
+  fn_namelist="ww3_shel.nml"
+  ${USHufsda}/fill_jinja_template.py -u "${settings}" -t "${fp_template}" -o "${fn_namelist}"
+  rsync -avh ${fn_namelist} "${COMINOUT}/${fn_namelist}_${PDY}${cyc}"
+fi
+
 echo "=========== Input Namelist Files COMPLETE !!! ================="
 
 

@@ -10,8 +10,8 @@ parm:
   DATE_FIRST_CYCLE: 2021032206
   DATE_LAST_CYCLE: 2021032218
   DT_ATMOS: 720
-  envir: atm_freefcst_ecf
-  EXP_CASE_NAME: atm_freefcst_ecf
+  envir: atm_freefcst
+  EXP_CASE_NAME: atm_freefcst
   FCST_HRS: 12
   OUTPUT_FH: '6 -1'
   TYPE_ANAL_FCST: fcst-only

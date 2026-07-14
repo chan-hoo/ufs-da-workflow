@@ -233,7 +233,7 @@
   do_skeb      = .false.
   use_med_flux = .false.
   frac_grid    = {{ frac_grid }}
-  cplchm       = .true.
+  cplchm       = .false.
   cplflx       = .true.
   cplice       = .true.
   cplwav       = .true.

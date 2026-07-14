@@ -10,7 +10,13 @@
 &output_type_nml
   type%field%list = 'WND HS FP DP PHS PTP PDIR'
   type%point%file = 'ww3_points.list'
+{%- if APP == "S2SW" %}
   type%restart%extra = 'ice itstep'
+{%- elif APP == "S2SWL" %}
+  type%restart%extra = ' '
+{%- else %}
+  type%restart%extra = 'ice'
+{%- endif %}
 /
 
 &output_date_nml

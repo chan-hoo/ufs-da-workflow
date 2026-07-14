@@ -12,13 +12,13 @@ OPTIONS
       show this help guide
   -p, --platform=PLATFORM
       name of machine you are building on
-      (e.g. gaeac6 | hercules | orion | ursa | derecho)
+      (e.g. ursa | hercules | orion | gaeac6 | derecho)
   -c, --compiler=COMPILER
       compiler to use; default depends on platform
       (e.g. intel | gnu | cray | gccgfortran)
   -a, --app=APPLICATION
-      weather model application to build; for example, S2SWA for GFS/GEFS
-      (e.g. S2SWA | S2SWAL | NG-GODAS | ATML | ATM | LND)
+      weather model application to build; for example, S2SW for GFS
+      (e.g. S2SW | S2SWL | NG-GODAS | ATML | ATM | LND)
   --ccpp="CCPP_SUITE1,CCPP_SUITE2..."
       CCPP suites (CCPP_SUITES) to include in build; delimited with ','
   --remove
@@ -93,7 +93,7 @@ BUILD_DIR="${SORC_DIR}/build"
 INSTALL_DIR="${SORC_DIR}/build"
 JEDI_BUILD_DIR=""
 COMPILER="intel"
-APPLICATION="S2SWA"
+APPLICATION="S2SW"
 CCPP_SUITES=""
 BUILD_TYPE="Release"
 BUILD_JOBS=4
