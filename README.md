@@ -1,8 +1,8 @@
 # ufs-da-workflow
 UFS DA (Data Assimilation) Workflow: UFS Weather Model + JCSDA JEDI
 - Available coupling configurations in UFS Weather Model:
- 1. S2SWA: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + CHM (GOCART)
- 2. S2SWAL: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + CHM (GOCART) + LND (Noah-MP)
+ 1. S2SW: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3)
+ 2. S2SWL: ATM (FV3+CCPP) + OCN (MOM6) + ICE (CICE) + WAV (WW3) + LND (Noah-MP)
  3. NG-GODAS: ATM (DATM) + OCN (MOM6) + ICE (CICE)
  4. ATML: ATM (FV3+CCPP) + LND (Noah-MP)
  5. ATM: ATM (FV3+CCPP) stand-alone
@@ -26,7 +26,7 @@ cd sorc
 ```
 ./app_build.sh -a=[APP]
 ```
-where `[APP]` is `S2SWA`, `S2SWAL`, `NG-GODAS`, `ATML`, or `ATM`.
+where `[APP]` is `S2SW`, `S2SWL`, `NG-GODAS`, `ATML`, or `ATM`.
 
 - Workflow components: YES, JEDI-bundle: YES
 ```

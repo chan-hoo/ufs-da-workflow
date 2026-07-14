@@ -25,15 +25,15 @@ include_directories( ${NETCDF_INCLUDE_DIRS} )
 
 message(APP="${APP}")
 if(NOT APP)
-  set(APP "S2SWA")
+  set(APP "S2SW")
 endif()
 message(APP="${APP}")
 
 message(CCPP_SUITES="${CCPP_SUITES}")
 if( NOT CCPP_SUITES )
-  if( APP MATCHES "S2SWA" OR APP MATCHES "S2SWAL" )
+  if( APP STREQUAL "S2SW" OR APP STREQUAL "S2SWL" )
     set(CCPP_SUITES "FV3_GFS_v17_coupled_p8_ugwpv1")
-  elseif( APP MATCHES "ATML" OR APP MATCHES "ATM" )
+  elseif( APP STREQUAL "ATML" OR APP STREQUAL "ATM" )
     set(CCPP_SUITES "FV3_GFS_v17_p8_ugwpv1" )
   endif()
 endif()
@@ -51,12 +51,13 @@ list(APPEND UFS_MODEL_ARGS
   "-DCCPP_SUITES=${CCPP_SUITES}"
   "-DMPI=ON"
 )
-if( APP MATCHES "S2SWA" )
+if( APP STREQUAL "S2SW" )
   list(APPEND UFS_MODEL_ARGS
     "-D32BIT=ON"
     "-DPDLIB=ON"
+    "-DUFS_TRACING=ON"
   )
-elseif( APP MATCHES "ATML" OR APP MATCHES "ATM" )
+elseif( APP STREQUAL "ATML" OR APP STREQUAL "ATM" )
   list(APPEND UFS_MODEL_ARGS
     "-D32BIT=ON"
   )
@@ -75,7 +76,7 @@ if( NOT DA_UTILS_ONLY )
 endif()
 
 # UFS_UTILS
-if( APP MATCHES "ATML" )
+if( APP STREQUAL "ATML" )
   list(APPEND UFS_UTILS_ARGS
     "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
     "-DBUILD_TESTING=OFF"
@@ -120,7 +121,7 @@ else()
   )
 endif()
 if( NOT DA_UTILS_ONLY AND NOT APP STREQUAL "LND" )
-  if( APP MATCHES "ATML" )
+  if( APP STREQUAL "ATML" )
     list(APPEND TARGET LIST UFS_UTILS_nofrac.fd)
     ExternalProject_Add(UFS_UTILS_nofrac.fd
       PREFIX ${CMAKE_CURRENT_BINARY_DIR}/UFS_UTILS_nofrac.fd
@@ -143,7 +144,7 @@ if( NOT DA_UTILS_ONLY AND NOT APP STREQUAL "LND" )
   endif()
 endif()
 
-# For snow / soil-moisture DA analysis
+# For snow DA analysis
 if( NOT APP STREQUAL "NG-GODAS" OR DA_UTILS_ONLY )
   # APPLY_INCR for JEDI snow-DA
   list(APPEND APPLY_INCR_ARGS
