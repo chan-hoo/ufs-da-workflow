@@ -295,13 +295,13 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       cd "${SORC_DIR}/GDASApp.cd"
       # Run build script
       if [ "${PLATFORM}" = "derecho" ]; then
-	cp -p "${SORC_DIR}/gdas_jcard_derecho.sh" "${JEDI_BUILD_DIR}"
-	sed -i "s|{{ JEDI_BUILD_DIR }}|$JEDI_BUILD_DIR|g" "${JEDI_BUILD_DIR}/gdas_jcard_derecho.sh"
-        qsub ${SORC_DIR}/gdas_jcard_derecho.sh
+	cp -p "${SORC_DIR}/gdas_jcard_derecho.sh" "${SORC_DIR}/GDASApp.cd"
+	sed -i "s|{{ SORC_DIR }}|$SORC_DIR|g" "${SORC_DIR}/GDASApp.cd/gdas_jcard_derecho.sh"
+        qsub ${SORC_DIR}/GDASApp.cd/gdas_jcard_derecho.sh
       else
 	export WORKFLOW_BUILD="ON"
 	export WORKFLOW_TESTS="OFF"
-        ./build.sh -f -t ${PLATFORM} -w "${HOME_DIR}"  #> build.log 2>&1 &
+        ./build.sh -f -t ${PLATFORM} -w "${HOME_DIR}" > build.log 2>&1 &
       fi
     fi
     cd "${SORC_DIR}"
