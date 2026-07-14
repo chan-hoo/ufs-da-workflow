@@ -17,8 +17,8 @@ parm:
   DATE_FIRST_CYCLE: 2024022400
   DATE_LAST_CYCLE: 2024022400
   ENSEMBLE_NUM_MEMBERS: 2
-  envir: anal_atmDA_3dvar_ecf
-  EXP_CASE_NAME: anal_atmDA_3dvar_ecf
+  envir: anal_atmDA_3dvar
+  EXP_CASE_NAME: anal_atmDA_3dvar
   JEDI_ALGORITHM: 3dvar
   NPROCS_ANALYSIS: 96
   TYPE_ANAL_FCST: anal-only  

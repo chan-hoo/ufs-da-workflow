@@ -14,8 +14,8 @@ parm:
   DATE_LAST_CYCLE: 2021032306
   DT_ATMOS: 720
   DT_RUNSEQ: 3600
-  envir: s2sw_snowDA_letkfoi_ecf
-  EXP_CASE_NAME: s2sw_snowDA_letkfoi_ecf
+  envir: s2sw_snowDA_letkfoi
+  EXP_CASE_NAME: s2sw_snowDA_letkfoi
   FCST_HRS: 24
   JEDI_ALGORITHM: letkf-oi
   OUTPUT_FH: '6 -1'
