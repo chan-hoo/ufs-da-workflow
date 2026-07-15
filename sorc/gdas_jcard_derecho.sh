@@ -12,5 +12,5 @@ export BUILD_JOBS="8"
 export WORKFLOW_BUILD="ON"
 export WORKFLOW_TESTS="OFF"
 
-cd {{ SORC_DIR }}/GDASApp.cd
-./build.sh -f -t derecho
+cd {{ HOME_DIR }}/sorc/GDASApp.cd
+./build.sh -f -t derecho -w {{ HOME_DIR }}

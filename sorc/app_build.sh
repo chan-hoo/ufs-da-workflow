@@ -281,7 +281,6 @@ if [ "${BUILD_JEDI}" != "off" ]; then
     if [ "${BUILD_JEDI}" = "bundle" ] || [ "${BUILD_JEDI}" = "bundle-only" ]; then
       module use ${SORC_DIR}/jedi-bundle/modulefiles
       module load ${PLATFORM}.${COMPILER}
-      module load git-lfs
       module list
       mkdir -p ${JEDI_BUILD_DIR}
       cd "${JEDI_BUILD_DIR}"
@@ -291,12 +290,11 @@ if [ "${BUILD_JEDI}" != "off" ]; then
       ecbuild "${JEDI_BUILD_DIR}/jedi-bundle" 2>&1 | tee log.jedibundle_ecbuild
       make ${MAKE_SETTINGS} 2>&1 | tee log.jedibundle_make
     elif [ "${BUILD_JEDI}" = "gdas" ] || [ "${BUILD_JEDI}" = "gdas-only" ]; then
-      module load git-lfs
       cd "${SORC_DIR}/GDASApp.cd"
       # Run build script
       if [ "${PLATFORM}" = "derecho" ]; then
 	cp -p "${SORC_DIR}/gdas_jcard_derecho.sh" "${SORC_DIR}/GDASApp.cd"
-	sed -i "s|{{ SORC_DIR }}|$SORC_DIR|g" "${SORC_DIR}/GDASApp.cd/gdas_jcard_derecho.sh"
+	sed -i "s|{{ HOME_DIR }}|$HOME_DIR|g" "${SORC_DIR}/GDASApp.cd/gdas_jcard_derecho.sh"
         qsub ${SORC_DIR}/GDASApp.cd/gdas_jcard_derecho.sh
       else
 	export WORKFLOW_BUILD="ON"
